@@ -17,7 +17,13 @@
             </div>
             <div class="nav-links absolute top-0">
                 <ul class="flex flex-col gap-[4vw] bg-white pb-6">
-                    <li><a class="hover:text-green-200 ml-3" href="{{ route('posts.index') }}">Home</a></li>
+                    @auth
+                        <li><a class="hover:text-green-200 ml-3" href="{{ route('posts') }}">Home</a></li>
+                    @endauth
+                    @guest
+                        <li><a class="hover:text-green-200 ml-3" href="{{ route('landingpage') }}">Home</a></li>
+                    @endguest
+                    
                     <li>
                         @guest
                             <a class="text-black bg-green-400 py-3 px-5 rounded-sm ml-3" href="{{ route('register') }}">Sign up</a>

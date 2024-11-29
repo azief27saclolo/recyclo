@@ -19,7 +19,8 @@
                 {{-- Email --}}
                 <div class="mt-3">
                     <label for="email">Email:</label>
-                    <input type="text" name="email" value="{{ old('email') }}" class="border w-full text-base px-2 py-2 focus:outline-none focus:ring-0 focus:border-gray-600 rounded-2xl" placeholder="Enter Username..."/>
+                    <input type="text" name="email" value="{{ old('email') }}" class="border w-full text-base px-2 py-2 focus:outline-none 
+                    focus:ring-0 focus:border-gray-600 rounded-2xl @error('title') ring-red-500 @enderror" placeholder="Enter Username..."/>
                     @error('email')
                         <p class="error">{{ $message }}</p>
                     @enderror
@@ -28,7 +29,8 @@
                 {{-- Password --}}
                 <div class="mt-5"> 
                     <label for="password">Password:</label>
-                    <input type="password" name="password" class="border w-full text-base px-2 py-2 focus:outline-none focus:ring-0 focus:border-gray-600 rounded-2xl" placeholder="Enter Password..."/>
+                    <input type="password" name="password" class="border w-full text-base px-2 py-2 focus:outline-none focus:ring-0 
+                    focus:border-gray-600 rounded-2xl @error('title') ring-red-500 @enderror" placeholder="Enter Password..."/>
                     @error('password')
                         <p class="error">{{ $message }}</p>
                     @enderror
