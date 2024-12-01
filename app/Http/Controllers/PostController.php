@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PostController extends Controller
 {
@@ -32,17 +33,18 @@ class PostController extends Controller
     public function store(Request $request)
     {
         // Validate
-        $request->validate([
-            'title' => ['required'],
+        $fields = $request->validate([
+            'title' => ['required', 'max:255'],
             'category' => ['required'],
-            'location' => ['required'],
-            'price' => ['required'],
+            'location' => ['required', 'max:255'],
+            'price' => ['required', 'numeric'],
         ]);
 
         // Create a post
+        Auth::user()->posts()->create($fields);
 
         // Redirect to dashboard
-        dd('ok');
+        return back()->with('success', 'Your post was created');
     }
 
     /**
