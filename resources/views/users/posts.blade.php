@@ -1,11 +1,8 @@
 <x-layout>
-    @guest
 
-    @endguest
+    <h1 class="title">{{ $user->username }}'s Posts ({{$posts->total()}})</h1>
 
-   @auth
-   <h1>Latest Post</h1>
-
+    {{-- User's Posts --}}
     <div>
         @foreach ($posts as $post)       
             <x-postCard :post="$post"/>
@@ -16,5 +13,4 @@
        {{ $posts->links() }}
    </div>
 
-   @endauth
 </x-layout>

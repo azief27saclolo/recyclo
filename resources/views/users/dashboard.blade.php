@@ -66,4 +66,17 @@
         </form>
     </div>
 
+    {{-- User Posts --}}
+    <h2 class="font-bold mb-4">Your Latest Posts</h2>
+
+    <div>
+        @foreach ($posts as $post)       
+            <x-postCard :post="$post"/>
+        @endforeach
+    </div>
+
+    <div>
+        {{ $posts->links() }}
+    </div>
+
 </x-layout>

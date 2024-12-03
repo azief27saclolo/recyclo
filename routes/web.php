@@ -7,6 +7,8 @@ use App\Http\Controllers\AuthController;
 
 Route::redirect('/', 'landingpage');
 
+Route::get('/{user}/posts', [DashboardController::class, 'userPosts'])->name('posts.user');
+
 Route::middleware('auth')->group(function() {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
