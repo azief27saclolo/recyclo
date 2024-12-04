@@ -2,7 +2,7 @@
     <section class="bg-green-600 h-[60vh] flex items-center flex-col justify-center gap-5">
         <h1 class="text-3xl text-center text-white font-semibold">Your Trash Has Value – <br> Recycle and Earn!</h1>
         <p class="text-center text-white">Don’t let valuable waste go to waste! Join others turning their trash into cash by recycling responsibly today!</p>
-        <a class="text-black font-semibold bg-green-400 py-3 px-5 rounded-sm" href="{{ route('login') }}">Recycle Now!</a>
+        <a class="text-black font-semibold bg-green-400 py-3 px-5 rounded-sm" href="{{ route('posts') }}">Recycle Now!</a>
     </section>
 
     <section class="h-full flex justify-center mt-5">

@@ -1,9 +1,6 @@
 <x-layout>
-    @guest
 
-    @endguest
-
-   @auth
+   {{-- @auth --}}
    <div class="header">
         <img src="../images/logo1.png" alt="Recyclo Logo" class="logo">
         <h1 class="title">Re<span>cyclo</span></h1>
@@ -24,5 +21,5 @@
        {{ $posts->links() }}
    </div>
 
-   @endauth
+   {{-- @endauth --}}
 </x-layout>
