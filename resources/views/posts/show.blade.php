@@ -3,7 +3,7 @@
     {{-- <x-postCard :post="$post" /> --}}
 
     <div class="slideshow-container">
-        <div class="slide active"><img src="../images/metals1.jpg" alt="Product Image" class="hero-image"></div>
+        <div class="slide active"><img src="{{ asset('storage/' . $post->image) }}" alt="Product Image" class="hero-image"></div>
         <div class="slide"><img src="../images/metals2.jpg" alt="Product Image" class="hero-image"></div>
         <div class="slide"><img src="../images/metals3.jpg" alt="Product Image" class="hero-image"></div>
         <a class="prev" onclick="changeSlide(-1)">&#10094;</a>

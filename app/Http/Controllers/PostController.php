@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 use App\Http\Controllers\Controller;
-use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Support\Facades\Gate;
+
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Routing\Controllers\HasMiddleware;
 
 class PostController extends Controller implements HasMiddleware
 {
@@ -42,16 +44,27 @@ class PostController extends Controller implements HasMiddleware
      */
     public function store(Request $request)
     {
+
         // Validate
-        $fields = $request->validate([
+        $request->validate([
             'title' => ['required', 'max:255'],
             'category' => ['required'],
             'location' => ['required', 'max:255'],
             'price' => ['required', 'numeric'],
+            'image' => ['required', 'file', 'max:3000', 'mimes:webp,png,jpg'],
         ]);
 
+        // Store image if exists
+        $path = Storage::disk('public')->put('posts_images', $request->image);
+
         // Create a post
-        Auth::user()->posts()->create($fields);
+        Auth::user()->posts()->create([
+            'title' => $request->title,
+            'category' => $request->category,
+            'location' => $request->location,
+            'price' => $request->price,
+            'image' => $path
+        ]);
 
         // Redirect to dashboard
         return back()->with('success', 'Your post was created!');

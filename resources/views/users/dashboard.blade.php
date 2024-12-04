@@ -13,10 +13,10 @@
             <x-flashMsg msg="{{ session('delete') }}" bg="bg-red-500"/>
         @endif
 
-        <form action="{{ route('posts.store') }}" method="post">
+        <form action="{{ route('posts.store') }}" method="post" enctype="multipart/form-data">
             @csrf
 
-            {{-- Post Title --}}
+            {{-- Title --}}
             <div class="mb-4">
                 <label for="title">Post Title</label>
                 <input type="text" name="title" value="{{ old('title') }}" class="border w-full text-base px-2 py-2 focus:outline-none 
@@ -32,9 +32,9 @@
                 <select name="category" value="{{ old('category') }}" class="border w-full text-base px-2 py-2 focus:outline-none 
                 focus:ring-0 focus:border-gray-600 rounded-2xl @error('category') ring-red-500 @enderror" placeholder="Enter title...">
                     <option value="">--Select--</option>
-                    <option value="Metal">Metal</option>
-                    <option value="Plastic">Plastic</option>
-                    <option value="Paper">Paper</option>
+                    <option value="metal">Metal</option>
+                    <option value="plastic">Plastic</option>
+                    <option value="paper">Paper</option>
                 </select>
                 @error('category')
                     <p class="error">{{ $message }}</p>
@@ -57,6 +57,15 @@
                 <input type="text" name="price" value="{{ old('price') }}" class="border w-full text-base px-2 py-2 focus:outline-none 
                 focus:ring-0 focus:border-gray-600 rounded-2xl @error('price') ring-red-500 @enderror" placeholder="Enter price..."/>
                 @error('price')
+                    <p class="error">{{ $message }}</p>
+                @enderror
+            </div>
+
+            {{-- Image --}}
+            <div class="mb-4">
+                <label for="image">Photo</label>
+                <input type="file" name="image" id="image">
+                @error('image')
                     <p class="error">{{ $message }}</p>
                 @enderror
             </div>

@@ -3,7 +3,7 @@
 <a href="{{ route('posts.show', $post) }}">
     <div class="shop-card">
         {{-- Image --}}
-        <img src="" alt="Plastic Waste">
+        <img src="{{ asset('storage/' . $post->image) }}" alt="Plastic Waste">
         
         <span class="star-icon">★</span>
         

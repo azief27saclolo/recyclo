@@ -16,6 +16,7 @@ class Post extends Model
         'category',
         'location',
         'price',
+        'image',
     ];
 
     public function user() : BelongsTo 
