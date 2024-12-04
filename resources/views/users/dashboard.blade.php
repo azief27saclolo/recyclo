@@ -1,6 +1,6 @@
 <x-layout>
     
-    <h1>Hello {{ auth()->user()->username }}</h1>
+    <h1 class="title">Hello {{ auth()->user()->username }}</h1>
 
     {{-- Create Post Form --}}
     <div class="card mb-4">
@@ -8,9 +8,9 @@
 
         {{-- Session Messages --}}
         @if (session('success'))    
-            <div class="mb-2">
-                <x-flashMsg msg="{{ session('success') }}" />
-            </div>
+            <x-flashMsg msg="{{ session('success') }}" bg="bg-green-500" />
+        @elseif (session('delete'))
+            <x-flashMsg msg="{{ session('delete') }}" bg="bg-red-500"/>
         @endif
 
         <form action="{{ route('posts.store') }}" method="post">
@@ -32,9 +32,9 @@
                 <select name="category" value="{{ old('category') }}" class="border w-full text-base px-2 py-2 focus:outline-none 
                 focus:ring-0 focus:border-gray-600 rounded-2xl @error('category') ring-red-500 @enderror" placeholder="Enter title...">
                     <option value="">--Select--</option>
-                    <option value="metal">Metal</option>
-                    <option value="plastic">Plastic</option>
-                    <option value="paper">Paper</option>
+                    <option value="Metal">Metal</option>
+                    <option value="Plastic">Plastic</option>
+                    <option value="Paper">Paper</option>
                 </select>
                 @error('category')
                     <p class="error">{{ $message }}</p>
@@ -67,11 +67,21 @@
     </div>
 
     {{-- User Posts --}}
-    <h2 class="font-bold mb-4">Your Latest Posts</h2>
+    <h2 class="font-bold mb-4">Your Latest Posts ({{ $posts->total() }})</h2>
 
     <div>
         @foreach ($posts as $post)       
-            <x-postCard :post="$post"/>
+            <x-postCard :post="$post">
+                {{-- Update Post --}}
+                <a href="{{ route('posts.edit', $post) }}" class="bg-green-500 text-white px-2 py-1 text-xs rounded-md">Update</a>
+                
+                {{-- Delete Post --}}
+                <form action="{{ route('posts.destroy', $post) }}" method="post">
+                    @csrf
+                    @method('DELETE')
+                    <button class="bg-red-500 text-white px-2 py-1 text-xs rounded-md">Delete</button>
+                </form>
+            </x-postCard>
         @endforeach
     </div>
 

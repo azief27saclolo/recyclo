@@ -14,7 +14,7 @@
                     <p class="font-light ">The idea of reduce, reuse, recycle has been around for a long time, and it seems to be working.</p>
                     <p class="font-light ">Well, that is our main goal. We would like to make a change in the environment while helping individuals like you make extra income online from just selling waste.</p>
                     <p class="font-light ">Wastes like plastic, metal cans, and paper waste will do.</p>
-                    <a class="text-black font-semibold bg-green-400 py-3 px-5 rounded-sm" href="#">Get Started</a>
+                    <a class="text-black font-semibold bg-green-400 py-3 px-5 rounded-sm" href="{{ route('login') }}">Get Started</a>
                 </div>
             </div>
         </div>
@@ -24,19 +24,19 @@
     <section class="h-full mt-10 flex flex-col items-center gap-6 mb-6">
         <h1 class="text-2xl font-semibold">Kinds of Waste that we accept</h1>
         <div class="w-[395px] h-[230px] rounded-md border border-green-800 flex flex-col justify-center items-center gap-2">
-            <img class="w-20" src="../src/img/poly-bag_14523484.png" alt="plastic bag img">
+            <img class="w-20" src="images/poly-bag_14523484.png" alt="plastic bag img">
             <h2 class="text-xl text-green-800 font-semibold">Plastic Waste</h2>
             <p class="text-sm text-center w-[350px] font-light">Plastics have been around us all the time. At your house, office, and school. It can be in a form of a straw, bag, bottles, and etc.</p>
         </div>
 
         <div class="w-[395px] h-[230px] rounded-md border border-green-800 flex flex-col justify-center items-center gap-2">
-            <img class="w-20" src="../src/img/metal_7263634.png" alt="plastic bag img">
+            <img class="w-20" src="images/metal_7263634.png" alt="plastic bag img">
             <h2 class="text-xl text-green-800 font-semibold">Metal Waste</h2>
             <p class="text-sm text-center w-[350px] font-light">Metal waste has a lot of recycling/reuse potential. It can easily save resources, reduces waste going to landfills, and many more.</p>
         </div>
 
         <div class="w-[395px] h-[230px] rounded-md border border-green-800 flex flex-col justify-center items-center gap-2">
-            <img class="w-20" src="../src/img/paper-recycle_6473463.png" alt="plastic bag img">
+            <img class="w-20" src="images/paper-recycle_6473463.png" alt="plastic bag img">
             <h2 class="text-xl text-green-800 font-semibold">Paper Waste</h2>
             <p class="text-sm text-center w-[350px] font-light">By just simply recycling paper waste, it can help to reduce greenhouse gas emissions that can contribute to climate change. Recycle now!</p>
         </div>
@@ -50,10 +50,10 @@
             <p class="text-white font-thin px-5">With Recyclo being a mobile web-app, you can easily take us anywhere you go!</p>
             <p class="text-white font-thin px-5">Going to work, office, business trip, school? No problem! Users can gain access to our marketplace with only 1 search away.</p>
         </div>
-        <a class="text-black bg-green-400 py-3 px-5 rounded-sm m-5 font-semibold" href="#">Register Now</a>
+        <a class="text-black bg-green-400 py-3 px-5 rounded-sm m-5 font-semibold" href="{{ route('register') }}">Register Now</a>
     </section>
     
-    <script>
+    {{-- <script>
         const navLinks = document.querySelector('.nav-links')
         function onToggleMenu(e){
             e.name = e.name === 'menu' ? 'close' : 'menu'
@@ -61,5 +61,5 @@
             navLinks.classList.toggle('left-[0%]')
             navLinks.classList.toggle('w-[100%]')
         }
-    </script>
+    </script> --}}
 </x-layout>

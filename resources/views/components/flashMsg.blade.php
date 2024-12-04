@@ -1,3 +1,3 @@
-@props(['msg'])
+@props(['msg', 'bg' => $bg])
 
-<p class="text-sm font-medium text-white bg-green-500 px-3 py-3 rounded-md">{{ $msg }}</p>
+<p class="mb-2 text-sm font-medium text-white px-3 py-3 rounded-md {{ $bg }}">{{ $msg }}</p>

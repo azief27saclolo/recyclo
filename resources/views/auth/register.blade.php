@@ -9,7 +9,7 @@
 
     
                 <div class="flex justify-center items-center mb-4">
-                    <img src="img/recyclo-logo.png" alt="Logo" class="max-w-full h-auto"> <!-- Added responsive image styles -->
+                    <img src="images/recyclo-logo.png" alt="Logo" class="max-w-full h-auto"> <!-- Added responsive image styles -->
                 </div>
     
                 <hr class="mt-3">
@@ -102,13 +102,13 @@
         
                 <div class="flex justify-center items-center mt-2 space-x-4">
                     <a href="#link1" class="block">
-                        <img src="img/apple-logo.png" alt="Apple Logo" class="h-8 w-8">
+                        <img src="images/apple-logo.png" alt="Apple Logo" class="h-8 w-8">
                     </a>
                     <a href="#link2" class="block">
-                        <img src="img/google-logo.png" alt="Google Logo" class="h-8 w-8">
+                        <img src="images/google-logo.png" alt="Google Logo" class="h-8 w-8">
                     </a>
                     <a href="#link3" class="block">
-                        <img src="img/facebook-logo.png" alt="Facebook Logo" class="h-8 w-8">
+                        <img src="images/facebook-logo.png" alt="Facebook Logo" class="h-8 w-8">
                     </a>
                 </div>
     
