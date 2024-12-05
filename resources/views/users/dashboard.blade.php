@@ -61,7 +61,7 @@
                 @enderror
             </div>
 
-            {{-- Image --}}
+            {{-- Upload Image --}}
             <div class="mb-4">
                 <label for="image">Photo</label>
                 <input type="file" name="image" id="image">

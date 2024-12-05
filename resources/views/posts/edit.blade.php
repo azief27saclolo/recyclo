@@ -5,7 +5,7 @@
     <div class="card">
         <h2 class="font-bold mb-4">Update your post</h2>
 
-        <form action="{{ route('posts.update', $post) }}" method="post">
+        <form action="{{ route('posts.update', $post) }}" method="post" enctype="multipart/form-data">
             @csrf
             @method('PUT')
             
@@ -51,6 +51,18 @@
             focus:ring-0 focus:border-gray-600 rounded-2xl @error('price') ring-red-500 @enderror" placeholder="Enter price..."/>
             @error('price')
             <p class="error">{{ $message }}</p>
+            @enderror
+        </div>
+
+        {{-- Image --}}
+        <label>Cover Photo</label>
+        <img class="h-1/2 w-1/2 mb-4" src="{{ asset('storage/' . $post->image) }}" alt="Plastic Waste">
+
+        {{-- Upload Image --}}
+        <div class="mb-4">
+            <input type="file" name="image" id="image">
+            @error('image')
+                <p class="error">{{ $message }}</p>
             @enderror
         </div>
         
