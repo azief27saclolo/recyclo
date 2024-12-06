@@ -1,4 +1,13 @@
-<x-layout>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Login</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
+<body>
     
     <div class="flex justify-center items-center h-screen px-4 bg-gray-50">
         {{-- Session Messages --}}
@@ -89,4 +98,6 @@
         </form>
     </div>
 
-</x-layout>
+
+</body>
+</html>
