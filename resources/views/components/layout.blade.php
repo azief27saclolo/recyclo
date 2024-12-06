@@ -109,6 +109,144 @@
         {{ $slot }}
     </main>
 
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-top">
+          <ul class="footer-list">
+            <li>
+              <p class="footer-list-title"><i class="bi bi-link-45deg"></i> Recyclo Links</p>
+            </li>
+            <li>
+              <p class="footer-list-text">
+                <i class="bi bi-facebook"></i>   <a href="#" class="link">Recyclo</a>
+              </p>
+            </li>
+            <br>
+            <li>
+              <p class="footer-list-text">
+                <i class="bi bi-instagram"></i>   <a href="#" class="link">@RecycloEst2024</a>
+              </p>
+            </li>
+            <br>
+            <li>
+              <p class="footer-list-text">
+                <i class="bi bi-twitter"></i>   <a href="#" class="link">RecycloEst2024</a>
+              </p>
+            </li>
+          </ul>
+  
+          <ul class="footer-list">
+  
+            <li>
+              <p class="footer-list-title">Shops</p>
+            </li>
+  
+            <li>
+              <a href="#" class="footer-link">New Products</a>
+            </li>
+  
+            <li>
+              <a href="#" class="footer-link">Best Sellers</a>
+            </li>
+  
+          </ul>
+  
+          <ul class="footer-list">
+            <li>
+              <p class="footer-list-title"><i class="bi bi-info-circle"></i> Infomation</p>
+            </li>
+            <li>
+              <a href="#" class="footer-link">About Us</a>
+            </li>
+            <li>
+              <a href="#" class="footer-link">Start a Return</a>
+            </li>
+  
+            <li>
+              <a href="#" class="footer-link">Contact Us</a>
+            </li>
+  
+            <li>
+              <a href="#" class="footer-link">Shipping FAQ</a>
+            </li>
+  
+            <li>
+              <a href="#" class="footer-link">Terms & Conditions</a>
+            </li>
+  
+            <li>
+              <a href="#" class="footer-link">Privacy Policy</a>
+            </li>
+  
+          </ul>
+  
+          <div class="footer-list">
+  
+            <p class="newsletter-title">Good emails.</p>
+  
+            <p class="newsletter-text">
+              Enter your email below to be the first to know about new collections and product launches.
+            </p>
+  
+            <form action="" class="newsletter-form">
+              <input type="email" name="email_address" placeholder="Enter your email address" required
+                class="email-field">
+  
+              <button type="submit" class="btn btn-primary">Subscribe</button>
+            </form>
+  
+          </div>
+  
+        </div>
+  
+        <div class="footer-bottom">
+  
+          <div class="wrapper">
+            <p class="copyright">
+              &copy; 2024 Recyclo
+            </p>
+  
+            <ul class="social-list">
+  
+              <li>
+                <a href="#" class="social-link">
+                  <ion-icon name="logo-twitter"></ion-icon>
+                </a>
+              </li>
+  
+              <li>
+                <a href="#" class="social-link">
+                  <ion-icon name="logo-facebook"></ion-icon>
+                </a>
+              </li>
+  
+              <li>
+                <a href="#" class="social-link">
+                  <ion-icon name="logo-instagram"></ion-icon>
+                </a>
+              </li>
+  
+              <li>
+                <a href="#" class="social-link">
+                  <ion-icon name="logo-youtube"></ion-icon>
+                </a>
+              </li>
+  
+            </ul>
+          </div>
+  
+          <div style="display: flex; align-items: center;">
+            <img src="./assets/images/mainlogo.png" alt="Logo" style="width: 50px; height: 50px; margin-right: 10px;">
+            <h1 style="color: black; margin: 0;"></h1>
+        </div>
+  
+          <img src="./assets/images/p.png" width="313" height="28" alt="available all payment method" class="w-100">
+  
+        </div>
+  
+      </div>
+    </footer>
+
     <script>
         // Set form: x-data="formSubmit" @submit.prevent="submit" and button: x-ref="btn"
         document.addEventListener('alpine:init', () => {

@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\WelcomeMail;
 use App\Models\Post;
-use App\Http\Controllers\Controller;
-
+use App\Mail\WelcomeMail;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
@@ -28,7 +27,7 @@ class PostController extends Controller implements HasMiddleware
      */
     public function index()
     {
-        $posts = Post::latest()->paginate(6);
+        $posts = Post::latest()->paginate(10);
 
         return view('posts.index', [ 'posts' => $posts ]);
     }
@@ -53,6 +52,7 @@ class PostController extends Controller implements HasMiddleware
             'category' => ['required'],
             'location' => ['required', 'max:255'],
             'price' => ['required', 'numeric'],
+            'description' => ['required', 'string'],
             'image' => ['required', 'file', 'max:3000', 'mimes:webp,png,jpg'],
         ]);
 
@@ -65,6 +65,7 @@ class PostController extends Controller implements HasMiddleware
             'category' => $request->category,
             'location' => $request->location,
             'price' => $request->price,
+            'description' => $request->description,
             'image' => $path
         ]);
 
@@ -80,7 +81,8 @@ class PostController extends Controller implements HasMiddleware
      */
     public function show(Post $post)
     {
-        return view('posts.show', ['post' => $post]);
+        $posts = Post::latest()->paginate(10); // Fetch the latest posts with pagination
+        return view('posts.show', ['post' => $post, 'posts' => $posts]);
     }
 
     /**
@@ -107,6 +109,7 @@ class PostController extends Controller implements HasMiddleware
             'category' => ['required'],
             'location' => ['required', 'max:255'],
             'price' => ['required', 'numeric'],
+            'description' => ['required', 'string'],
             'image' => ['required', 'file', 'max:3000', 'mimes:webp,png,jpg'],
         ]);
 
@@ -122,6 +125,7 @@ class PostController extends Controller implements HasMiddleware
             'category' => $request->category,
             'location' => $request->location,
             'price' => $request->price,
+            'description' => $request->description,
             'image' => $path
         ]);
 

@@ -11,7 +11,7 @@
           <div class="card-actions">
 
             <button class="action-btn" aria-label="add to cart">
-              <ion-icon name="bag" aria-hidden="true"></ion-icon>
+              <ion-icon name="cart" aria-hidden="true"></ion-icon>
             </button>
 
             <button class="action-btn" aria-label="add to whishlist">
@@ -32,6 +32,9 @@
             <span class="span">₱{{ $post->price }}.00</span>
           </div>
 
+          <h3>
+            <a href="{{ route('posts.show', $post) }}" class="card-title">{{ $post->title }}</a>
+          </h3>
           <h3>
             <a href="{{ route('posts.user', $post->user) }}" class="card-title">{{ $post->user->username }}'s Shop</a>
           </h3>

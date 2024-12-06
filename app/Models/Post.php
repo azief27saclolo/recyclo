@@ -16,11 +16,17 @@ class Post extends Model
         'category',
         'location',
         'price',
+        'description',
         'image',
     ];
 
     public function user() : BelongsTo 
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'post_id');
     }
 }
