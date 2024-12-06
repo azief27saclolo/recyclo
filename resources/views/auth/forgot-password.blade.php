@@ -8,7 +8,7 @@
     
     <div class="flex justify-center items-center h-screen px-4">
         
-        <form action="{{ route('password.request') }}" method="post">
+        <form action="{{ route('password.request') }}" method="post" x-data="formSubmit" @submit.prevent="submit">
             @csrf
 
             <div class="w-full max-w-sm p-6 shadow-lg bg-gray-100 rounded-md"> <!-- Changed to max-w-md for better responsiveness -->
@@ -32,7 +32,7 @@
     
                 {{-- Login Button --}}
                 <div class="mt-5">
-                    <button type="submit" class="border-2 border-yellow-400 bg-yellow-400 py-2 w-full rounded-md">Submit</button> <!-- Increased padding for better touch targets -->
+                    <button x-ref="btn" type="submit" class="border-2 border-yellow-400 bg-yellow-400 py-2 w-full rounded-md">Submit</button> <!-- Increased padding for better touch targets -->
                 </div>
     
             </div>

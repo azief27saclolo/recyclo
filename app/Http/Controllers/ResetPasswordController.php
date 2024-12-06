@@ -23,16 +23,16 @@ class ResetPasswordController extends Controller
                     ? back()->with(['status' => __($status)])
                     : back()->withErrors(['email' => __($status)]);
     }
-
+    
     public function passwordReset(string $token) {
         return view('auth.reset-password', ['token' => $token]);
     }
 
     public function passwordUpdate(Request $request) {
-        $request->validate([
+        $credentials = $request->validate([
             'token' => 'required',
-            'email' => 'required|email',
-            'password' => 'required|min:8|confirmed',
+            'email' => ['required','email'],
+            'password' => ['required','confirmed'],
         ]);
      
         $status = Password::reset(

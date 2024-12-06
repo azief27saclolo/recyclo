@@ -13,7 +13,7 @@
             <x-flashMsg msg="{{ session('delete') }}" bg="bg-red-500"/>
         @endif
 
-        <form action="{{ route('posts.store') }}" method="post" enctype="multipart/form-data">
+        <form action="{{ route('posts.store') }}" method="post" enctype="multipart/form-data" x-data="formSubmit" @submit.prevent="submit">
             @csrf
 
             {{-- Title --}}
@@ -71,7 +71,7 @@
             </div>
 
             {{-- Submit Button --}}
-            <button class="primary-btn">Create</button>
+            <button x-ref="btn" class="primary-btn">Create</button>
         </form>
     </div>
 

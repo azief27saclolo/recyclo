@@ -1,15 +1,20 @@
 <x-layout>
     
     <div class="flex justify-center items-center h-screen px-4">
+
+        {{-- Session Messages --}}
+        @if (session('status'))    
+            <x-flashMsg msg="{{ session('status') }}" bg="bg-green-500" />
+        @endif
         
         <form action="{{ route('login') }}" method="post">
             @csrf
 
-            <div class="w-full max-w-sm p-6 shadow-lg bg-gray-100 rounded-md"> <!-- Changed to max-w-md for better responsiveness -->
+            <div class="w-full max-w-sm p-6 shadow-lg bg-gray-100 rounded-md">
 
     
                 <div class="flex justify-center items-center mb-4">
-                    <img src="images/recyclo-logo.png" alt="Logo" class="max-w-full h-auto"> <!-- Added responsive image styles -->
+                    <img src="images/recyclo-logo.png" alt="Logo" class="max-w-full h-auto">
                 </div>
     
                 <hr class="mt-3">

@@ -9,20 +9,20 @@
 
             <input type="hidden" name="token" value="{{ $token }}">
 
-            <div class="w-full max-w-sm p-6 shadow-lg bg-gray-100 rounded-md"> <!-- Changed to max-w-md for better responsiveness -->
+            <div class="w-full max-w-sm p-6 shadow-lg bg-gray-100 rounded-md">
 
     
-                <div class="flex justify-center items-center mb-4">
-                    <img src="images/recyclo-logo.png" alt="Logo" class="max-w-full h-auto"> <!-- Added responsive image styles -->
-                </div>
+                {{-- <div class="flex justify-center items-center mb-4">
+                    <img src="images/recyclo-logo.png" alt="Logo" class="max-w-full h-auto">
+                </div> --}}
     
-                <hr class="mt-3">
+                {{-- <hr class="mt-3"> --}}
 
                 {{-- Email --}}
                 <div class="mt-3">
                     <label for="email">Email:</label>
                     <input type="text" name="email" value="{{ old('email') }}" class="border w-full text-base px-2 py-2 
-                    focus:outline-none focus:ring-0 focus:border-gray-600 rounded-2xl @error('title') ring-red-500 @enderror" placeholder="Enter Username..."/>
+                    focus:outline-none focus:ring-0 focus:border-gray-600 rounded-2xl @error('title') ring-red-500 @enderror" placeholder="Enter email..."/>
                     @error('email')
                         <p class="error">{{ $message }}</p>
                     @enderror
