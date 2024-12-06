@@ -1,9 +1,10 @@
+<!-- resources/views/layouts/create-post-layout.blade.php -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Form</title>
+    <title>Create Post</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css?family=Montserrat:400,600&display=swap');
@@ -36,7 +37,7 @@
         }
 
         .left-container h1 {
-            color:white;
+            color: rgba(0,0,0,.8);
             display: inline-block;
             font-size: 24px;
         }
@@ -81,7 +82,7 @@
         }
 
         .right-container h1:nth-of-type(1) {
-            color: white;
+            color: rgba(0,0,0,.8);
             font-size: 28px;
             font-weight: 600;
         }
@@ -214,86 +215,19 @@
     </style>
 </head>
 <body>
-    <h1 class="title">Hello {{ auth()->user()->username }}</h1>
-
-    {{-- Create Post Form --}}
-    <div class="card mb-4">
-        <h2 class="font-bold mb-4">Create a new post</h2>
-
-        {{-- Session Messages --}}
-        @if (session('success'))    
-            <x-flashMsg msg="{{ session('success') }}" bg="bg-green-500" />
-        @elseif (session('delete'))
-            <x-flashMsg msg="{{ session('delete') }}" bg="bg-red-500"/>
-        @endif
-<<<<<<< Updated upstream
-
-        <form action="{{ route('posts.store') }}" method="post">
-            @csrf
-
-            {{-- Post Title --}}
-            <div class="mb-4">
-                <label for="title">Post Title</label>
-                <input type="text" name="title" value="{{ old('title') }}" class="border w-full text-base px-2 py-2 focus:outline-none 
-                focus:ring-0 focus:border-gray-600 rounded-2xl @error('title') ring-red-500 @enderror" placeholder="Enter title..."/>
-                @error('title')
-                    <p class="error">{{ $message }}</p>
-                @enderror
-            </div>
-
-            {{-- Category --}}
-            <div class="mb-4">
-                <label for="category">Category</label>
-                <select name="category" value="{{ old('category') }}" class="border w-full text-base px-2 py-2 focus:outline-none 
-                focus:ring-0 focus:border-gray-600 rounded-2xl @error('category') ring-red-500 @enderror" placeholder="Enter title...">
-                    <option value="">--Select--</option>
-                    <option value="Metal">Metal</option>
-                    <option value="Plastic">Plastic</option>
-                    <option value="Paper">Paper</option>
-                </select>
-                @error('category')
-                    <p class="error">{{ $message }}</p>
-                @enderror
-            </div>
-
-            {{-- Location --}}
-            <div class="mb-4">
-                <label for="location">Location</label>
-                <input type="text" name="location" value="{{ old('location') }}" class="border w-full text-base px-2 py-2 focus:outline-none 
-                focus:ring-0 focus:border-gray-600 rounded-2xl @error('location') ring-red-500 @enderror" placeholder="Enter location..."/>
-                @error('location')
-                    <p class="error">{{ $message }}</p>
-                @enderror
-            </div>
-
-            {{-- Price --}}
-            <div class="mb-4">
-                <label for="price">Price per kilo</label>
-                <input type="text" name="price" value="{{ old('price') }}" class="border w-full text-base px-2 py-2 focus:outline-none 
-                focus:ring-0 focus:border-gray-600 rounded-2xl @error('price') ring-red-500 @enderror" placeholder="Enter price..."/>
-                @error('price')
-                    <p class="error">{{ $message }}</p>
-                @enderror
-            </div>
-
-            {{-- Submit Button --}}
-            <button class="primary-btn">Create</button>
-        </form>
-=======
-        <div class="signup-container">
+    <div class="signup-container">
         <div class="left-container">
             <h1>
                 <i class="fas fa-paw"></i>
                 PUPASSURE
             </h1>
             <div class="puppy">
-               
                 <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/38816/image-from-rawpixel-id-542207-jpeg.png" alt="Puppy">
             </div>
         </div>
         <div class="right-container">
             <header>
-                <h1>Make a fortune by selling your Sraps!</h1>
+                <h1>Make a fortune by selling your sheeits!</h1>
                 <form action="{{ route('posts.store') }}" method="post" enctype="multipart/form-data" x-data="formSubmit" @submit.prevent="submit">
                     @csrf
                     <div class="set">
@@ -355,31 +289,6 @@
                 </form>
             </header>
         </div>
->>>>>>> Stashed changes
     </div>
-
-    
-    <x-layout>
-    {{-- User Posts --}}
-    <h2 class="font-bold mb-4">Your Latest Posts ({{ $posts->total() }})</h2>
-
-    <div>
-        @foreach ($posts as $post)       
-            <x-postCard :post="$post">
-                {{-- Update Post --}}
-                <a href="{{ route('posts.edit', $post) }}" class="bg-green-500 text-white px-2 py-1 text-xs rounded-md">Update</a>
-                
-                {{-- Delete Post --}}
-                <form action="{{ route('posts.destroy', $post) }}" method="post">
-                    @csrf
-                    @method('DELETE')
-                    <button class="bg-red-500 text-white px-2 py-1 text-xs rounded-md">Delete</button>
-                </form>
-            </x-postCard>
-        @endforeach
-    </div>
-
-    {{ $posts->links() }}
-    </x-layout>
 </body>
-</html>
+</html> 

@@ -1605,6 +1605,16 @@ video {
   transform: scale(0.98);
 }
 
+
+
+/* awad's css */
+
+
+
+
+
+
+
 @media (max-width: 768px) {
   .cart-info {
       flex-direction: column;
@@ -1636,3 +1646,7 @@ video {
     display: none;
   }
 }
+
+
+
+

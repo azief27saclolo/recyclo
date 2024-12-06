@@ -9,6 +9,8 @@
     <script src="https://unpkg.com/ionicons@4.5.10-0/dist/ionicons.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+  
+   
 </head>
 <body class="bg-white font-roboto">
     <header class="bg-white sticky top-[0%] z-10 drop-shadow-md mt-3">
@@ -47,18 +49,20 @@
                     @auth
                         <p class="username">{{ auth()->user()->username }}</p>                  
                     @endauth
+                    
 
                     <a class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1" href="#">About</a>
                     <a class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1" href="#">Waste</a>
                     <a class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1" href="#">ContactUs</a>
                     @auth                       
-                        <a href="{{ route('dashboard') }}" class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Profile</a>
+                        <a href="{{ route('profilePage') }}" class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Profile</a>
 
                         <form action="{{ route('logout') }}" method="post">
                             @csrf
                             <button class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Logout</button>
                         </form>
                     @endauth
+                  
                
                 </div>
             </div>
