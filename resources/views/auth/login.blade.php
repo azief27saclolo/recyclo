@@ -35,9 +35,13 @@
                 </div>
                 
                 {{-- Remember Me --}}
-                <div class="mb-4 mt-4">
-                    <input type="checkbox" name="remember" id="remember">
-                    <span for="remember">Remember Me</span>
+                <div class="mb-4 mt-4 flex justify-between items-center">
+                    <div>
+                        <input type="checkbox" name="remember" id="remember">
+                        <span for="remember">Remember Me</span>
+                    </div>
+
+                    <a class="text-blue-500" href="{{ 'forgot-password' }}">Forgot your password?</a>
                 </div>
 
                 @error('failed')
