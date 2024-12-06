@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\ResetPasswordController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
@@ -13,10 +14,15 @@ Route::redirect('/', 'landingpage');
 // Posts route
 Route::resource('posts', PostController::class);
 
+// Landing page route
+Route::view('/landingpage', 'landingpage.landingpage')->name('landingpage');
+Route::get('/landingpage', [LandingPageController::class, 'index'])->name('landingpage');
+
 // User posts route
 Route::get('/{user}/posts', [DashboardController::class, 'userPosts'])->name('posts.user');
 
 Route::get('/posts', [PostController::class, 'index'])->name('posts');
+
 
 // Routes for authenticated users
 Route::middleware('auth')->group(function() {
@@ -41,8 +47,6 @@ Route::middleware('guest')->group(function() {
     
     Route::view('/login', 'auth.login')->name('login');
     Route::post('/login', [AuthController::class, 'login']);
-
-    Route::view('/landingpage', 'landingpage.landingpage')->name('landingpage');
     
     // Reset Password Routes
     Route::view('/forgot-password', 'auth.forgot-password')->name('password.request');

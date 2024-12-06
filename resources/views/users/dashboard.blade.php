@@ -32,9 +32,9 @@
                 <select name="category" value="{{ old('category') }}" class="border w-full text-base px-2 py-2 focus:outline-none 
                 focus:ring-0 focus:border-gray-600 rounded-2xl @error('category') ring-red-500 @enderror" placeholder="Enter title...">
                     <option value="">--Select--</option>
-                    <option value="metal">Metal</option>
-                    <option value="plastic">Plastic</option>
-                    <option value="paper">Paper</option>
+                    <option value="Metal">Metal</option>
+                    <option value="Plastic">Plastic</option>
+                    <option value="Paper">Paper</option>
                 </select>
                 @error('category')
                     <p class="error">{{ $message }}</p>

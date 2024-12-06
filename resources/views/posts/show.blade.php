@@ -2,22 +2,7 @@
 
     {{-- <x-postCard :post="$post" /> --}}
 
-    <div class="slideshow-container">
         <div class="slide active"><img src="{{ asset('storage/' . $post->image) }}" alt="Product Image" class="hero-image"></div>
-        <div class="slide"><img src="../images/metals2.jpg" alt="Product Image" class="hero-image"></div>
-        <div class="slide"><img src="../images/metals3.jpg" alt="Product Image" class="hero-image"></div>
-        <a class="prev" onclick="changeSlide(-1)">&#10094;</a>
-        <a class="next" onclick="changeSlide(1)">&#10095;</a>
-    </div>
-    
-    {{-- <div class="header" style="width: 100%; padding: 20px; display: flex; align-items: center; position: absolute; top: 0; z-index: 1000;">
-        <div class="nav">
-            <a href="index.html" class="return-link"><i class="bi bi-arrow-return-left"></i></a>
-            
-            <a href="#" class="return-link"><i class="bi bi-share"></i></a>
-            <a href="#" class="return-link"><i class="bi bi-three-dots-vertical"></i></i></a>
-        </div>
-    </div> --}}
     
     <div class="shop-info">
         {{-- Title --}}

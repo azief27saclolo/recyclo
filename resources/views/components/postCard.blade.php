@@ -2,36 +2,55 @@
 
 <a href="{{ route('posts.show', $post) }}">
     <div class="shop-card">
-        {{-- Image --}}
-        <img src="{{ asset('storage/' . $post->image) }}" alt="Plastic Waste">
-        
-        <span class="star-icon">★</span>
-        
-        <div class="shop-info">
-            {{-- Title --}}
-            <h2 class="font-bold text-xl">{{ $post->title }}</h2>
-            
-            {{-- Author and Date --}}
-            <div class="text-xs font-light mb-4">
-                <span>Posted {{ $post->created_at->diffForHumans() }} by</span>
-                <a href="{{ route('posts.user', $post->user) }}" class="text-blue-500 font-medium">{{ $post->user->username }}</a>
-            </div>
-            
-            {{-- Category --}}
-            <h2 class="waste-filter">{{ $post->category }}</h2>
-            
-            {{-- Location --}}
-            <h2 class="font-thin text-m">Location: {{ $post->location }}</h2>
-            
-            {{-- Price --}}
-            <h2 class="font-thin text-m">Price: {{ $post->price }}</h2>
-            
-            {{-- Rating --}}
-            <span class="rating">★ 5.0</span>
+
+        <div class="card-banner img-holder" style="--width: 540; --height: 720;">
+          <img src="{{ asset('storage/' . $post->image) }}" width="540" height="720" loading="lazy"
+            alt="Facial cleanser" class="img-cover">
+
+          <span class="badge" aria-label="20% off">{{ $post->category }}</span>
+          <div class="card-actions">
+
+            <button class="action-btn" aria-label="add to cart">
+              <ion-icon name="bag" aria-hidden="true"></ion-icon>
+            </button>
+
+            <button class="action-btn" aria-label="add to whishlist">
+              <ion-icon name="heart" aria-hidden="true"></ion-icon>
+            </button>
+
+            <button class="action-btn" aria-label="compare">
+              <ion-icon name="repeat" aria-hidden="true"></ion-icon>
+            </button>
+
+          </div>
         </div>
 
-        <div class="flex items-center justify-end gap-4 mt-40">
-            {{ $slot }}
+        <div class="card-content">
+
+          <div class="price">
+
+            <span class="span">₱{{ $post->price }}.00</span>
+          </div>
+
+          <h3>
+            <a href="{{ route('posts.user', $post->user) }}" class="card-title">{{ $post->user->username }}'s Shop</a>
+          </h3>
+
+          <div class="card-rating">
+
+            <div class="rating-wrapper" aria-label="5 start rating">
+              <ion-icon name="star" aria-hidden="true"></ion-icon>
+              <ion-icon name="star" aria-hidden="true"></ion-icon>
+              <ion-icon name="star" aria-hidden="true"></ion-icon>
+              <ion-icon name="star" aria-hidden="true"></ion-icon>
+              <ion-icon name="star" aria-hidden="true"></ion-icon>
+            </div>
+
+            <p class="rating-text">5170 reviews</p>
+
+          </div>
+
         </div>
-    </div>
+
+      </div>
 </a>

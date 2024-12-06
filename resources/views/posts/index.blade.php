@@ -1,25 +1,29 @@
 <x-layout>
 
-   {{-- @auth --}}
-   <div class="header">
-        <img src="../images/logo1.png" alt="Recyclo Logo" class="logo">
-        <h1 class="title">Re<span>cyclo</span></h1>
-        <div class="menu">
-            <i class="bi bi-list"></i>
+    {{-- User's Posts --}}
+    <section class="section shop" id="shop" aria-label="shop">
+        <div class="container">
+          <div class="title-wrapper">
+            <h2 class="h2 section-title">Best Deals</h2>
+
+            <a href="{{ route('posts') }}" class="btn-link">
+              <span class="span">View More Products</span>
+
+              <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
+            </a>
+          </div>
+        <ul class="has-scrollbar">
+            @foreach ($posts as $post)       
+                <li class="scrollbar-item">
+                    <x-postCard :post="$post"/>
+                </li>
+            @endforeach
+        </ul>
         </div>
-    </div>
+    </section>
 
-   <h1 class="title">Latest</h1>
-
-    <div>
-        @foreach ($posts as $post)       
-            <x-postCard :post="$post"/>
-        @endforeach
-    </div>
-
-   <div>
+   {{-- <div>
        {{ $posts->links() }}
-   </div>
+   </div> --}}
 
-   {{-- @endauth --}}
 </x-layout>
