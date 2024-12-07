@@ -36,6 +36,7 @@
                         <option value="Metal">Metal</option>
                         <option value="Plastic">Plastic</option>
                         <option value="Paper">Paper</option>
+                        <option value="Glass">Glass</option>
                     </select>
                     @error('category')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
