@@ -60,9 +60,7 @@
             {{-- Login Button --}}
             <div>
                 <button
-                    type="submit"
-                    class="w-full py-3 bg-yellow-400 text-white font-semibold rounded-md shadow-md hover:bg-yellow-500 transition"
-                >
+                    class="w-full py-3 bg-yellow-400 text-white font-semibold rounded-md shadow-md hover:bg-yellow-500 transition">
                     Log In
                 </button>
             </div>

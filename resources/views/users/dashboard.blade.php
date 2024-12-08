@@ -37,6 +37,7 @@
                         <option value="Plastic">Plastic</option>
                         <option value="Paper">Paper</option>
                         <option value="Glass">Glass</option>
+                        <option value="Wood">Wood</option>
                     </select>
                     @error('category')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -94,11 +95,10 @@
 
     <section class="section shop" id="shop" aria-label="shop">
         <div class="container">
-            <ul class="has-scrollbar">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 @foreach ($posts as $post)       
-                    <li class="scrollbar-item">
+                    <div class="bg-white p-4 rounded-lg shadow-md border border-gray-300">
                         <x-postCard :post="$post"/>
-
                         <div class="flex items-center justify-end gap-4 mt-6">
                             {{-- Update post --}}
                             <a href="{{ route('posts.edit', $post) }}"
@@ -111,9 +111,9 @@
                                 <button class="bg-red-500 text-white px-2 py-1 text-xs rounded-md">Delete</button>
                             </form>
                         </div>
-                    </li>
+                    </div>
                 @endforeach
-            </ul>
+            </div>
         </div>
     </section>
 

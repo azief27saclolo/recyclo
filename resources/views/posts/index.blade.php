@@ -52,7 +52,7 @@
     <section class="section shop" id="shop" aria-label="shop">
         <div class="container">
           <div class="title-wrapper">
-            <h2 class="h2 section-title">Shops Near You</h2>
+            <h2 class="h2 section-title">Latest Listings</h2>
 
             <a href="{{ route('posts') }}" class="btn-link">
               <span class="span">View More Products</span>

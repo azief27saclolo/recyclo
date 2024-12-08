@@ -46,7 +46,7 @@
             <p style="color: black;">Price: ₱{{ $post->price }}.00 per kg</p>
             <p style="color: black;">Quantity: {{ $quantity }} kg</p>
             <p style="color: black;">Transportation Fee: ₱35.00</p>
-            <h3 style="color: black;">Subtotal: ₱{{ $totalPrice + 35 }}.00</h3>
+            <h3 style="color: black;">Subtotal: ₱{{ $totalPrice }}.00</h3>
         </div>
     </div>
 </div>

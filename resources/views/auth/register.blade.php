@@ -95,7 +95,7 @@
             </div>
 
             <!-- Sign Up Button -->
-            <button type="submit" class="bg-yellow-400 text-white w-full py-2 rounded-lg shadow hover:bg-yellow-500 transition">
+            <button x-ref="btn" class="bg-yellow-400 text-white w-full py-2 rounded-lg shadow hover:bg-yellow-500 transition">
                 Sign Up
             </button>
 

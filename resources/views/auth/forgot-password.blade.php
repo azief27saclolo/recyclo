@@ -1,5 +1,5 @@
 <x-layout>
-    <h1 class="title">Request a password reset email</h1>
+    {{-- <h1 class="title">Request a password reset email</h1> --}}
 
     {{-- Session Messages --}}
     @if (session('status'))    
