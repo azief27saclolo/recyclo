@@ -54,6 +54,8 @@ class PostController extends Controller implements HasMiddleware
             'price' => ['required', 'numeric'],
             'description' => ['required', 'string'],
             'image' => ['required', 'file', 'max:3000', 'mimes:webp,png,jpg'],
+            'unit' => ['required'],
+            'quantity' => ['required', 'numeric'],
         ]);
 
         // Store image
@@ -66,7 +68,9 @@ class PostController extends Controller implements HasMiddleware
             'location' => $request->location,
             'price' => $request->price,
             'description' => $request->description,
-            'image' => $path
+            'image' => $path,
+            'unit' => $request->unit,
+            'quantity' => $request->quantity,
         ]);
 
         // Send email
@@ -111,6 +115,8 @@ class PostController extends Controller implements HasMiddleware
             'price' => ['required', 'numeric'],
             'description' => ['required', 'string'],
             'image' => ['required', 'file', 'max:3000', 'mimes:webp,png,jpg'],
+            'unit' => ['required'],
+            'quantity' => ['required', 'numeric'],
         ]);
 
         // Update image
@@ -126,7 +132,9 @@ class PostController extends Controller implements HasMiddleware
             'location' => $request->location,
             'price' => $request->price,
             'description' => $request->description,
-            'image' => $path
+            'image' => $path,
+            'unit' => $request->unit,
+            'quantity' => $request->quantity,
         ]);
 
         // Redirect to dashboard

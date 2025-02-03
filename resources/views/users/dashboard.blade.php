@@ -38,6 +38,9 @@
                         <option value="Paper">Paper</option>
                         <option value="Glass">Glass</option>
                         <option value="Wood">Wood</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Fabric">Fabric</option>
+                        <option value="Rubber">Rubber</option>
                     </select>
                     @error('category')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -54,9 +57,46 @@
                     @enderror
                 </div>
 
+                {{-- Unit --}}
+                <div class="mb-4">
+                    <label for="unit" class="block text-gray-700 font-bold mb-2">Unit</label>
+                    <select name="unit" class="border w-full text-base px-4 py-2 focus:outline-none 
+                    focus:ring-2 focus:ring-blue-500 rounded-lg @error('unit') ring-red-500 @enderror">
+                        <option value="">--Select--</option>
+                        <option value="kg">Kilogram (kg)</option>
+                        <option value="g">Gram (g)</option>
+                        <option value="lb">Pound (lb)</option>
+                        <option value="L">Liter (L)</option>
+                        <option value="m3">Cubic Meter (m3)</option>
+                        <option value="gal">Gallon (gal)</option>
+                        <option value="pc">Per Piece (pc)</option>
+                        <option value="dz">Per Dozen (dz)</option>
+                        <option value="bndl">Per Bundle (bndl)</option>
+                        <option value="sack">Per Sack (sack)</option>
+                        <option value="bale">Per Bale (bale)</option>
+                        <option value="roll">Per Roll (roll)</option>
+                        <option value="drum">Per Drum (drum)</option>
+                        <option value="box">Per Box (box)</option>
+                        <option value="pallet">Per Pallet (pallet)</option>
+                    </select>
+                    @error('unit')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- Quantity --}}
+                <div class="mb-4">
+                    <label for="quantity" class="block text-gray-700 font-bold mb-2">Quantity</label>
+                    <input type="number" name="quantity" value="{{ old('quantity') }}" class="border w-full text-base px-4 py-2 focus:outline-none 
+                    focus:ring-2 focus:ring-blue-500 rounded-lg @error('quantity') ring-red-500 @enderror" placeholder="Enter quantity..."/>
+                    @error('quantity')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 {{-- Price --}}
                 <div class="mb-4">
-                    <label for="price" class="block text-gray-700 font-bold mb-2">Price per kilo</label>
+                    <label for="price" class="block text-gray-700 font-bold mb-2">Price per unit</label>
                     <input type="text" name="price" value="{{ old('price') }}" class="border w-full text-base px-4 py-2 focus:outline-none 
                     focus:ring-2 focus:ring-blue-500 rounded-lg @error('price') ring-red-500 @enderror" placeholder="Enter price..."/>
                     @error('price')

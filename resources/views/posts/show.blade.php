@@ -10,12 +10,13 @@
               <h1 style="font-weight: 200; margin-bottom: 10px;">
                 <i class="bi bi-compass"></i>{{ $post->location }}<br>
                 <i class="bi bi-telephone-inbound"></i>{{ $post->user->number }}<br>
-                We sell recyclable materials where you can create the best out of it! <br>
-                Order now from our shop and start doing innovative products where people can have benefits from it.
               </h1>
 
               <h1>Price: </h1>
               <h1 style="color: black;">{{ $post->price }}.00</h1>
+
+              <h1>Description: </h1>
+              <p style="color: black;">{{ $post->description }}</p>
 
               <div style="display: flex; align-items: center;">
                 <h1 style="color: black;">  Quantity (kg): </h1>
