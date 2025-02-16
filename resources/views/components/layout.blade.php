@@ -59,19 +59,17 @@
                     
                 @auth
                     <p class="username">Hello! {{ auth()->user()->username }}</p>                  
-                @endauth
-                @guest
-                <a class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1" href="{{ route('login') }}">Login</a>
-                <a class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1" href="{{ route('register') }}">Register</a>
-                @endguest
-                @auth                       
-                    <a href="{{ route('dashboard') }}" class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Profile</a>
-
+                    <a href="{{ route('profile') }}" class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Profile</a>
+                    <a href="{{ route('dashboard') }}" class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Add Listing</a>
                     <form action="{{ route('logout') }}" method="post">
                         @csrf
                         <button class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Logout</button>
                     </form>
                 @endauth
+                @guest
+                <a class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1" href="{{ route('login') }}">Login</a>
+                <a class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1" href="{{ route('register') }}">Register</a>
+                @endguest
             </div>
 
               <button class="header-action-btn" aria-label="heart item">

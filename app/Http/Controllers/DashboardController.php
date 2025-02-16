@@ -28,4 +28,35 @@ class DashboardController extends Controller
             'user' => $user
         ]);
     }
+
+    public function profile()
+    {
+        return view('users.profile');
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = auth()->user();
+
+        $request->validate([
+            'profile_picture' => ['nullable', 'image', 'max:2048'],
+            'username' => ['required', 'string', 'max:255', 'unique:users,username,' . $user->id],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'location' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        if ($request->hasFile('profile_picture')) {
+            $path = $request->file('profile_picture')->store('profile_pictures', 'public');
+            $user->profile_picture = $path;
+        }
+
+        $user->username = $request->username;
+        if ($request->password) {
+            $user->password = bcrypt($request->password);
+        }
+        $user->location = $request->location;
+        $user->save();
+
+        return redirect()->route('profile')->with('success', 'Profile updated successfully!');
+    }
 }
