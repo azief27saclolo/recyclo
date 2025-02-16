@@ -31,10 +31,12 @@
               <span class="line line-3"></span>
             </button>
             <div class="input-wrapper">
-              <input type="search" name="search" placeholder="Search product" class="search-field">
-              <button class="search-submit" aria-label="search">
-                <ion-icon name="search" aria-hidden="true"></ion-icon>
-              </button>
+              <form action="{{ route('search') }}" method="GET">
+                <input type="search" name="query" placeholder="Search product" class="search-field">
+                <button type="submit" class="search-submit" aria-label="search">
+                  <ion-icon name="search" aria-hidden="true"></ion-icon>
+                </button>
+              </form>
             </div>
             
             <a href="{{ route('landingpage') }}">

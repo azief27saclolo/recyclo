@@ -26,6 +26,9 @@ Route::get('/{user}/posts', [DashboardController::class, 'userPosts'])->name('po
 
 Route::get('/posts', [PostController::class, 'index'])->name('posts');
 
+// Search route
+Route::get('/search', [PostController::class, 'search'])->name('search');
+
 // Routes for authenticated users
 Route::middleware('auth')->group(function() {
     Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('verified')->name('dashboard');
