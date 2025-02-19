@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Payment;
+use App\Models\Post;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class PaymentController extends Controller
+{
+    public function checkout(Post $post)
+    {
+        return view('payments.checkout', compact('post'));
+    }
+
+    public function process(Request $request, Post $post)
+    {
+        $request->validate([
+            'payment_method' => 'required|in:e-wallet,bank-transfer,credit-card',
+        ]);
+
+        $payment = Payment::create([
+            'user_id' => Auth::id(),
+            'post_id' => $post->id,
+            'payment_method' => $request->payment_method,
+            'amount' => $post->price,
+            'status' => 'pending'
+        ]);
+
+        return $this->handlePaymentMethod($payment);
+    }
+
+    private function handlePaymentMethod(Payment $payment)
+    {
+        switch($payment->payment_method) {
+            case 'e-wallet':
+                return $this->processEWallet($payment);
+            case 'bank-transfer':
+                return $this->processBankTransfer($payment);
+            default:
+                return $this->processCreditCard($payment);
+        }
+    }
+}
