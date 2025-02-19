@@ -19,7 +19,7 @@ class FavoritesController extends Controller
         $user = Auth::user();
         $user->favorites()->attach($post->id);
 
-        return redirect()->back()->with('success', 'Post added to favorites!');
+        return redirect()->back()->with(['success' => 'Item added to favorites!', 'type' => 'success']);
     }
 
     public function remove(Post $post)
@@ -27,6 +27,6 @@ class FavoritesController extends Controller
         $user = Auth::user();
         $user->favorites()->detach($post->id);
 
-        return redirect()->back()->with('success', 'Post removed from favorites!');
+        return redirect()->back()->with(['success' => 'Item removed from favorites!', 'type' => 'error']);
     }
 }

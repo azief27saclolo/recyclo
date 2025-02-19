@@ -62,12 +62,35 @@
 </a>
 
 @if(session('success'))
-    <div id="flash-message" class="alert alert-success">
+    <div id="flash-message" class="popup-message {{ session('type') }}">
         {{ session('success') }}
     </div>
     <script>
-        setTimeout(function() {
-            document.getElementById('flash-message').style.display = 'none';
-        }, 3000); // 3 seconds
+        document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(function () {
+                var flashMessage = document.getElementById('flash-message');
+                if (flashMessage) {
+                    flashMessage.remove();
+                }
+            }, 2000); // 2 seconds before removing
+        });
     </script>
 @endif
+
+<style>
+.popup-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 1000;
+}
+.popup-message.success {
+    background-color: #28a745;
+}
+.popup-message.error {
+    background-color: red;
+}
+</style>
