@@ -21,4 +21,12 @@ class FavoritesController extends Controller
 
         return redirect()->back()->with('success', 'Post added to favorites!');
     }
+
+    public function remove(Post $post)
+    {
+        $user = Auth::user();
+        $user->favorites()->detach($post->id);
+
+        return redirect()->back()->with('success', 'Post removed from favorites!');
+    }
 }

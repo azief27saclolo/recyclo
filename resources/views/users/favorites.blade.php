@@ -13,7 +13,21 @@
                 <ul class="has-scrollbar">
                     @foreach ($favorites as $post)       
                         <li class="scrollbar-item">
-                            <x-postCard :post="$post"/>
+                            <div class="card h-100">
+                                <div class="card-img-container" style="height: 200px; width: 100%; overflow: hidden;">
+                                    <img src="{{ asset('storage/' . $post->image) }}" class="card-img-top" alt="{{ $post->title }}" style="object-fit: cover; height: 100%; width: 100%;">
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ $post->title }}</h5>
+                                    <p class="card-text">₱{{ $post->price }}.00</p>
+                                    <a href="{{ route('posts.show', $post) }}" class="btn btn-primary">View</a>
+                                    <form action="{{ route('favorites.remove', $post) }}" method="POST" style="margin-top: 10px;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger" style="background-color: red; color: white;">Remove from Favorites</button>
+                                    </form>
+                                </div>
+                            </div>
                         </li>
                     @endforeach
                 </ul>

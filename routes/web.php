@@ -53,6 +53,7 @@ Route::middleware('auth')->group(function() {
 
     Route::get('/favorites', [FavoritesController::class, 'index'])->name('favorites');
     Route::post('/favorites/{post}', [FavoritesController::class, 'add'])->name('favorites.add');
+    Route::delete('/favorites/{post}', [FavoritesController::class, 'remove'])->name('favorites.remove');
 });
 
 // Routes for guests users
