@@ -61,6 +61,7 @@
                     <p class="username">Hello! {{ auth()->user()->username }}</p>                  
                     <a href="{{ route('profile') }}" class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Profile</a>
                     <a href="{{ route('dashboard') }}" class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Add Listing</a>
+                    <a href="{{ route('favorites') }}" class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Favorites</a>
                     <form action="{{ route('logout') }}" method="post">
                         @csrf
                         <button class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Logout</button>
@@ -106,7 +107,7 @@
       </header>
 
     <main>
-        {{ $slot }}
+        @yield('content')
     </main>
 
     <footer class="footer">

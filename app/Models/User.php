@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Post;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -64,5 +65,10 @@ class User extends Authenticatable implements MustVerifyEmail
     public function boughtOrders()
     {
         return $this->hasMany(Order::class, 'buyer_id');
+    }
+
+    public function favorites()
+    {
+        return $this->belongsToMany(Post::class, 'favorites');
     }
 }

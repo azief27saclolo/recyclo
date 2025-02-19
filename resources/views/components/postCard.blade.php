@@ -1,11 +1,11 @@
-@props(['post'])
+@props(['post', 'class' => ''])
 
-<a href="{{ route('posts.show', $post) }}">
+<a href="{{ route('posts.show', $post) }}" class="{{ $class }}">
     <div class="shop-card">
 
-        <div class="card-banner img-holder" style="--width: 540; --height: 720;">
-          <img src="{{ asset('storage/' . $post->image) }}" width="540" height="720" loading="lazy"
-            alt="Facial cleanser" class="img-cover">
+        <div class="card-banner img-holder" style="--width: 270; --height: 360;">
+          <img src="{{ asset('storage/' . $post->image) }}" width="270" height="360" loading="lazy"
+            alt="Facial cleanser" class="img-cover" style="object-fit: cover; width: 100%; height: 100%;">
 
           <span class="badge" aria-label="20% off">{{ $post->category }}</span>
           <div class="card-actions">
@@ -14,9 +14,12 @@
               <ion-icon name="cart" aria-hidden="true"></ion-icon>
             </button>
 
-            <button class="action-btn" aria-label="add to whishlist">
-              <ion-icon name="heart" aria-hidden="true"></ion-icon>
-            </button>
+            <form action="{{ route('favorites.add', $post) }}" method="POST" id="favorite-form-{{ $post->id }}">
+                @csrf
+                <button type="submit" class="action-btn" aria-label="add to wishlist">
+                    <ion-icon name="heart" aria-hidden="true"></ion-icon>
+                </button>
+            </form>
 
             <button class="action-btn" aria-label="compare">
               <ion-icon name="repeat" aria-hidden="true"></ion-icon>
@@ -57,3 +60,14 @@
 
       </div>
 </a>
+
+@if(session('success'))
+    <div id="flash-message" class="alert alert-success">
+        {{ session('success') }}
+    </div>
+    <script>
+        setTimeout(function() {
+            document.getElementById('flash-message').style.display = 'none';
+        }, 3000); // 3 seconds
+    </script>
+@endif

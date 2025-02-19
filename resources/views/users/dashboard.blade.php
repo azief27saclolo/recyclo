@@ -1,10 +1,12 @@
-<x-layout>
+@extends('components.layout')
+
+@section('content')
+<div class="container">
     
-    {{-- <h1 class="title">Hello {{ auth()->user()->username }}</h1> --}}
 
     {{-- Create Post Form --}}
     <div class="flex justify-center items-center max-h-screen">
-        <div class="bg-white p-6 rounded-lg shadow-md border border-gray-300 w-full max-w-screen-md" >
+        <div class="bg-white p-6 rounded-lg shadow-md border border-gray-300 w-full max-w-screen-md">
             <h2 class="font-bold mb-6 text-center">Create a new post</h2>
 
             {{-- Session Messages --}}
@@ -49,7 +51,7 @@
 
                 {{-- Location --}}
                 <div class="mb-4">
-                    <label for="location" class="block text-gray-700 font-bold mb-2" >Location</label>
+                    <label for="location" class="block text-gray-700 font-bold mb-2">Location</label>
                     <input type="text" name="location" value="{{ old('location') }}" class="border w-full text-base px-4 py-2 focus:outline-none 
                     focus:ring-2 focus:ring-blue-500 rounded-lg @error('location') ring-red-500 @enderror" placeholder="Enter location..."/>
                     @error('location')
@@ -131,7 +133,7 @@
     </div>
 
     {{-- User Posts --}}
-    <h2 class="font-bold">Your Latest Posts ({{ $posts->total() }})</h2>
+    <h2 class="font-bold">Your Latest Listings ({{ $posts->total() }})</h2>
 
     <section class="section shop" id="shop" aria-label="shop">
         <div class="container">
@@ -181,5 +183,5 @@
     {{-- <div>
         {{ $posts->links() }}
     </div> --}}
-
-</x-layout>
+</div>
+@endsection

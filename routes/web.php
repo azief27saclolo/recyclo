@@ -7,8 +7,8 @@ use App\Http\Controllers\ShowPostController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\ResetPasswordController;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\FavoritesController;
 
 // Landing page route
 Route::redirect('/', 'landingpage');
@@ -50,6 +50,9 @@ Route::middleware('auth')->group(function() {
 
     Route::get('/profile', [DashboardController::class, 'profile'])->name('profile');
     Route::put('/profile', [DashboardController::class, 'updateProfile'])->name('profile.update');
+
+    Route::get('/favorites', [FavoritesController::class, 'index'])->name('favorites');
+    Route::post('/favorites/{post}', [FavoritesController::class, 'add'])->name('favorites.add');
 });
 
 // Routes for guests users

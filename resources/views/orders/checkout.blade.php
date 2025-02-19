@@ -1,4 +1,7 @@
-<x-layout>
+@extends('components.layout')
+
+@section('content')
+<div class="container">
       
     <section class="section checkout" id="checkout" aria-label="checkout">
         <div class="container">
@@ -94,4 +97,5 @@
     }
 </script>
 
-</x-layout>
+</div>
+@endsection
