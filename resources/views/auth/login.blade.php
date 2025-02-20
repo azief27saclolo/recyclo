@@ -1,4 +1,7 @@
-<x-layout>
+@extends('components.layout')
+
+@section('content')
+<div class="container">
     
     <div class="flex justify-center items-center h-screen px-4 bg-gray-50">
         {{-- Session Messages --}}
@@ -87,4 +90,5 @@
         </form>
     </div>
 
-</x-layout>
+</div>
+@endsection

@@ -1,4 +1,7 @@
-<x-layout>
+@extends('components.layout')
+
+@section('content')
+<div class="container">
 
     <a href="{{ route('dashboard') }}" class="block mb-2 text-xs text-blue-500">&larr; Go back</a>
 
@@ -132,4 +135,5 @@
     </div>
 
 
-</x-layout>
+</div>
+@endsection

@@ -1,4 +1,7 @@
-<x-layout>
+@extends('components.layout')
+
+@section('content')
+<div class="container">
 
     <h1 class="title">Reset your password</h1>
     
@@ -53,4 +56,5 @@
         </form>
     </div>
 
-</x-layout>
+</div>
+@endsection

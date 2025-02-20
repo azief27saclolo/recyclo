@@ -1,4 +1,8 @@
-<x-layout>
+@extends('components.layout')
+
+@section('content')
+<div class="container">
+    
     <section class="section shop" id="shop" aria-label="shop">
         <div class="container">
             <h2 class="h2 section-title">Search Results for "{{ $query }}"</h2>
@@ -60,4 +64,6 @@
             @endif
         </div>
     </section>
-</x-layout>
+
+</div>
+@endsection
