@@ -60,7 +60,8 @@
                 @auth
                     <p class="username">Hello! {{ auth()->user()->username }}</p>                  
                     <a href="{{ route('profile') }}" class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Profile</a>
-                    <a href="{{ route('dashboard') }}" class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Add Listing</a>
+                    <a href="{{ route('dashboard') }}" class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Sell</a>
+                    <a href="{{ route('buy.create') }}" class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Buy</a>
                     {{-- Removed Favorites button --}}
                     <form action="{{ route('logout') }}" method="post">
                         @csrf
@@ -86,7 +87,10 @@
             <nav class="navbar">
               <ul class="navbar-list">
                 <li>
-                  <a href="{{ route('posts') }}" class="navbar-link has-after">Home</a>
+                  <a href="{{ route('posts') }}" class="navbar-link has-after">Selling</a>
+                </li>
+                <li>
+                  <a href="{{ route('buy.index') }}" class="navbar-link has-after">Buying</a>
                 </li>
                 <li>
                   <a href="#collection" class="navbar-link has-after">About Us</a>

@@ -9,6 +9,7 @@ use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\ResetPasswordController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\FavoritesController;
+use App\Http\Controllers\BuyController;
 
 // Landing page route
 Route::redirect('/', 'landingpage');
@@ -74,3 +75,7 @@ Route::middleware('guest')->group(function() {
 Route::get('/order-success', function () {
     return view('orders.success');
 })->name('order.success');
+
+Route::get('/buy', [BuyController::class, 'create'])->name('buy.create');
+Route::post('/buy', [BuyController::class, 'store'])->name('buy.store');
+Route::get('/buy-requests', [BuyController::class, 'index'])->name('buy.index');
