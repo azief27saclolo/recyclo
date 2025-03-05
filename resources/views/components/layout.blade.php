@@ -61,7 +61,7 @@
                     <p class="username">Hello! {{ auth()->user()->username }}</p>                  
                     <a href="{{ route('profile') }}" class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Profile</a>
                     <a href="{{ route('dashboard') }}" class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Add Listing</a>
-                    <a href="{{ route('favorites') }}" class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Favorites</a>
+                    {{-- Removed Favorites button --}}
                     <form action="{{ route('logout') }}" method="post">
                         @csrf
                         <button class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Logout</button>
@@ -73,9 +73,9 @@
                 @endguest
             </div>
 
-              <button class="header-action-btn" aria-label="heart item">
-                <ion-icon name="heart" aria-hidden="true" aria-hidden="true"></ion-icon>
-                <span class="btn-badge">0</span>
+              <button class="header-action-btn" aria-label="heart item" onclick="window.location.href='{{ route('favorites') }}'">
+                <ion-icon name="heart" aria-hidden="true"></ion-icon>
+                <span class="btn-badge">{{ Auth::check() ? Auth::user()->favorites->count() : 0 }}</span>
               </button>
               <button class="header-action-btn" aria-label="cart item">
                 <ion-icon name="cart" aria-hidden="true" aria-hidden="true"></ion-icon>
