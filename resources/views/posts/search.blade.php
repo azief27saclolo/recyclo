@@ -5,48 +5,7 @@
     
     <section class="section shop" id="shop" aria-label="shop">
         <div class="container">
-            <h2 class="h2 section-title">Search Results for "{{ $query }}"</h2>
-
-            {{-- Sellers Section --}}
-            <h3 class="h3 section-title">Sellers</h3>
-            @if($users->isEmpty())
-                <p>No sellers found.</p>
-            @else
-                @foreach ($users as $user)
-                    <div class="seller-section">
-                        <h4>{{ $user->username }}</h4>
-                        <p>{{ $user->email }}</p>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                            @foreach ($user->posts as $post)
-                                <div class="bg-white p-4 rounded-lg shadow-md border border-gray-300">
-                                    <x-postCard :post="$post"/>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                @endforeach
-                {{ $users->links() }}
-            @endif
-
-            {{-- Categories Section --}}
-            <h3 class="h3 section-title">Categories</h3>
-            @if($categories->isEmpty())
-                <p>No categories found.</p>
-            @else
-                @foreach ($categories as $category)
-                    <div class="category-section">
-                        <h4>{{ $category->category }}</h4>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                            @foreach ($posts->where('category', $category->category) as $post)
-                                <div class="bg-white p-4 rounded-lg shadow-md border border-gray-300">
-                                    <x-postCard :post="$post"/>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                @endforeach
-                {{ $categories->links() }}
-            @endif
+            <h2 class="h2 section-title">Search Results for "{{ $query }}"</h2><br>
 
             {{-- Products Section --}}
             <h3 class="h3 section-title">Products</h3>
@@ -61,6 +20,25 @@
                     @endforeach
                 </div>
                 {{ $posts->links() }}
+            @endif
+
+            <br>
+
+            {{-- Buy Requests Section --}}
+            <h3 class="h3 section-title">Buy Requests</h3>
+            @if($buyRequests->isEmpty())
+                <p>No buy requests found.</p>
+            @else
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    @foreach ($buyRequests as $buyRequest)
+                        <div class="bg-white p-4 rounded-lg shadow-md border border-gray-300">
+                            <h4>{{ $buyRequest->category }}</h4>
+                            <p>{{ $buyRequest->description }}</p>
+                            <p>Quantity: {{ $buyRequest->quantity }} {{ $buyRequest->unit }}</p>
+                        </div>
+                    @endforeach
+                </div>
+                {{ $buyRequests->links() }}
             @endif
         </div>
     </section>

@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use App\Models\User;
+use App\Models\Buy;
 
 class PostController extends Controller implements HasMiddleware
 {
@@ -161,7 +162,7 @@ class PostController extends Controller implements HasMiddleware
     }
 
     /**
-     * Search for posts.
+     * Search for posts and buy requests.
      */
     public function search(Request $request)
     {
@@ -172,21 +173,14 @@ class PostController extends Controller implements HasMiddleware
                      ->orWhere('description', 'LIKE', "%{$query}%")
                      ->paginate(10);
 
-        // Search for users
-        $users = User::where('username', 'LIKE', "%{$query}%")
-                     ->orWhere('email', 'LIKE', "%{$query}%")
-                     ->paginate(10);
-
-        // Search for categories
-        $categories = Post::select('category')
-                          ->where('category', 'LIKE', "%{$query}%")
-                          ->distinct()
+        // Search for buy requests
+        $buyRequests = Buy::where('category', 'LIKE', "%{$query}%")
+                          ->orWhere('description', 'LIKE', "%{$query}%")
                           ->paginate(10);
 
         return view('posts.search', [
             'posts' => $posts,
-            'users' => $users,
-            'categories' => $categories,
+            'buyRequests' => $buyRequests,
             'query' => $query
         ]);
     }

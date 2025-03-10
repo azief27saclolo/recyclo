@@ -38,4 +38,22 @@ class BuyController extends Controller
         $buyRequests = Buy::with('user')->get();
         return view('users.view_buy_requests', compact('buyRequests'));
     }
+
+    /**
+     * Search for buy requests.
+     */
+    public function search(Request $request)
+    {
+        $query = $request->input('query');
+
+        // Search for buy requests
+        $buyRequests = Buy::where('category', 'LIKE', "%{$query}%")
+                          ->orWhere('description', 'LIKE', "%{$query}%")
+                          ->paginate(10);
+
+        return view('posts.search', [
+            'buyRequests' => $buyRequests,
+            'query' => $query
+        ]);
+    }
 }

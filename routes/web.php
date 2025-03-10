@@ -30,6 +30,9 @@ Route::get('/posts', [PostController::class, 'index'])->name('posts');
 // Search route
 Route::get('/search', [PostController::class, 'search'])->name('search');
 
+// Buy requests search route
+Route::get('/search-buy-requests', [BuyController::class, 'search'])->name('search.buy.requests');
+
 // Routes for authenticated users
 Route::middleware('auth')->group(function() {
     Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('verified')->name('dashboard');
