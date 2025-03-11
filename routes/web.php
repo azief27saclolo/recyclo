@@ -62,8 +62,9 @@ Route::middleware('auth')->group(function() {
 
 // Routes for guests users
 Route::middleware('guest')->group(function() {
-    Route::view('/register', 'auth.register')->name('register');
-    Route::post('/register', [AuthController::class, 'register']);
+    // The view route isn't needed anymore since we're using login.blade.php for both
+    // Route::view('/register', 'auth.register')->name('register');
+    Route::post('/register', [AuthController::class, 'register'])->name('register');
     
     Route::view('/login', 'auth.login')->name('login');
     Route::post('/login', [AuthController::class, 'login']);

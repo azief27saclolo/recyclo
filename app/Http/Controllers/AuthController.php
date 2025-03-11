@@ -12,28 +12,34 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 class AuthController extends Controller
 {
     // Register User
-    public function register(Request $request) {
-        
-        // Validate
-        $fields = $request->validate([
-            'firstname' => ['required', 'max:255'],
-            'lastname' => ['required', 'max:255'],
-            'username' => ['required', 'max:255'],
-            'email' => ['required', 'max:255', 'email', 'unique:users'],
-            'number' => ['required', 'numeric', 'unique:users'],
-            'password' => ['required', 'min:8', 'confirmed'],
+    public function register(Request $request) 
+    {
+        $formFields = $request->validate([
+            'firstname' => ['required', 'string', 'min:2', 'max:255'],
+            'lastname' => ['required', 'string', 'min:2', 'max:255'],
+            'username' => ['required', 'string', 'min:3', 'max:255', 'unique:users,username'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'birthday' => ['required', 'date'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'terms' => ['required']
         ]);
-
-        // Register
-        $user = User::create($fields);
+        
+        // Remove terms from form fields as it's not a database column
+        unset($formFields['terms']);
+        
+        // Hash Password
+        $formFields['password'] = bcrypt($formFields['password']);
+        
+        // Create User
+        $user = User::create($formFields);
         
         // Login
-        Auth::login($user);
-
-        event(new Registered($user));
-
-        //Redirect
-        return redirect()->route('dashboard');
+        auth()->login($user);
+        
+        // Send verification email
+        $user->sendEmailVerificationNotification();
+        
+        return redirect('/email/verify')->with('message', 'User created and logged in');
     }
 
     // Verify Email Notice Handler

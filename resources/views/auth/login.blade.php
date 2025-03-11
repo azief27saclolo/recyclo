@@ -1,94 +1,218 @@
 @extends('components.layout')
 
 @section('content')
-<div class="container">
-    
-    <div class="flex justify-center items-center h-screen px-4 bg-gray-50">
-        {{-- Session Messages --}}
-        @if (session('status'))
-            <x-flashMsg msg="{{ session('status') }}" bg="bg-green-500" />
-        @endif
+<div class="login-body">
+    <div class="login-container" id="container">
+        <div class="forms-container">
+            <div class="signin-signup">
+                <!-- Login Form -->
+                <form action="{{ route('login') }}" method="post" class="sign-in-form">
+                    @csrf
+                    <img src="{{ asset('images/recyclo-logo.png') }}" alt="Recyclo Logo" class="login-logo">
+                    <h2 class="title">Sign in to Recyclo</h2>
+                    
+                    @if (session('status'))
+                        <div class="mb-4 text-sm font-medium text-green-600">
+                            {{ session('status') }}
+                        </div>
+                    @endif
+                    
+                    <div class="input-field">
+                        <i class="bi bi-envelope-fill"></i>
+                        <input type="email" name="email" value="{{ old('email') }}" placeholder="Email" required />
+                    </div>
+                    @error('email')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                    
+                    <div class="input-field">
+                        <i class="bi bi-lock-fill"></i>
+                        <input type="password" name="password" placeholder="Password" required />
+                    </div>
+                    @error('password')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                    
+                    <div class="terms-checkbox">
+                        <input type="checkbox" name="remember" id="remember">
+                        <label for="remember">Remember me</label>
+                    </div>
+                    
+                    <input type="submit" value="Login" class="btn solid" />
+                    
+                    <a href="{{ route('password.request') }}" class="mt-3 text-sm text-secondary-green hover:underline">
+                        Forgot your password?
+                    </a>
+                    
+                    <p class="social-text">Or Sign in with</p>
+                    <div class="social-media">
+                        <a href="#" class="social-icon">
+                            <i class="bi bi-facebook"></i>
+                        </a>
+                        <a href="#" class="social-icon">
+                            <i class="bi bi-google"></i>
+                        </a>
+                        <a href="#" class="social-icon">
+                            <i class="bi bi-twitter"></i>
+                        </a>
+                    </div>
+                </form>
 
-        <form action="{{ route('login') }}" method="post" class=" w-full max-w-md p-6 bg-white shadow-xl rounded-lg">
-            @csrf
-
-            {{-- Logo --}}
-            <div class="flex justify-center mb-6">
-                <img src="images/recyclo-logo.png" alt="Logo" class="h-16">
+                <!-- Full Registration Form -->
+                <form action="{{ route('register') }}" method="post" class="sign-up-form">
+                    @csrf
+                    <h2 class="title">Join Recyclo</h2>
+                    
+                    <!-- First Name -->
+                    <div class="input-field">
+                        <i class="bi bi-person-fill"></i>
+                        <input type="text" name="firstname" value="{{ old('firstname') }}" placeholder="First name" required />
+                    </div>
+                    @error('firstname')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                    
+                    <!-- Last Name -->
+                    <div class="input-field">
+                        <i class="bi bi-person-fill"></i>
+                        <input type="text" name="lastname" value="{{ old('lastname') }}" placeholder="Last name" required />
+                    </div>
+                    @error('lastname')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                    
+                    <!-- Username -->
+                    <div class="input-field">
+                        <i class="bi bi-person-badge-fill"></i>
+                        <input type="text" name="username" value="{{ old('username') }}" placeholder="Username" required />
+                    </div>
+                    @error('username')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                    
+                    <!-- Email -->
+                    <div class="input-field">
+                        <i class="bi bi-envelope-fill"></i>
+                        <input type="email" name="email" value="{{ old('email') }}" placeholder="Email" required />
+                    </div>
+                    @error('email')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                    
+                    <!-- Birthday -->
+                    <div class="input-field">
+                        <i class="bi bi-calendar-fill"></i>
+                        <input type="date" name="birthday" value="{{ old('birthday') }}" placeholder="Birthday" required />
+                    </div>
+                    @error('birthday')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                    
+                    <!-- Password -->
+                    <div class="input-field">
+                        <i class="bi bi-lock-fill"></i>
+                        <input type="password" name="password" placeholder="Password" required />
+                    </div>
+                    @error('password')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                    
+                    <!-- Confirm Password -->
+                    <div class="input-field">
+                        <i class="bi bi-lock-fill"></i>
+                        <input type="password" name="password_confirmation" placeholder="Confirm password" required />
+                    </div>
+                    
+                    <!-- Terms & Conditions -->
+                    <div class="terms-checkbox">
+                        <input type="checkbox" name="terms" id="terms" required>
+                        <label for="terms">I accept the terms and conditions</label>
+                    </div>
+                    
+                    <input type="submit" class="btn" value="Sign up" />
+                    
+                    <!-- Removed social login options here -->
+                </form>
             </div>
+        </div>
 
-            {{-- Email --}}
-            <div class="mb-4">
-                <label for="email" class="block text-sm font-medium text-gray-700">Email:</label>
-                <input
-                    type="email"
-                    name="email"
-                    value="{{ old('email') }}"
-                    class="w-full mt-1 p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-yellow-400 focus:border-yellow-400 @error('email') border-red-500 @enderror"
-                    placeholder="Enter your email"
-                />
-                @error('email')
-                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
+        <div class="panels-container">
+            <div class="panel left-panel">
+                <div class="content">
+                    <h3>New to Recyclo?</h3>
+                    <p>Join our community of eco-conscious buyers and sellers. Turn waste into opportunity!</p>
+                    <div class="text-center w-full mt-4">
+                        <button type="button" class="btn transparent" id="sign-up-btn">Sign up</button>
+                    </div>
+                </div>
+                <img src="{{ asset('images/reduce.svg') }}" class="image" alt="" />
             </div>
-
-            {{-- Password --}}
-            <div class="mb-4">
-                <label for="password" class="block text-sm font-medium text-gray-700">Password:</label>
-                <input
-                    type="password"
-                    name="password"
-                    class="w-full mt-1 p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-yellow-400 focus:border-yellow-400 @error('password') border-red-500 @enderror"
-                    placeholder="Enter your password"
-                />
-                @error('password')
-                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
+            <div class="panel right-panel">
+                <div class="content">
+                    <h3>Already a member?</h3>
+                    <p>Sign in to continue your journey in making the world a better place, one recycled item at a time.</p>
+                    <button type="button" class="btn transparent" id="sign-in-btn">Sign in</button>
+                </div>
+                <img src="{{ asset('images/recycle.svg') }}" class="image" alt="" />
             </div>
-
-            {{-- Remember Me & Forgot Password --}}
-            <div class="flex justify-between items-center mb-4">
-                <label class="flex items-center text-sm">
-                    <input
-                        type="checkbox"
-                        name="remember"
-                        id="remember"
-                        class="h-4 w-4 text-yellow-400 focus:ring-yellow-400 border-gray-300 rounded"
-                    />
-                    <span class="ml-2">Remember Me</span>
-                </label>
-                <a href="{{ 'forgot-password' }}" class="text-sm text-yellow-400 hover:underline">Forgot your password?</a>
-            </div>
-
-            {{-- Login Button --}}
-            <div>
-                <button
-                    class="w-full py-3 bg-yellow-400 text-white font-semibold rounded-md shadow-md hover:bg-yellow-500 transition">
-                    Log In
-                </button>
-            </div>
-
-            {{-- Divider --}}
-            <div class="flex items-center mt-6">
-                <div class="flex-grow h-px bg-gray-300"></div>
-                <span class="px-4 text-sm text-gray-500">or log in with</span>
-                <div class="flex-grow h-px bg-gray-300"></div>
-            </div>
-
-            {{-- Social Login --}}
-            <div class="flex justify-center space-x-6 mt-4">
-                <a href="#link1" class="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center shadow hover:shadow-lg">
-                    <img src="images/apple-logo.png" alt="Apple Logo" class="h-6">
-                </a>
-                <a href="#link2" class="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center shadow hover:shadow-lg">
-                    <img src="images/google-logo.png" alt="Google Logo" class="h-6">
-                </a>
-                <a href="#link3" class="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center shadow hover:shadow-lg">
-                    <img src="images/facebook-logo.png" alt="Facebook Logo" class="h-6">
-                </a>
-            </div>
-        </form>
+        </div>
     </div>
-
 </div>
+
+<script>
+    const signUpButton = document.getElementById('sign-up-btn');
+    const signInButton = document.getElementById('sign-in-btn');
+    const container = document.getElementById('container');
+
+    // Function to set focus on the first input of the active form
+    function setFormFocus() {
+        // Determine which form is active
+        const activeForm = container.classList.contains('sign-up-mode') ? 
+            document.querySelector('.sign-up-form .input-field input') : 
+            document.querySelector('.sign-in-form .input-field input');
+        
+        // Set focus on the first input field
+        if (activeForm) {
+            activeForm.focus();
+        }
+    }
+
+    // Check URL parameters to determine which form to show
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const form = urlParams.get('form');
+        
+        // Check for 'register' parameter, case-insensitive
+        if (form && form.toLowerCase() === 'register') {
+            container.classList.add('sign-up-mode');
+            console.log('Registration form activated via URL parameter');
+        } else {
+            // Ensure we're in login mode and focus on login field
+            container.classList.remove('sign-up-mode');
+        }
+        
+        // Focus on the appropriate form's input - use a shorter delay for better UX
+        setTimeout(setFormFocus, 50);
+    });
+
+    signUpButton.addEventListener('click', () => {
+        container.classList.add('sign-up-mode');
+        setTimeout(setFormFocus, 300); // Add delay to wait for animation
+    });
+
+    signInButton.addEventListener('click', () => {
+        container.classList.remove('sign-up-mode');
+        setTimeout(setFormFocus, 300); // Add delay to wait for animation
+    });
+    
+    // Add glow effect to input fields when focused
+    document.querySelectorAll('.input-field input').forEach(input => {
+        input.addEventListener('focus', () => {
+            input.previousElementSibling.classList.add('glow');
+        });
+        input.addEventListener('blur', () => {
+            input.previousElementSibling.classList.remove('glow');
+        });
+    });
+</script>
 @endsection

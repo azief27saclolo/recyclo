@@ -19,7 +19,7 @@
     <link rel="preload" as="image" href="images/bboo.jpg">
     <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/css/style.css', 'resources/css/login.css', 'resources/js/app.js'])
 </head>
 <body id="top">
     <header class="header">
@@ -70,7 +70,7 @@
                 @endauth
                 @guest
                 <a class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1" href="{{ route('login') }}">Login</a>
-                <a class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1" href="{{ route('register') }}">Register</a>
+                <a class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1" href="{{ route('login') }}?form=register" data-form="register">Register</a>
                 @endguest
             </div>
 
