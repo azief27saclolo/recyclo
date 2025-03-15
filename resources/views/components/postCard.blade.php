@@ -10,9 +10,12 @@
           <span class="badge" aria-label="20% off">{{ $post->category }}</span>
           <div class="card-actions">
 
-            <button class="action-btn" aria-label="add to cart">
-              <ion-icon name="cart" aria-hidden="true"></ion-icon>
-            </button>
+            <form action="#" method="POST">
+              @csrf
+              <button class="action-btn" aria-label="add to cart">
+                <ion-icon name="cart" aria-hidden="true"></ion-icon>
+              </button>
+            </form>
 
             <form action="{{ route('favorites.add', $post) }}" method="POST" id="favorite-form-{{ $post->id }}">
                 @csrf
@@ -21,9 +24,9 @@
                 </button>
             </form>
 
-            <button class="action-btn" aria-label="compare">
+            {{-- <button class="action-btn" aria-label="compare">
               <ion-icon name="repeat" aria-hidden="true"></ion-icon>
-            </button>
+            </button> --}}
 
           </div>
         </div>
@@ -92,5 +95,25 @@
 }
 .popup-message.error {
     background-color: red;
+}
+
+/* Fix for overlapping buttons */
+.card-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+}
+.card-actions form {
+    margin: 0;
+    padding: 0;
+    width: auto;
+    height: auto;
+}
+.card-actions .action-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 48px;
+    height: 48px;
 }
 </style>
