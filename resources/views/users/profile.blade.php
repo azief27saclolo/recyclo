@@ -58,7 +58,7 @@
 
         .sidebar-header h2 {
             margin: 0;
-            font-size: 1.5rem;
+            font-size: 22px;
         }
 
         .menu-item {
@@ -79,7 +79,7 @@
 
         .menu-item i {
             margin-right: 10px;
-            font-size: 1.2rem;
+            font-size: 18px;
         }
 
         .main-content {
@@ -99,7 +99,7 @@
         .profile-header h1 {
             margin: 0;
             color: var(--hoockers-green);
-            font-size: 2rem;
+            font-size: 28px;
             margin-bottom: 20px;
         }
 
@@ -119,12 +119,12 @@
             display: block;
             color: #666;
             margin-bottom: 8px;
-            font-size: 0.9rem;
+            font-size: 13px;
         }
 
         .info-group .value {
             color: #333;
-            font-size: 1.1rem;
+            font-size: 16px;
             padding: 10px;
             background: #f8f9fa;
             border-radius: 8px;
@@ -191,18 +191,32 @@
         }
 
         .stat-number {
-            font-size: 1.8rem;
+            font-size: 26px;
             font-weight: bold;
             color: var(--hoockers-green);
         }
 
         .stat-label {
-            font-size: 0.9rem;
+            font-size: 13px;
             color: #666;
         }
 
         #editProfileForm {
             display: none;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: var(--hoockers-green);
+            outline: none;
         }
     </style>
 </head>
@@ -211,7 +225,7 @@
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
-                <img src="{{ asset('assets/images/mainlogo.png') }}" alt="Recyclo Logo">
+                <img src="{{ asset('images/mainlogo.png') }}" alt="Recyclo Logo">
                 <h2>Recyclo</h2>
             </div>
             <nav>
@@ -326,7 +340,7 @@
                         @enderror
                     </div>
 
-                    <button type="submit" class="edit-btn">Update Profile</button>
+                    <button type="submit" class="edit-btn" style="margin-bottom: 15px;">Update Profile</button>
                     <button type="button" id="cancelEdit" class="edit-btn" style="background-color: #dc3545; margin-left: 10px;">Cancel</button>
                 </form>
             </div>
