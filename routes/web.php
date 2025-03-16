@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ShopController;
 use App\Http\Controllers\ShowPostController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LandingPageController;
@@ -58,6 +59,11 @@ Route::middleware('auth')->group(function() {
     Route::get('/favorites', [FavoritesController::class, 'index'])->name('favorites');
     Route::post('/favorites/{post}', [FavoritesController::class, 'add'])->name('favorites.add');
     Route::delete('/favorites/{post}', [FavoritesController::class, 'remove'])->name('favorites.remove');
+    
+    // Shop Registration Routes
+    Route::get('/shop/register', [ShopController::class, 'create'])->name('shop.register');
+    Route::post('/shop/register', [ShopController::class, 'store'])->name('shop.store');
+    Route::get('/shop/dashboard', [ShopController::class, 'dashboard'])->name('shop.dashboard');
 });
 
 // Routes for guests users

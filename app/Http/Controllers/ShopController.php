@@ -1,0 +1,65 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Shop;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+
+class ShopController extends Controller
+{
+    /**
+     * Show the shop registration form
+     */
+    public function create()
+    {
+        // Check if the user already has an application
+        $application = Shop::where('user_id', Auth::id())->first();
+        return view('shops.register', compact('application'));
+    }
+
+    /**
+     * Store the shop registration
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'shop_name' => 'required|string|max:255',
+            'shop_address' => 'required|string',
+            'valid_id' => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120',
+        ]);
+
+        // Upload files
+        $validIdPath = $request->file('valid_id')->store('shop_documents', 'public');
+
+        // Create shop application
+        Shop::create([
+            'user_id' => Auth::id(),
+            'shop_name' => $request->shop_name,
+            'shop_address' => $request->shop_address,
+            'valid_id_path' => $validIdPath,
+            'status' => 'pending'
+        ]);
+
+        return redirect()->route('shop.register')->with('success', 'Your shop application has been submitted successfully.');
+    }
+
+    /**
+     * Dashboard for approved sellers
+     */
+    public function dashboard()
+    {
+        // Check if the user has an approved shop
+        $shop = Shop::where('user_id', Auth::id())
+                    ->where('status', 'approved')
+                    ->first();
+        
+        if (!$shop) {
+            return redirect()->route('shop.register')
+                ->with('error', 'You need an approved shop to access this page.');
+        }
+        
+        return view('shops.dashboard', compact('shop'));
+    }
+}

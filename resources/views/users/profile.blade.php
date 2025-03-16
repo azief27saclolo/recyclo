@@ -137,13 +137,16 @@
             padding: 12px 25px;
             border-radius: 8px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: all 0.3s ease;
             display: inline-block;
             text-decoration: none;
         }
 
         .edit-btn:hover {
-            background: var(--hoockers-green_80);
+            background: #3c5c44; /* Direct hex color instead of variable */
+            color: white !important; /* Force white text on hover */
+            transform: translateY(-2px); /* Add subtle lift effect */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Add shadow for better look */
         }
 
         .profile-picture-container {
@@ -241,9 +244,9 @@
                     <i class="bi bi-shield-lock"></i>
                     <span>Privacy Settings</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="{{ route('shop.register') }}" class="menu-item">
                     <i class="bi bi-person-check-fill"></i>
-                    <span>Become A Seller</span>
+                    <span>Register a Shop</span>
                 </a>
                 <form action="{{ route('logout') }}" method="POST" id="logout-form" style="display: none;">
                     @csrf
