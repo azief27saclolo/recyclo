@@ -236,6 +236,105 @@
             margin-left: 250px;
             padding: 40px;
         }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1050;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 50px auto;
+            padding: 30px;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .modal-title {
+            color: var(--hoockers-green);
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .form-control:focus {
+            border-color: var(--hoockers-green);
+            outline: none;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .submit-btn {
+            background: var(--hoockers-green);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            background: var(--hoockers-green_80);
+        }
     </style>
 </head>
 <body>
@@ -309,7 +408,7 @@
                 </div>
 
                 <div class="quick-actions">
-                    <a href="{{ route('posts.create') }}" class="action-btn">
+                    <a href="#" class="action-btn" id="addProductBtn">
                         <i class="bi bi-plus-circle"></i> Add Product
                     </a>
                     <a href="{{ route('orders.index') }}" class="action-btn">
@@ -359,6 +458,113 @@
         </div>
     </div>
 
+    <!-- Product Form Modal -->
+    <div id="addProductModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add New Product</h2>
+                <span class="close">&times;</span>
+            </div>
+            
+            <form action="{{ route('posts.store') }}" method="post" enctype="multipart/form-data">
+                @csrf
+
+                <div class="form-group">
+                    <label class="form-label" for="title">Product Title</label>
+                    <input type="text" name="title" id="title" class="form-control" placeholder="Enter product title..." required>
+                    @error('title')
+                        <p class="error-message">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="category">Category</label>
+                    <select name="category" id="category" class="form-control" required>
+                        <option value="">--Select--</option>
+                        <option value="Metal">Metal</option>
+                        <option value="Plastic">Plastic</option>
+                        <option value="Paper">Paper</option>
+                        <option value="Glass">Glass</option>
+                        <option value="Wood">Wood</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Fabric">Fabric</option>
+                        <option value="Rubber">Rubber</option>
+                    </select>
+                    @error('category')
+                        <p class="error-message">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="location">Location</label>
+                    <input type="text" name="location" id="location" class="form-control" placeholder="Enter location..." required>
+                    @error('location')
+                        <p class="error-message">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="unit">Unit</label>
+                    <select name="unit" id="unit" class="form-control" required>
+                        <option value="">--Select--</option>
+                        <option value="kg">Kilogram (kg)</option>
+                        <option value="g">Gram (g)</option>
+                        <option value="lb">Pound (lb)</option>
+                        <option value="L">Liter (L)</option>
+                        <option value="m3">Cubic Meter (m3)</option>
+                        <option value="gal">Gallon (gal)</option>
+                        <option value="pc">Per Piece (pc)</option>
+                        <option value="dz">Per Dozen (dz)</option>
+                        <option value="bndl">Per Bundle (bndl)</option>
+                        <option value="sack">Per Sack (sack)</option>
+                        <option value="bale">Per Bale (bale)</option>
+                        <option value="roll">Per Roll (roll)</option>
+                        <option value="drum">Per Drum (drum)</option>
+                        <option value="box">Per Box (box)</option>
+                        <option value="pallet">Per Pallet (pallet)</option>
+                    </select>
+                    @error('unit')
+                        <p class="error-message">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="quantity">Quantity</label>
+                    <input type="number" name="quantity" id="quantity" class="form-control" placeholder="Enter quantity..." required>
+                    @error('quantity')
+                        <p class="error-message">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="price">Price per unit</label>
+                    <input type="text" name="price" id="price" class="form-control" placeholder="Enter price..." required>
+                    @error('price')
+                        <p class="error-message">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="description">Description</label>
+                    <textarea name="description" id="description" class="form-control" rows="4" placeholder="Enter description..."></textarea>
+                    @error('description')
+                        <p class="error-message">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="image">Photo</label>
+                    <input type="file" name="image" id="image" class="form-control" accept="image/*">
+                    @error('image')
+                        <p class="error-message">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <button type="submit" class="submit-btn">Add Product</button>
+            </form>
+        </div>
+    </div>
+
     <script>
     function confirmLogout(event) {
         event.preventDefault();
@@ -377,6 +583,32 @@
             }
         });
     }
+
+    // Product Modal Functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get modal elements
+        const modal = document.getElementById('addProductModal');
+        const btn = document.getElementById('addProductBtn');
+        const closeBtn = modal.querySelector('.close');
+
+        // Open modal when Add Product button is clicked
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            modal.style.display = 'block';
+        });
+
+        // Close modal when X is clicked
+        closeBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+
+        // Close modal when clicking outside the modal
+        window.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    });
     </script>
 </body>
 </html>
