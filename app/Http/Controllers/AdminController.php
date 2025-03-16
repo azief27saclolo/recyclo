@@ -39,8 +39,25 @@ class AdminController extends Controller
 
     public function orders()
     {
-        $orders = Order::with(['user', 'items.post'])->orderBy('created_at', 'desc')->get();
+        // Get all orders with related information
+        $orders = Order::with(['user', 'buyer', 'seller', 'post'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+            
         return view('admin.orders', compact('orders'));
+    }
+    
+    public function updateOrderStatus(Request $request, Order $order)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:pending,approved,completed,cancelled'
+        ]);
+        
+        $order->status = $validated['status'];
+        $order->save();
+        
+        return redirect()->route('admin.orders')
+            ->with('success', "Order #{$order->id} status updated to {$validated['status']}");
     }
 
     public function users()
