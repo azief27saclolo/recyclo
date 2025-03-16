@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Admin;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
@@ -65,21 +67,34 @@ class AuthController extends Controller
     }
 
     // Login User
-    public function login(Request $request) {
-        // Validate
-        $fields = $request->validate([
-            'email' => ['required', 'max:255', 'email'],
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
             'password' => ['required']
         ]);
 
-        // Try To Log In The User
-        if(Auth::attempt($fields, $request->remember)) {
-            return redirect()->intended('posts');
-        } else {
-            return back()->withErrors([
-                'failed' => 'The provided credentials do not match our records.'
-            ]);
+        // Check if the user is an admin
+        $admin = Admin::where('email', $credentials['email'])->first();
+        
+        if ($admin && Hash::check($credentials['password'], $admin->password)) {
+            // Create a session for admin
+            $request->session()->put('admin_logged_in', true);
+            $request->session()->put('admin_email', $admin->email);
+            $request->session()->put('admin_id', $admin->id);
+            
+            return redirect('/admin/dashboard');
         }
+        
+        // Regular user authentication
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
+            return redirect()->intended('dashboard');
+        }
+
+        return back()->withErrors([
+            'email' => 'The provided credentials do not match our records.',
+        ]);
     }
 
     // Logout User

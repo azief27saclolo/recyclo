@@ -11,6 +11,9 @@ use App\Http\Controllers\ResetPasswordController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\FavoritesController;
 use App\Http\Controllers\BuyController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdminLoginController;
+use App\Http\Middleware\AdminMiddleware;
 
 // Landing page route
 Route::redirect('/', 'landingpage');
@@ -34,11 +37,23 @@ Route::get('/search', [PostController::class, 'search'])->name('search');
 // Buy requests search route
 Route::get('/search-buy-requests', [BuyController::class, 'search'])->name('search.buy.requests');
 
+// Add dedicated admin login route
+Route::post('/admin/login', [AdminLoginController::class, 'login'])->name('admin.login');
+
+// Admin Routes using full class path
+Route::group(['middleware' => [AdminMiddleware::class]], function() {
+    Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    Route::get('/admin/orders', [AdminController::class, 'orders'])->name('admin.orders');
+    Route::get('/admin/users', [AdminController::class, 'users'])->name('admin.users');
+    Route::get('/admin/shops', [AdminController::class, 'shops'])->name('admin.shops');
+    Route::get('/admin/logout', [AdminController::class, 'logout'])->name('admin.logout');
+});
+
 // Routes for authenticated users
 Route::middleware('auth')->group(function() {
     Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('verified')->name('dashboard');
     
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
     // Email Verification Notice route
     Route::get('/email/verify', [AuthController::class, 'verifyEmailNotice'])->name('verification.notice');
