@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Post;
 use App\Models\User;
 use App\Models\Order;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class DashboardController extends Controller
 {
@@ -36,27 +39,48 @@ class DashboardController extends Controller
 
     public function updateProfile(Request $request)
     {
-        $user = auth()->user();
-
-        $request->validate([
-            'profile_picture' => ['nullable', 'image', 'max:2048'],
-            'username' => ['required', 'string', 'max:255', 'unique:users,username,' . $user->id],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-            'location' => ['nullable', 'string', 'max:255'],
+        $user = Auth::user();
+        
+        // Validate the form data
+        $validatedData = $request->validate([
+            'username' => [
+                'required', 
+                'string', 
+                'max:255',
+                Rule::unique('users')->ignore($user->id)
+            ],
+            'password' => 'nullable|string|min:8',
+            'location' => 'nullable|string|max:255',
+            'profile_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
         ]);
-
+        
+        // Update username and location
+        $user->username = $validatedData['username'];
+        
+        if ($request->filled('location')) {
+            $user->location = $validatedData['location'];
+        }
+        
+        // Update password if provided
+        if ($request->filled('password')) {
+            $user->password = Hash::make($validatedData['password']);
+        }
+        
+        // Handle profile picture upload
         if ($request->hasFile('profile_picture')) {
-            $path = $request->file('profile_picture')->store('profile_pictures', 'public');
-            $user->profile_picture = $path;
+            // Delete old profile picture if exists
+            if ($user->profile_picture) {
+                Storage::disk('public')->delete($user->profile_picture);
+            }
+            
+            // Store the new image
+            $profilePath = $request->file('profile_picture')->store('profile_pictures', 'public');
+            $user->profile_picture = $profilePath;
         }
-
-        $user->username = $request->username;
-        if ($request->password) {
-            $user->password = bcrypt($request->password);
-        }
-        $user->location = $request->location;
+        
+        // Save changes
         $user->save();
-
+        
         return redirect()->route('profile')->with('success', 'Profile updated successfully!');
     }
 }

@@ -260,6 +260,12 @@
 
         <!-- Main Content -->
         <div class="main-content">
+            @if (session('success'))
+                <div class="alert alert-success" style="background-color: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    {{ session('success') }}
+                </div>
+            @endif
+            
             <div class="profile-header">
                 <h1>My Profile</h1>
                 <p>Manage your personal information and account settings</p>
