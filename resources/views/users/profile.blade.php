@@ -240,13 +240,22 @@
                     <i class="bi bi-person"></i>
                     <span>Profile</span>
                 </a>
+                
+                @if(Auth::user()->shop && Auth::user()->shop->status === 'approved')
+                    <a href="{{ route('shop.dashboard') }}" class="menu-item">
+                        <i class="bi bi-shop"></i>
+                        <span>My Shop</span>
+                    </a>
+                @else
+                    <a href="{{ route('shop.register') }}" class="menu-item">
+                        <i class="bi bi-person-check-fill"></i>
+                        <span>Register a Shop</span>
+                    </a>
+                @endif
+                
                 <a href="#" class="menu-item">
                     <i class="bi bi-shield-lock"></i>
                     <span>Privacy Settings</span>
-                </a>
-                <a href="{{ route('shop.register') }}" class="menu-item">
-                    <i class="bi bi-person-check-fill"></i>
-                    <span>Register a Shop</span>
                 </a>
                 <form action="{{ route('logout') }}" method="POST" id="logout-form" style="display: none;">
                     @csrf
