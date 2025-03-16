@@ -176,6 +176,130 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1050;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 50px auto;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .modal-title {
+            color: var(--hoockers-green);
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            width: 100%;
+            padding: 0;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            display: block;
+        }
+
+        .form-control:focus {
+            border-color: var(--hoockers-green);
+            outline: none;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .submit-btn {
+            background: var(--hoockers-green);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            background: #3c5c44;
+        }
+
+        /* Ensure modal form controls take full width */
+        #addRequestModal .form-control {
+            width: 100%;
+            max-width: none;
+        }
+        
+        #addRequestModal form {
+            width: 100%;
+        }
+        
+        #addRequestModal .form-group {
+            padding: 0;
+            margin-bottom: 20px;
+        }
+        
+        #addRequestModal textarea.form-control {
+            min-height: 120px;
+        }
     </style>
 </head>
 <body>
@@ -235,8 +359,17 @@
             @endif
             
             <div class="content-header">
-                <h1>My Buy Requests</h1>
-                <p>View and manage your recycling material requests</p>
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1>My Buy Requests</h1>
+                        <p>View and manage your recycling material requests</p>
+                    </div>
+                    <div>
+                        <a href="#" class="create-btn" id="addRequestBtn">
+                            <i class="bi bi-plus-circle"></i> Add Buy Request
+                        </a>
+                    </div>
+                </div>
             </div>
 
             <div class="buy-requests-container">
@@ -263,6 +396,69 @@
         </div>
     </div>
 
+    <!-- Buy Request Form Modal -->
+    <div id="addRequestModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Create a Buy Request</h2>
+                <span class="close">&times;</span>
+            </div>
+            
+            <form action="{{ route('buy.store') }}" method="post" enctype="multipart/form-data">
+                @csrf
+
+                <div class="form-group">
+                    <label class="form-label" for="category">Category</label>
+                    <select name="category" id="category" class="form-control" required>
+                        <option value="">--Select--</option>
+                        <option value="Metal">Metal</option>
+                        <option value="Plastic">Plastic</option>
+                        <option value="Paper">Paper</option>
+                        <option value="Glass">Glass</option>
+                        <option value="Wood">Wood</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Fabric">Fabric</option>
+                        <option value="Rubber">Rubber</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="quantity">Quantity</label>
+                    <input type="number" name="quantity" id="quantity" class="form-control" placeholder="Enter quantity..." required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="unit">Unit</label>
+                    <select name="unit" id="unit" class="form-control" required>
+                        <option value="">--Select--</option>
+                        <option value="kg">Kilogram (kg)</option>
+                        <option value="g">Gram (g)</option>
+                        <option value="lb">Pound (lb)</option>
+                        <option value="L">Liter (L)</option>
+                        <option value="m3">Cubic Meter (m3)</option>
+                        <option value="gal">Gallon (gal)</option>
+                        <option value="pc">Per Piece (pc)</option>
+                        <option value="dz">Per Dozen (dz)</option>
+                        <option value="bndl">Per Bundle (bndl)</option>
+                        <option value="sack">Per Sack (sack)</option>
+                        <option value="bale">Per Bale (bale)</option>
+                        <option value="roll">Per Roll (roll)</option>
+                        <option value="drum">Per Drum (drum)</option>
+                        <option value="box">Per Box (box)</option>
+                        <option value="pallet">Per Pallet (pallet)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="description">Description</label>
+                    <textarea name="description" id="description" class="form-control" rows="4" placeholder="Enter description..." required></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">Post Request</button>
+            </form>
+        </div>
+    </div>
+
     <script>
     function confirmLogout(event) {
         event.preventDefault();
@@ -281,6 +477,43 @@
             }
         });
     }
+
+    // Buy Request Modal Functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get modal elements
+        const modal = document.getElementById('addRequestModal');
+        const btn = document.getElementById('addRequestBtn');
+        const closeBtn = modal.querySelector('.close');
+
+        // Open modal when Add Request button is clicked
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
+        });
+
+        // Close modal when X is clicked
+        closeBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto'; // Enable scrolling again
+        });
+
+        // Close modal when clicking outside the modal
+        window.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        });
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && modal.style.display === 'flex') {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        });
+    });
     </script>
 </body>
 </html>
