@@ -194,6 +194,11 @@
             display: block;
             text-decoration: none;
             color: #333;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
         }
 
         .dropdown-option:hover {
