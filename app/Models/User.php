@@ -30,6 +30,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'location',
         'profile_picture',
+        'status', // Add status to fillable attributes
     ];
 
     /**

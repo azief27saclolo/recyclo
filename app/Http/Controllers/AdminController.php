@@ -62,8 +62,26 @@ class AdminController extends Controller
 
     public function users()
     {
-        $users = User::orderBy('created_at', 'desc')->get();
+        // Get users with their shop information
+        $users = User::with('shop')
+            ->orderBy('created_at', 'desc')
+            ->get();
+            
         return view('admin.users', compact('users'));
+    }
+    
+    public function updateUserStatus(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:active,suspended,inactive'
+        ]);
+        
+        // Update user status
+        $user->status = $validated['status'];
+        $user->save();
+        
+        return redirect()->route('admin.users')
+            ->with('success', "User {$user->username}'s status updated to {$validated['status']}");
     }
 
     public function shops()
