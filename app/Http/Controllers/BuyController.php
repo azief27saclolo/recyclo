@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Buy;
+use Illuminate\Support\Facades\Auth;
 
 class BuyController extends Controller
 {
@@ -33,9 +34,18 @@ class BuyController extends Controller
         return redirect()->route('buy.create')->with('success', 'Buy request created successfully.');
     }
 
+    /**
+     * Display a listing of the user's buy requests.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function index()
     {
-        $buyRequests = Buy::with('user')->get();
+        // Filter buy requests to show only those from the authenticated user
+        $buyRequests = Buy::where('user_id', Auth::id())
+                        ->latest()
+                        ->get();
+                        
         return view('users.view_buy_requests', compact('buyRequests'));
     }
 

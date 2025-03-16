@@ -327,6 +327,11 @@
                     </a>
                 @endif
                 
+                <a href="{{ route('buy.index') }}" class="menu-item">
+                    <i class="bi bi-bag"></i>
+                    <span>Buy Requests</span>
+                </a>
+                
                 <a href="#" class="menu-item">
                     <i class="bi bi-shield-lock"></i>
                     <span>Privacy Settings</span>
