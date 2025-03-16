@@ -49,26 +49,24 @@
             </a>
           
             <div class="header-actions" x-data="{ open: false }">
-                {{-- Dropdown Button --}}
-              <button @click="open = !open" type="button" class="header-action-btn" aria-label="user">
-                <ion-icon name="person" aria-hidden="true" aria-hidden="true" class="text-3xl cursor-pointer mr-[10px]" onclick="onToggleMenu(this)"></ion-icon>
-              </button>
-
-              {{-- Dropdown Menu --}}
-              <div x-show="open" @click.outside="open = false" class="bg-white shadow-lg absolute z-10 top-20 right-30 rounded-lg overflow-hidden font-light">
-                    
                 @auth
-                    <p class="username">Hello! {{ auth()->user()->username }}</p>                  
-                    <a href="{{ route('profile') }}" class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Profile</a>
-                    {{-- Removed dashboard/sell button --}}
-                    <a href="{{ route('buy.create') }}" class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Buy</a>
-                    {{-- Removed Logout form and button --}}
+                    {{-- Dropdown Button for logged in users --}}
+                    <button @click="open = !open" type="button" class="header-action-btn" aria-label="user">
+                        <ion-icon name="person" aria-hidden="true" class="text-3xl cursor-pointer mr-[10px]" onclick="onToggleMenu(this)"></ion-icon>
+                    </button>
+                    
+                    {{-- Dropdown Menu --}}
+                    <div x-show="open" @click.outside="open = false" class="bg-white shadow-lg absolute z-10 top-20 right-30 rounded-lg overflow-hidden font-light">
+                        <p class="username">Hello! {{ auth()->user()->username }}</p>                  
+                        <a href="{{ route('profile') }}" class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Profile</a>
+                        <a href="{{ route('buy.create') }}" class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Buy</a>
+                    </div>
+                @else
+                    {{-- Direct link to login for non-logged in users --}}
+                    <a href="{{ route('login') }}" class="header-action-btn" aria-label="user">
+                        <ion-icon name="person" aria-hidden="true" class="text-3xl cursor-pointer mr-[10px]"></ion-icon>
+                    </a>
                 @endauth
-                @guest
-                <a class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1" href="{{ route('login') }}">Login</a>
-                <a class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1" href="{{ route('login') }}?form=register" data-form="register">Register</a>
-                @endguest
-            </div>
 
               <button class="header-action-btn" aria-label="heart item" onclick="window.location.href='{{ route('favorites') }}'">
                 <ion-icon name="heart" aria-hidden="true"></ion-icon>
