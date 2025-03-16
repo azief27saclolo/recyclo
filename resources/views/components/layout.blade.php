@@ -60,13 +60,9 @@
                 @auth
                     <p class="username">Hello! {{ auth()->user()->username }}</p>                  
                     <a href="{{ route('profile') }}" class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Profile</a>
-                    <a href="{{ route('dashboard') }}" class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Sell</a>
+                    {{-- Removed dashboard/sell button --}}
                     <a href="{{ route('buy.create') }}" class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Buy</a>
-                    {{-- Removed Favorites button --}}
-                    <form action="{{ route('logout') }}" method="post">
-                        @csrf
-                        <button class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Logout</button>
-                    </form>
+                    {{-- Removed Logout form and button --}}
                 @endauth
                 @guest
                 <a class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1" href="{{ route('login') }}">Login</a>

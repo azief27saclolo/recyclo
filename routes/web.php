@@ -56,7 +56,8 @@ Route::group(['middleware' => [AdminMiddleware::class]], function() {
 Route::middleware('auth')->group(function() {
     Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('verified')->name('dashboard');
     
-    Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+    // Update logout route to accept both GET and POST methods
+    Route::match(['get', 'post'], '/logout', [AuthController::class, 'logout'])->name('logout');
 
     // Email Verification Notice route
     Route::get('/email/verify', [AuthController::class, 'verifyEmailNotice'])->name('verification.notice');

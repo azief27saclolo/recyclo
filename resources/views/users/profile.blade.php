@@ -257,8 +257,7 @@
                     <i class="bi bi-shield-lock"></i>
                     <span>Privacy Settings</span>
                 </a>
-                <form action="{{ route('logout') }}" method="POST" id="logout-form" style="display: none;">
-                    @csrf
+                <form action="{{ route('logout') }}" method="GET" id="logout-form" style="display: none;">
                 </form>
                 <a href="#" class="menu-item" style="color: #dc3545;" onclick="confirmLogout(event)">
                     <i class="bi bi-box-arrow-right"></i>
