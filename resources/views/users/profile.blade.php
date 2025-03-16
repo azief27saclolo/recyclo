@@ -204,22 +204,96 @@
             color: #666;
         }
 
-        #editProfileForm {
-            display: none;
-        }
-        
         .form-control {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: 2px solid #ccc;
             border-radius: 6px;
             font-size: 16px;
             transition: border-color 0.3s ease;
+            box-sizing: border-box; /* Ensures padding is included in width */
         }
         
         .form-control:focus {
             border-color: var(--hoockers-green);
             outline: none;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow: auto;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: auto;
+            padding: 25px;
+            border-radius: 15px;
+            width: 95%;
+            max-width: 600px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+            animation: modalAnimation 0.3s ease;
+        }
+
+        @keyframes modalAnimation {
+            from {opacity: 0; transform: translateY(-30px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #777;
+            transition: color 0.3s;
+        }
+
+        .close-modal:hover {
+            color: #333;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: var(--hoockers-green);
+            font-size: 22px;
+        }
+        
+        /* Adjust form layout in modal */
+        .modal .info-group {
+            margin-bottom: 20px;
+            padding: 0; /* Remove horizontal padding */
+            width: 100%; /* Ensure full width */
+        }
+        
+        .modal form {
+            width: 100%;
+            padding: 0;
+        }
+        
+        /* Make input fields take full width */
+        .modal .form-control {
+            width: 100%;
+            display: block;
+            margin: 0;
         }
     </style>
 </head>
@@ -318,50 +392,6 @@
                 </button>
             </div>
 
-            <!-- Edit Profile Form (Initially Hidden) -->
-            <div id="editProfileForm" class="profile-info">
-                <h3>Edit Your Profile</h3>
-                <form action="{{ route('profile.update') }}" method="post" enctype="multipart/form-data">
-                    @csrf
-                    @method('PUT')
-
-                    <div class="info-group">
-                        <label for="profile_picture">Profile Picture</label>
-                        <input type="file" name="profile_picture" class="form-control">
-                        @error('profile_picture')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="info-group">
-                        <label for="username">Username</label>
-                        <input type="text" name="username" value="{{ auth()->user()->username }}" class="form-control">
-                        @error('username')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="info-group">
-                        <label for="password">Password</label>
-                        <input type="password" name="password" class="form-control">
-                        @error('password')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="info-group">
-                        <label for="location">Location</label>
-                        <input type="text" name="location" value="{{ auth()->user()->location }}" class="form-control">
-                        @error('location')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <button type="submit" class="edit-btn" style="margin-bottom: 15px;">Update Profile</button>
-                    <button type="button" id="cancelEdit" class="edit-btn" style="background-color: #dc3545; margin-left: 10px;">Cancel</button>
-                </form>
-            </div>
-
             <!-- Activity Overview -->
             <div class="profile-info">
                 <h3 style="margin-bottom: 20px; color: var(--hoockers-green);">Activity Overview</h3>
@@ -379,20 +409,86 @@
         </div>
     </div>
 
+    <!-- Edit Profile Modal -->
+    <div id="editProfileModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="modal-header">
+                <h3>Edit Your Profile</h3>
+            </div>
+            <form action="{{ route('profile.update') }}" method="post" enctype="multipart/form-data" style="width: 100%;">
+                @csrf
+                @method('PUT')
+
+                <div class="info-group" style="width: 100%;">
+                    <label for="profile_picture">Profile Picture</label>
+                    <input type="file" name="profile_picture" class="form-control">
+                    @error('profile_picture')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="info-group">
+                    <label for="username">Username</label>
+                    <input type="text" name="username" value="{{ auth()->user()->username }}" class="form-control">
+                    @error('username')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="info-group">
+                    <label for="password">Password</label>
+                    <input type="password" name="password" class="form-control">
+                    @error('password')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="info-group">
+                    <label for="location">Location</label>
+                    <input type="text" name="location" value="{{ auth()->user()->location }}" class="form-control">
+                    @error('location')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="info-group">
+                    <button type="submit" class="edit-btn" style="width: 100%; margin-bottom: 15px;">Update Profile</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('editProfileModal');
         const showEditFormBtn = document.getElementById('showEditForm');
-        const cancelEditBtn = document.getElementById('cancelEdit');
-        const editProfileForm = document.getElementById('editProfileForm');
+        const closeModalBtn = document.querySelector('.close-modal');
         
         showEditFormBtn.addEventListener('click', function() {
-            editProfileForm.style.display = 'block';
-            showEditFormBtn.style.display = 'none';
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
         });
         
-        cancelEditBtn.addEventListener('click', function() {
-            editProfileForm.style.display = 'none';
-            showEditFormBtn.style.display = 'inline-block';
+        function closeModal() {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto'; // Enable scrolling again
+        }
+        
+        closeModalBtn.addEventListener('click', closeModal);
+        
+        // Close modal when clicking outside of it
+        window.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && modal.style.display === 'flex') {
+                closeModal();
+            }
         });
     });
     
