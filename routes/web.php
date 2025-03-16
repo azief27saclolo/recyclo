@@ -48,6 +48,7 @@ Route::group(['middleware' => [AdminMiddleware::class]], function() {
     Route::get('/admin/users', [AdminController::class, 'users'])->name('admin.users');
     Route::put('/admin/users/{user}/status', [AdminController::class, 'updateUserStatus'])->name('admin.users.update-status');
     Route::get('/admin/shops', [AdminController::class, 'shops'])->name('admin.shops');
+    Route::put('/admin/shops/{shop}/status', [AdminController::class, 'updateShopStatus'])->name('admin.shops.update-status');
     Route::get('/admin/logout', [AdminController::class, 'logout'])->name('admin.logout');
 });
 

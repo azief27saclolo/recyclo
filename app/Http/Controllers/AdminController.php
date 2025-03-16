@@ -86,8 +86,37 @@ class AdminController extends Controller
 
     public function shops()
     {
-        $shops = Shop::with('user')->orderBy('created_at', 'desc')->get();
-        return view('admin.shops', compact('shops'));
+        // Get all shops including pending registration requests
+        $shops = Shop::with('user')
+            ->orderByRaw("FIELD(status, 'pending', 'approved', 'rejected')")
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        // Get counts for each status
+        $pendingCount = $shops->where('status', 'pending')->count();
+        $approvedCount = $shops->where('status', 'approved')->count();
+        $rejectedCount = $shops->where('status', 'rejected')->count();
+        
+        return view('admin.shops', compact('shops', 'pendingCount', 'approvedCount', 'rejectedCount'));
+    }
+
+    public function updateShopStatus(Request $request, Shop $shop)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:pending,approved,rejected',
+            'remarks' => 'nullable|string|max:255',
+        ]);
+        
+        $shop->status = $validated['status'];
+        
+        if ($validated['status'] == 'rejected' && isset($validated['remarks'])) {
+            $shop->remarks = $validated['remarks'];
+        }
+        
+        $shop->save();
+        
+        return redirect()->route('admin.shops')
+            ->with('success', "Shop '{$shop->shop_name}' status updated to {$validated['status']}");
     }
 
     public function logout(Request $request)
