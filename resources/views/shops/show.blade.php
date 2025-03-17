@@ -1,17 +1,6 @@
 @extends('components.layout')
 
 @section('content')
-{{-- Debug information --}}
-<div class="debug-info" style="background: #f8f9fa; padding: 15px; margin-bottom: 20px; border-left: 5px solid #007bff;">
-    <h3>Debug Information</h3>
-    <p>Shop exists: {{ isset($shop) ? 'Yes' : 'No' }}</p>
-    @if(isset($shop))
-        <p>Shop ID: {{ $shop->id }}</p>
-        <p>Shop Username: {{ $shop->username }}</p>
-        <p>Posts count: {{ $posts->count() }}</p>
-    @endif
-</div>
-
 <div class="container">
     @if(isset($shop))
         <div class="shop-header">
