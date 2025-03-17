@@ -52,7 +52,7 @@ class AdminController extends Controller
         return redirect()->back()->with('success', 'Order status updated successfully');
     }
 
-    // New methods for approving/rejecting orders
+    // Change method signature back to use $orderId
     public function approveOrder($orderId)
     {
         $order = Order::findOrFail($orderId);

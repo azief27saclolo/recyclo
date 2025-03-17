@@ -256,6 +256,70 @@
         .btn-reject:hover {
             background-color: #c82333;
         }
+
+        /* Tab styling for filters */
+        .tab-container {
+            margin-bottom: 25px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .tab-btn {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+        
+        .tab-btn:hover {
+            color: var(--hoockers-green);
+        }
+        
+        .tab-btn.active {
+            color: var(--hoockers-green);
+            border-bottom-color: var(--hoockers-green);
+        }
+        
+        .pending-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #ff6b6b;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+        
+        .highlight-row {
+            background-color: #fff8e1;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { background-color: #fff8e1; }
+            50% { background-color: #ffecb3; }
+            100% { background-color: #fff8e1; }
+        }
+        
+        .approval-section {
+            background: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -295,6 +359,34 @@
                 <div class="orders-heading">
                     <h1><i class="bi bi-cart"></i> Orders Management</h1>
                 </div>
+
+                <!-- Order Requests Awaiting Approval -->
+                @php
+                    $pendingOrders = $orders->where('status', 'pending')->count();
+                @endphp
+                
+                @if($pendingOrders > 0)
+                <div class="approval-section">
+                    <h3 style="margin-top: 0; color: #856404;"><i class="bi bi-exclamation-triangle"></i> Pending Order Requests: {{ $pendingOrders }}</h3>
+                    <p>You have {{ $pendingOrders }} order request(s) waiting for your approval. Please review them below.</p>
+                </div>
+                @endif
+                
+                <!-- Tabs for filtering orders -->
+                <div class="tab-container">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" data-tab="all">All Orders</button>
+                        <button class="tab-btn" data-tab="pending">
+                            Pending Approval 
+                            @if($pendingOrders > 0)
+                                <span class="pending-count">{{ $pendingOrders }}</span>
+                            @endif
+                        </button>
+                        <button class="tab-btn" data-tab="approved">Approved</button>
+                        <button class="tab-btn" data-tab="completed">Completed</button>
+                        <button class="tab-btn" data-tab="cancelled">Cancelled</button>
+                    </div>
+                </div>
                 
                 <div class="table-responsive">
                     <table class="table">
@@ -313,7 +405,7 @@
                         <tbody>
                             @if(count($orders) > 0)
                                 @foreach($orders as $order)
-                                <tr>
+                                <tr class="order-row {{ $order->status }} {{ $order->status == 'pending' ? 'highlight-row' : '' }}">
                                     <td>#{{ $order->id }}</td>
                                     <td>
                                         @if($order->buyer)
@@ -348,13 +440,14 @@
                                     <td>
                                         @if($order->status == 'pending')
                                             <div class="action-buttons">
-                                                <form action="{{ route('admin.orders.approve', $order->id) }}" method="POST">
+                                                <!-- Use URL helper instead of route helper to avoid parameter issues -->
+                                                <form action="/admin/orders/{{ $order->id }}/approve" method="POST">
                                                     @csrf
                                                     <button type="submit" class="btn btn-approve" title="Approve Order">
                                                         <i class="bi bi-check-circle"></i> Approve
                                                     </button>
                                                 </form>
-                                                <form action="{{ route('admin.orders.reject', $order->id) }}" method="POST">
+                                                <form action="/admin/orders/{{ $order->id }}/reject" method="POST">
                                                     @csrf
                                                     <button type="submit" class="btn btn-reject" title="Reject Order">
                                                         <i class="bi bi-x-circle"></i> Reject
@@ -406,5 +499,39 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Simple tab functionality for filtering orders
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const orderRows = document.querySelectorAll('.order-row');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    // Get the tab value
+                    const tabValue = this.getAttribute('data-tab');
+                    
+                    // Show/hide rows based on selected tab
+                    orderRows.forEach(row => {
+                        if (tabValue === 'all') {
+                            row.style.display = 'table-row';
+                        } else {
+                            if (row.classList.contains(tabValue)) {
+                                row.style.display = 'table-row';
+                            } else {
+                                row.style.display = 'none';
+                            }
+                        }
+                    });
+                });
+            });
+        });
+    </script>
 </body>
 </html>
