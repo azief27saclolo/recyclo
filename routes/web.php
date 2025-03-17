@@ -114,3 +114,4 @@ Route::delete('/buy/{id}', [App\Http\Controllers\BuyController::class, 'destroy'
 
 // Add this new route for shops
 Route::get('/shops', [ShopsController::class, 'index'])->name('shops');
+Route::get('/shops/{user}', [ShopsController::class, 'show'])->name('shops.show');
