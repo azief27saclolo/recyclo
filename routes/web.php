@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ShopController;
+use App\Http\Controllers\ShopsController;
 use App\Http\Controllers\ShowPostController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LandingPageController;
@@ -110,3 +111,6 @@ Route::post('/buy', [BuyController::class, 'store'])->name('buy.store');
 Route::get('/buy-requests', [BuyController::class, 'index'])->name('buy.index');
 Route::put('/buy/{id}', [App\Http\Controllers\BuyController::class, 'update'])->name('buy.update');
 Route::delete('/buy/{id}', [App\Http\Controllers\BuyController::class, 'destroy'])->name('buy.destroy');
+
+// Add this new route for shops
+Route::get('/shops', [ShopsController::class, 'index'])->name('shops');

@@ -96,7 +96,7 @@
                   <a href="#collection" class="navbar-link has-after">Goals</a>
                 </li>
                 <li>
-                  <a href="#shop" class="navbar-link has-after">Shops</a>
+                  <a href="{{ route('shops') }}" class="navbar-link has-after">Shops</a>
                 </li>
               </ul>
             </nav>
