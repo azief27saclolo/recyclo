@@ -66,4 +66,57 @@ class BuyController extends Controller
             'query' => $query
         ]);
     }
+
+    /**
+     * Update the specified buy request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'category' => 'required|string|max:255',
+            'quantity' => 'required|integer|min:1',
+            'unit' => 'required|string|max:10',
+            'description' => 'required|string|max:1000',
+        ]);
+
+        $buyRequest = Buy::findOrFail($id);
+        
+        // Check if the user is authorized to update this request
+        if ($buyRequest->user_id !== Auth::id()) {
+            return redirect()->back()->with('error', 'You are not authorized to edit this buy request.');
+        }
+
+        $buyRequest->update([
+            'category' => $request->category,
+            'quantity' => $request->quantity,
+            'unit' => $request->unit,
+            'description' => $request->description,
+        ]);
+
+        return redirect()->route('buy.index')->with('success', 'Buy request updated successfully.');
+    }
+
+    /**
+     * Remove the specified buy request.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        $buyRequest = Buy::findOrFail($id);
+        
+        // Check if the user is authorized to delete this request
+        if ($buyRequest->user_id !== Auth::id()) {
+            return redirect()->back()->with('error', 'You are not authorized to delete this buy request.');
+        }
+
+        $buyRequest->delete();
+
+        return redirect()->route('buy.index')->with('success', 'Buy request deleted successfully.');
+    }
 }

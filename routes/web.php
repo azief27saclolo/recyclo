@@ -108,3 +108,5 @@ Route::get('/order-success', function () {
 Route::get('/buy', [BuyController::class, 'create'])->name('buy.create');
 Route::post('/buy', [BuyController::class, 'store'])->name('buy.store');
 Route::get('/buy-requests', [BuyController::class, 'index'])->name('buy.index');
+Route::put('/buy/{id}', [App\Http\Controllers\BuyController::class, 'update'])->name('buy.update');
+Route::delete('/buy/{id}', [App\Http\Controllers\BuyController::class, 'destroy'])->name('buy.destroy');

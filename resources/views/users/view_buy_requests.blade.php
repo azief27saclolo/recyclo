@@ -119,6 +119,9 @@
             padding: 20px;
             border: 1px solid #e9ecef;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            min-height: 220px;
         }
         
         .request-card:hover {
@@ -283,22 +286,67 @@
         }
 
         /* Ensure modal form controls take full width */
-        #addRequestModal .form-control {
+        #addRequestModal .form-control,
+        #editRequestModal .form-control {
             width: 100%;
             max-width: none;
         }
         
-        #addRequestModal form {
+        #addRequestModal form,
+        #editRequestModal form {
             width: 100%;
         }
         
-        #addRequestModal .form-group {
+        #addRequestModal .form-group,
+        #editRequestModal .form-group {
             padding: 0;
             margin-bottom: 20px;
         }
         
-        #addRequestModal textarea.form-control {
+        #addRequestModal textarea.form-control,
+        #editRequestModal textarea.form-control {
             min-height: 120px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: auto;
+            padding-top: 15px;
+        }
+        
+        .edit-btn, .delete-btn {
+            padding: 6px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: none;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        .edit-btn {
+            background-color: #4dabf7;
+            color: white;
+        }
+        
+        .edit-btn:hover {
+            background-color: #3793dd;
+        }
+        
+        .delete-btn {
+            background-color: #fa5252;
+            color: white;
+        }
+        
+        .delete-btn:hover {
+            background-color: #e03e3e;
+        }
+        
+        .action-buttons i {
+            margin-right: 5px;
         }
     </style>
 </head>
@@ -381,6 +429,14 @@
                                 <p><strong>Quantity:</strong> {{ $buyRequest->quantity }} {{ $buyRequest->unit }}</p>
                                 <p><strong>Description:</strong> {{ $buyRequest->description }}</p>
                                 <p class="timestamp">Posted: {{ $buyRequest->created_at->diffForHumans() }}</p>
+                                <div class="action-buttons">
+                                    <button class="edit-btn" onclick="openEditModal({{ $buyRequest->id }}, '{{ $buyRequest->category }}', {{ $buyRequest->quantity }}, '{{ $buyRequest->unit }}', '{{ addslashes($buyRequest->description) }}')">
+                                        <i class="bi bi-pencil"></i> Edit
+                                    </button>
+                                    <button class="delete-btn" onclick="confirmDelete({{ $buyRequest->id }})">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </button>
+                                </div>
                             </div>
                         @endforeach
                     </div>
@@ -459,6 +515,76 @@
         </div>
     </div>
 
+    <!-- Edit Buy Request Modal -->
+    <div id="editRequestModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Edit Buy Request</h2>
+                <span class="close">&times;</span>
+            </div>
+            
+            <form id="editRequestForm" action="" method="post">
+                @csrf
+                @method('PUT')
+
+                <div class="form-group">
+                    <label class="form-label" for="edit_category">Category</label>
+                    <select name="category" id="edit_category" class="form-control" required>
+                        <option value="">--Select--</option>
+                        <option value="Metal">Metal</option>
+                        <option value="Plastic">Plastic</option>
+                        <option value="Paper">Paper</option>
+                        <option value="Glass">Glass</option>
+                        <option value="Wood">Wood</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Fabric">Fabric</option>
+                        <option value="Rubber">Rubber</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="edit_quantity">Quantity</label>
+                    <input type="number" name="quantity" id="edit_quantity" class="form-control" placeholder="Enter quantity..." required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="edit_unit">Unit</label>
+                    <select name="unit" id="edit_unit" class="form-control" required>
+                        <option value="">--Select--</option>
+                        <option value="kg">Kilogram (kg)</option>
+                        <option value="g">Gram (g)</option>
+                        <option value="lb">Pound (lb)</option>
+                        <option value="L">Liter (L)</option>
+                        <option value="m3">Cubic Meter (m3)</option>
+                        <option value="gal">Gallon (gal)</option>
+                        <option value="pc">Per Piece (pc)</option>
+                        <option value="dz">Per Dozen (dz)</option>
+                        <option value="bndl">Per Bundle (bndl)</option>
+                        <option value="sack">Per Sack (sack)</option>
+                        <option value="bale">Per Bale (bale)</option>
+                        <option value="roll">Per Roll (roll)</option>
+                        <option value="drum">Per Drum (drum)</option>
+                        <option value="box">Per Box (box)</option>
+                        <option value="pallet">Per Pallet (pallet)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="edit_description">Description</label>
+                    <textarea name="description" id="edit_description" class="form-control" rows="4" placeholder="Enter description..." required></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">Update Request</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Delete Buy Request Form -->
+    <form id="deleteRequestForm" action="" method="POST" style="display: none;">
+        @csrf
+        @method('DELETE')
+    </form>
+
     <script>
     function confirmLogout(event) {
         event.preventDefault();
@@ -481,39 +607,92 @@
     // Buy Request Modal Functionality
     document.addEventListener('DOMContentLoaded', function() {
         // Get modal elements
-        const modal = document.getElementById('addRequestModal');
-        const btn = document.getElementById('addRequestBtn');
-        const closeBtn = modal.querySelector('.close');
+        const addModal = document.getElementById('addRequestModal');
+        const editModal = document.getElementById('editRequestModal');
+        const addBtn = document.getElementById('addRequestBtn');
+        const addCloseBtn = addModal.querySelector('.close');
+        const editCloseBtn = editModal.querySelector('.close');
 
         // Open modal when Add Request button is clicked
-        btn.addEventListener('click', function(e) {
+        addBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            modal.style.display = 'flex';
+            addModal.style.display = 'flex';
             document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
         });
 
-        // Close modal when X is clicked
-        closeBtn.addEventListener('click', function() {
-            modal.style.display = 'none';
+        // Close add modal when X is clicked
+        addCloseBtn.addEventListener('click', function() {
+            addModal.style.display = 'none';
+            document.body.style.overflow = 'auto'; // Enable scrolling again
+        });
+        
+        // Close edit modal when X is clicked
+        editCloseBtn.addEventListener('click', function() {
+            editModal.style.display = 'none';
             document.body.style.overflow = 'auto'; // Enable scrolling again
         });
 
-        // Close modal when clicking outside the modal
+        // Close modals when clicking outside
         window.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                modal.style.display = 'none';
+            if (e.target === addModal) {
+                addModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+            if (e.target === editModal) {
+                editModal.style.display = 'none';
                 document.body.style.overflow = 'auto';
             }
         });
         
-        // Close modal with Escape key
+        // Close modals with Escape key
         document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape' && modal.style.display === 'flex') {
-                modal.style.display = 'none';
-                document.body.style.overflow = 'auto';
+            if (event.key === 'Escape') {
+                if (addModal.style.display === 'flex') {
+                    addModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }
+                if (editModal.style.display === 'flex') {
+                    editModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }
             }
         });
     });
+    
+    // Function to open edit modal with current data
+    function openEditModal(id, category, quantity, unit, description) {
+        // Set form action URL
+        document.getElementById('editRequestForm').action = `/buy/${id}`;
+        
+        // Fill form with current values
+        document.getElementById('edit_category').value = category;
+        document.getElementById('edit_quantity').value = quantity;
+        document.getElementById('edit_unit').value = unit;
+        document.getElementById('edit_description').value = description;
+        
+        // Show the modal
+        document.getElementById('editRequestModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+    
+    // Function to confirm deletion
+    function confirmDelete(id) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#fa5252',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.getElementById('deleteRequestForm');
+                form.action = `/buy/${id}`;
+                form.submit();
+            }
+        });
+    }
     </script>
 </body>
 </html>
