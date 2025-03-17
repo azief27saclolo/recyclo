@@ -47,24 +47,49 @@
             </div>
         </div>
 
-        <h2 class="section-title">Shop Products</h2>
-        
-        @if(isset($posts) && count($posts) > 0)
-            <div class="products-container">
-                @foreach($posts as $post)
-                    <div class="product-card">
-                        <img src="{{ asset('storage/' . $post->image) }}" 
-                             alt="{{ $post->title }}"
-                             onerror="this.onerror=null; this.src='https://placehold.co/200x200?text=Product';">
-                        <h3>{{ $post->title }}</h3>
-                        <p class="price">₱{{ $post->price }}.00</p>
+        <section class="section shop" id="shop" aria-label="shop">
+            <div class="container">
+                <div class="title-wrapper shop-products-title">
+                    <h2 class="h2 section-title">Shop Products</h2>
+                </div>
+                
+                @if(isset($posts) && count($posts) > 0)
+                    <div class="products-grid">
+                        @foreach($posts as $post)
+                            <div class="grid-item">
+                                <x-postCard :post="$post" />
+                            </div>
+                        @endforeach
                     </div>
-                @endforeach
+                @else
+                    <div class="empty-shop-message">
+                        <p>No products available from this seller yet.</p>
+                    </div>
+                @endif
             </div>
-        @else
-            <div class="empty-shop-message">
-                <p>No products available from this seller yet.</p>
-            </div>
+        </section>
+
+        <!-- New Arrivals Section (if needed) -->
+        @if(count($latestPosts) > 0 && $latestPosts->count() != $posts->count())
+            <section class="section shop" id="new-arrivals" aria-label="new arrivals">
+                <div class="container">
+                    <div class="title-wrapper">
+                        <h2 class="h2 section-title">New Arrivals</h2>
+                        <a href="{{ route('posts.user', $shop) }}" class="btn-link">
+                            <span class="span">View All</span>
+                            <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
+                        </a>
+                    </div>
+                    
+                    <ul class="has-scrollbar">
+                        @foreach($latestPosts as $post)
+                            <li class="scrollbar-item">
+                                <x-postCard :post="$post" />
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            </section>
         @endif
     @else
         <div class="alert alert-danger">
@@ -175,6 +200,116 @@
         background: #f9f9f9;
         border-radius: 8px;
         margin: 20px 0;
+    }
+
+    /* Ensure slider works with any number of products */
+    .has-scrollbar {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+        padding: 10px 0;
+        margin: 0 -5px;
+    }
+
+    .scrollbar-item {
+        flex: 0 0 auto;
+        width: 250px;
+        margin: 0 10px;
+        scroll-snap-align: start;
+    }
+
+    /* Make sure scrollbar is always visible when needed */
+    .has-scrollbar::-webkit-scrollbar {
+        height: 6px;
+        width: 6px;
+    }
+
+    .has-scrollbar::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 25px;
+    }
+
+    .has-scrollbar::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 25px;
+    }
+
+    .has-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+
+    /* Product Grid Styles - Adjusted Card Size */
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* Increased from 200px */
+        gap: 18px; /* Increased from 15px */
+        margin-top: 10px; /* Reduced from 20px to bring grid closer to title */
+    }
+
+    .grid-item {
+        display: flex;
+        justify-content: center;
+    }
+
+    /* Make cards slightly bigger */
+    .products-grid .shop-card {
+        width: 95%;  /* Increased from 90% */
+        height: auto;
+        margin: 0 auto;
+        transform-origin: center top;
+    }
+
+    .products-grid .card-banner {
+        height: 230px; /* Increased from 210px */
+    }
+
+    .products-grid .card-content {
+        padding: 12px; /* Increased from 10px */
+    }
+
+    .products-grid .card-title {
+        font-size: 1rem; /* Increased from 0.9rem */
+        margin-bottom: 6px;
+    }
+
+    .products-grid .price {
+        font-size: 1.1rem; /* Increased from 1rem */
+    }
+
+    /* Media queries for responsive grid with adjusted card sizes */
+    @media (max-width: 768px) {
+        .products-grid {
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .products-grid {
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+        }
+    }
+
+    /* Make sure the post cards display properly in the grid */
+    .products-grid .shop-card {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+    }
+
+    /* Enhanced Shop Products Title */
+    .shop-products-title {
+        margin-bottom: 10px; /* Reduced from default to bring closer to products */
+    }
+    
+    .shop-products-title .section-title {
+        font-size: 2.4rem; /* Increased from 1.8rem */
+        font-weight: 700;
+        color: #1e6f31;
+        margin: 10px 0; /* Reduced top/bottom margin */
     }
 </style>
 @endsection
