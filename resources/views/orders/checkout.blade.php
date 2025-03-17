@@ -81,6 +81,20 @@
             </div>
         </div>
     </section>
+
+    <!-- Order Confirmation Modal -->
+    <div id="orderModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; max-width: 500px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+            <div style="color: #517a5b; font-size: 60px; margin-bottom: 20px;">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <h3 style="font-size: 24px; margin-bottom: 15px; color: #333;">Order Successfully Placed!</h3>
+            <p style="font-size: 16px; margin-bottom: 20px; color: #666;">Your order is now under review. Please wait while the seller confirms your order.</p>
+            <button onclick="closeModal()" style="background: #517a5b; color: white; border: none; padding: 12px 30px; border-radius: 8px; font-size: 16px; cursor: pointer; transition: all 0.3s ease; display: block; margin: 0 auto;">
+                Continue Shopping
+            </button>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -98,12 +112,17 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert("Order placed successfully!");
-                window.location.href = "{{ route('posts') }}";
+                // Show the order confirmation modal instead of alert
+                document.getElementById("orderModal").style.display = "flex";
             } else {
                 alert("Failed to place order.");
             }
         });
+    }
+
+    function closeModal() {
+        document.getElementById("orderModal").style.display = "none";
+        window.location.href = "{{ route('posts') }}";
     }
 </script>
 @endsection
