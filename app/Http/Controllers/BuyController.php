@@ -31,7 +31,19 @@ class BuyController extends Controller
             'description' => $request->description,
         ]);
 
-        return redirect()->route('buy.create')->with('success', 'Buy request created successfully.');
+        // Get the previous URL (referrer)
+        $previousUrl = url()->previous();
+        
+        // Check if request is AJAX
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Buy request created successfully.'
+            ]);
+        }
+
+        // Redirect back to the same page the request came from
+        return redirect()->back()->with('success', 'Buy request created successfully.');
     }
 
     /**

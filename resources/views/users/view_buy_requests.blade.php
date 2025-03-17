@@ -22,6 +22,8 @@
     <!-- SweetAlert for logout confirmation -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <style>
         .profile-container {
             display: flex;
@@ -460,7 +462,7 @@
                 <span class="close">&times;</span>
             </div>
             
-            <form action="{{ route('buy.store') }}" method="post" enctype="multipart/form-data">
+            <form id="addRequestForm" action="{{ route('buy.store') }}" method="post" enctype="multipart/form-data">
                 @csrf
 
                 <div class="form-group">
@@ -657,6 +659,59 @@
                 }
             }
         });
+
+        // Add form submission handler
+        const addRequestForm = document.getElementById('addRequestForm');
+        if (addRequestForm) {
+            addRequestForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Close the modal
+                        addModal.style.display = 'none';
+                        document.body.style.overflow = 'auto';
+                        
+                        // Show success message
+                        Swal.fire({
+                            title: 'Success!',
+                            text: data.message,
+                            icon: 'success',
+                            confirmButtonColor: '#517A5B'
+                        });
+                        
+                        // Reset the form
+                        addRequestForm.reset();
+                        
+                        // Reload the buy requests section to show the new request
+                        // You could implement a more elegant solution that adds the new request without a full reload
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Something went wrong. Please try again.',
+                        icon: 'error',
+                        confirmButtonColor: '#517A5B'
+                    });
+                });
+            });
+        }
     });
     
     // Function to open edit modal with current data
