@@ -16,7 +16,7 @@
       <div class="shop-title-wrapper">
         <h2 class="h2 shop-name">{{ $shop->username }}'s Shop</h2>
         <a href="{{ route('posts.user', $shop) }}" class="btn-link">
-          <span class="span">View All Products</span>
+          <span class="span">View Shop</span>
           <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
         </a>
       </div>
