@@ -50,17 +50,10 @@
           
             <div class="header-actions" x-data="{ open: false }">
                 @auth
-                    {{-- Dropdown Button for logged in users --}}
-                    <button @click="open = !open" type="button" class="header-action-btn" aria-label="user">
-                        <ion-icon name="person" aria-hidden="true" class="text-3xl cursor-pointer mr-[10px]" onclick="onToggleMenu(this)"></ion-icon>
-                    </button>
-                    
-                    {{-- Dropdown Menu --}}
-                    <div x-show="open" @click.outside="open = false" class="bg-white shadow-lg absolute z-10 top-20 right-30 rounded-lg overflow-hidden font-light">
-                        <p class="username">Hello! {{ auth()->user()->username }}</p>                  
-                        <a href="{{ route('profile') }}" class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Profile</a>
-                        <a href="{{ route('buy.create') }}" class="block hover:text-green-200 pl-4 pr-8 py-2 mb-1">Buy</a>
-                    </div>
+                    {{-- Direct link to profile for logged in users (replacing dropdown) --}}
+                    <a href="{{ route('profile') }}" class="header-action-btn" aria-label="user profile">
+                        <ion-icon name="person" aria-hidden="true" class="text-3xl cursor-pointer mr-[10px]"></ion-icon>
+                    </a>
                 @else
                     {{-- Direct link to login for non-logged in users --}}
                     <a href="{{ route('login') }}" class="header-action-btn" aria-label="user">
