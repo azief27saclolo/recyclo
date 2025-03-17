@@ -50,41 +50,13 @@
                     </div>
                     <div style="padding: 20px;">
                         <div style="background: #f8f9fa; border-radius: 10px; padding: 30px; margin-bottom: 20px; text-align: center;">
-                            <div style="margin-bottom: 20px; text-align: left;">
-                                <label style="display: block; margin-bottom: 10px; color: #333;">
-                                    <input type="radio" name="payment-method" value="gcash" checked> GCash
-                                </label>
-                                <label style="display: block; margin-bottom: 10px; color: #333;">
-                                    <input type="radio" name="payment-method" value="cod"> Cash on Delivery
-                                </label>
-                                <label style="display: block; margin-bottom: 10px; color: #333;">
-                                    <input type="radio" name="payment-method" value="credit-card"> Credit Card
-                                </label>
-                            </div>
-                            
-                            <div class="gcash-details" style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
+                            <div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
                                 <img src="{{ asset('assets/images/mon.jpg') }}" alt="GCash" style="height: 80px; width: auto; object-fit: contain;">
                                 <div style="width: 100%; text-align: center; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
                                     <p style="color: #666; margin-bottom: 10px; font-size: 1rem;">Scan / Send payment to:</p>
                                     <p style="font-size: 1.8rem; font-weight: 600; color: #517a5b; margin: 10px 0;">0929 519 0987</p>
                                     <p style="color: #333; font-size: 1.2rem; font-weight: 500;">{{ $post->user->username }}</p>
                                 </div>
-                            </div>
-                        </div>
-                        
-                        <div id="location-details" style="display: none; margin: 25px 0; padding: 20px; background: #f8f9fa; border-radius: 10px;">
-                            <h4 style="color: #517a5b; margin-bottom: 15px;">Delivery Information</h4>
-                            <div style="margin-bottom: 15px;">
-                                <label for="address" style="display: block; margin-bottom: 5px; color: #333;">Address:</label>
-                                <input type="text" id="address" name="address" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
-                            </div>
-                            <div style="margin-bottom: 15px;">
-                                <label for="city" style="display: block; margin-bottom: 5px; color: #333;">City:</label>
-                                <input type="text" id="city" name="city" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
-                            </div>
-                            <div style="margin-bottom: 15px;">
-                                <label for="postal-code" style="display: block; margin-bottom: 5px; color: #333;">Postal Code:</label>
-                                <input type="text" id="postal-code" name="postal-code" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
                             </div>
                         </div>
                         
@@ -112,24 +84,6 @@
 </div>
 
 <script>
-    document.querySelectorAll('input[name="payment-method"]').forEach((input) => {
-        input.addEventListener('change', function() {
-            const locationDetails = document.getElementById('location-details');
-            const gcashDetails = document.querySelector('.gcash-details');
-            
-            if (this.value === 'cod') {
-                locationDetails.style.display = 'block';
-                gcashDetails.style.display = 'none';
-            } else if (this.value === 'gcash') {
-                locationDetails.style.display = 'none';
-                gcashDetails.style.display = 'flex';
-            } else {
-                locationDetails.style.display = 'none';
-                gcashDetails.style.display = 'none';
-            }
-        });
-    });
-
     function placeOrder() {
         var quantity = "{{ $quantity }}";
         var post_id = "{{ $post->id }}";
