@@ -444,6 +444,28 @@
                                     <h3>{{ $product->title }}</h3>
                                     <p>₱{{ number_format($product->price, 2) }}</p>
                                     <p>Stock: {{ $product->quantity ?? 'N/A' }}</p>
+                                    
+                                    <!-- Add action buttons -->
+                                    <div class="product-actions" style="margin-top: 10px; display: flex; justify-content: space-between;">
+                                        <button class="action-btn edit-product-btn" 
+                                                style="flex: 1; margin-right: 5px; font-size: 0.85rem; padding: 8px 5px;"
+                                                data-product-id="{{ $product->id }}"
+                                                data-product-title="{{ $product->title }}"
+                                                data-product-category="{{ $product->category }}"
+                                                data-product-location="{{ $product->location }}"
+                                                data-product-unit="{{ $product->unit }}"
+                                                data-product-quantity="{{ $product->quantity }}"
+                                                data-product-price="{{ $product->price }}"
+                                                data-product-description="{{ $product->description }}">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </button>
+                                        <button class="action-btn delete-product-btn" 
+                                                style="flex: 1; margin-left: 5px; font-size: 0.85rem; padding: 8px 5px; background-color: #dc3545;"
+                                                data-product-id="{{ $product->id }}"
+                                                data-product-title="{{ $product->title }}">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </button>
+                                    </div>
                                 </div>
                             @endforeach
                         @else
@@ -469,10 +491,8 @@
                 <h2 class="modal-title">Add New Product</h2>
                 <span class="close">&times;</span>
             </div>
-            
             <form action="{{ route('posts.store') }}" method="post" enctype="multipart/form-data">
                 @csrf
-
                 <div class="form-group">
                     <label class="form-label" for="title">Product Title</label>
                     <input type="text" name="title" id="title" class="form-control" placeholder="Enter product title..." required>
@@ -569,6 +589,114 @@
         </div>
     </div>
 
+    <!-- Edit Product Form Modal -->
+    <div id="editProductModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Edit Product</h2>
+                <span class="close">&times;</span>
+            </div>
+            
+            <form id="editProductForm" method="post" enctype="multipart/form-data">
+                @csrf
+                @method('PUT')
+
+                <div class="form-group">
+                    <label class="form-label" for="edit-title">Product Title</label>
+                    <input type="text" name="title" id="edit-title" class="form-control" placeholder="Enter product title..." required>
+                    @error('title')
+                        <p class="error-message">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="edit-category">Category</label>
+                    <select name="category" id="edit-category" class="form-control" required>
+                        <option value="">--Select--</option>
+                        <option value="Metal">Metal</option>
+                        <option value="Plastic">Plastic</option>
+                        <option value="Paper">Paper</option>
+                        <option value="Glass">Glass</option>
+                        <option value="Wood">Wood</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Fabric">Fabric</option>
+                        <option value="Rubber">Rubber</option>
+                    </select>
+                    @error('category')
+                        <p class="error-message">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="edit-location">Location</label>
+                    <input type="text" name="location" id="edit-location" class="form-control" placeholder="Enter location..." required>
+                    @error('location')
+                        <p class="error-message">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="edit-unit">Unit</label>
+                    <select name="unit" id="edit-unit" class="form-control" required>
+                        <option value="">--Select--</option>
+                        <option value="kg">Kilogram (kg)</option>
+                        <option value="g">Gram (g)</option>
+                        <option value="lb">Pound (lb)</option>
+                        <option value="L">Liter (L)</option>
+                        <option value="m3">Cubic Meter (m3)</option>
+                        <option value="gal">Gallon (gal)</option>
+                        <option value="pc">Per Piece (pc)</option>
+                        <option value="dz">Per Dozen (dz)</option>
+                        <option value="bndl">Per Bundle (bndl)</option>
+                        <option value="sack">Per Sack (sack)</option>
+                        <option value="bale">Per Bale (bale)</option>
+                        <option value="roll">Per Roll (roll)</option>
+                        <option value="drum">Per Drum (drum)</option>
+                        <option value="box">Per Box (box)</option>
+                        <option value="pallet">Per Pallet (pallet)</option>
+                    </select>
+                    @error('unit')
+                        <p class="error-message">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="edit-quantity">Quantity</label>
+                    <input type="number" name="quantity" id="edit-quantity" class="form-control" placeholder="Enter quantity..." required>
+                    @error('quantity')
+                        <p class="error-message">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="edit-price">Price per unit</label>
+                    <input type="text" name="price" id="edit-price" class="form-control" placeholder="Enter price..." required>
+                    @error('price')
+                        <p class="error-message">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="edit-description">Description</label>
+                    <textarea name="description" id="edit-description" class="form-control" rows="4" placeholder="Enter description..."></textarea>
+                    @error('description')
+                        <p class="error-message">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="edit-image">Photo (leave blank to keep current image)</label>
+                    <input type="file" name="image" id="edit-image" class="form-control" accept="image/*">
+                    @error('image')
+                        <p class="error-message">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <button type="submit" class="submit-btn">Update Product</button>
+            </form>
+        </div>
+    </div>
+
     <script>
     function confirmLogout(event) {
         event.preventDefault();
@@ -611,6 +739,95 @@
             if (e.target === modal) {
                 modal.style.display = 'none';
             }
+        });
+
+        // Get modal elements for edit modal
+        const editModal = document.getElementById('editProductModal');
+        const editCloseBtn = editModal.querySelector('.close');
+        const editProductForm = document.getElementById('editProductForm');
+        
+        // Edit Product Button Click
+        document.querySelectorAll('.edit-product-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const productId = this.getAttribute('data-product-id');
+                const productTitle = this.getAttribute('data-product-title');
+                const productCategory = this.getAttribute('data-product-category');
+                const productLocation = this.getAttribute('data-product-location');
+                const productUnit = this.getAttribute('data-product-unit');
+                const productQuantity = this.getAttribute('data-product-quantity');
+                const productPrice = this.getAttribute('data-product-price');
+                const productDescription = this.getAttribute('data-product-description');
+                
+                // Set form action - Fix the route name from posts.index to posts
+                editProductForm.action = `{{ route('posts') }}/${productId}`;
+                
+                // Populate form fields
+                document.getElementById('edit-title').value = productTitle;
+                document.getElementById('edit-category').value = productCategory;
+                document.getElementById('edit-location').value = productLocation;
+                document.getElementById('edit-unit').value = productUnit;
+                document.getElementById('edit-quantity').value = productQuantity;
+                document.getElementById('edit-price').value = productPrice;
+                document.getElementById('edit-description').value = productDescription;
+                
+                // Show the modal
+                editModal.style.display = 'block';
+            });
+        });
+        
+        // Close edit modal when X is clicked
+        editCloseBtn.addEventListener('click', function() {
+            editModal.style.display = 'none';
+        });
+        
+        // Close edit modal when clicking outside
+        window.addEventListener('click', function(e) {
+            if (e.target === editModal) {
+                editModal.style.display = 'none';
+            }
+        });
+        
+        // Delete Product Button Click
+        document.querySelectorAll('.delete-product-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const productId = this.getAttribute('data-product-id');
+                const productTitle = this.getAttribute('data-product-title');
+                
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: `Do you really want to delete "${productTitle}"? This cannot be undone.`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'No, keep it'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Create form and submit for DELETE request
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = `{{ route('posts') }}/${productId}`; // Fix the route name
+                        form.style.display = 'none';
+                        
+                        const csrfToken = document.createElement('input');
+                        csrfToken.type = 'hidden';
+                        csrfToken.name = '_token';
+                        csrfToken.value = '{{ csrf_token() }}';
+                        
+                        const methodField = document.createElement('input');
+                        methodField.type = 'hidden';
+                        methodField.name = '_method';
+                        methodField.value = 'DELETE';
+                        
+                        form.appendChild(csrfToken);
+                        form.appendChild(methodField);
+                        document.body.appendChild(form);
+                        
+                        form.submit();
+                    }
+                });
+            });
         });
     });
     </script>
