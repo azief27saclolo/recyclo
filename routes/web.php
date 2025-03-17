@@ -46,6 +46,11 @@ Route::group(['middleware' => [AdminMiddleware::class]], function() {
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     Route::get('/admin/orders', [AdminController::class, 'orders'])->name('admin.orders');
     Route::put('/admin/orders/{order}/status', [AdminController::class, 'updateOrderStatus'])->name('admin.orders.update-status');
+    
+    // Add new routes for approval/rejection
+    Route::post('/admin/orders/{order}/approve', [AdminController::class, 'approveOrder'])->name('admin.orders.approve');
+    Route::post('/admin/orders/{order}/reject', [AdminController::class, 'rejectOrder'])->name('admin.orders.reject');
+    
     Route::get('/admin/users', [AdminController::class, 'users'])->name('admin.users');
     Route::put('/admin/users/{user}/status', [AdminController::class, 'updateUserStatus'])->name('admin.users.update-status');
     Route::get('/admin/shops', [AdminController::class, 'shops'])->name('admin.shops');

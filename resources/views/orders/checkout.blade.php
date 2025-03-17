@@ -9,6 +9,12 @@
                 <p style="color: #666; margin-top: 5px; font-size: 18px;">Complete your purchase</p>
             </div>
 
+            <!-- Admin Approval Notice -->
+            <div style="max-width: 800px; margin: 0 auto 20px auto; background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; border-radius: 10px; padding: 15px 20px; text-align: center;">
+                <i class="bi bi-info-circle" style="font-size: 20px; margin-right: 10px; vertical-align: middle;"></i>
+                <span style="vertical-align: middle; font-size: 16px;">Your order will be submitted as a request and requires admin approval before processing.</span>
+            </div>
+
             <div style="max-width: 800px; margin: 0 auto; padding: 20px;">
                 <!-- Order Summary -->
                 <div style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 25px; overflow: hidden;">
@@ -63,13 +69,13 @@
                         <div style="margin: 25px 0; padding: 20px; background: #f8f9fa; border-radius: 10px;">
                             <h4 style="color: #517a5b; margin-bottom: 15px; font-size: 20px;">Pickup Information</h4>
                             <p style="margin-bottom: 10px; color: #333; font-size: 18px;">{{ $post->user->username }}'s Shop<br>{{ $post->location }}</p>
-                            <p style="color: #666; font-size: 16px;">Please pick up your order within 3 days after payment confirmation.</p>
+                            <p style="color: #666; font-size: 16px;">Please pick up your order within 3 days after your order has been approved and payment is confirmed.</p>
                         </div>
 
                         <div style="display: grid; gap: 15px; margin-top: 25px;">
                             <button type="button" onclick="placeOrder()" 
                                     style="background: #517a5b; color: white; border: none; padding: 15px; border-radius: 8px; font-size: 18px; cursor: pointer; transition: all 0.3s ease; width: 100%;">
-                                Complete Order
+                                Submit Order Request
                             </button>
                             <button type="button" onclick="window.location.href='{{ route('posts') }}'" 
                                     style="background: none; border: 2px solid #517a5b; color: #517a5b; padding: 15px; border-radius: 8px; font-size: 18px; cursor: pointer; transition: all 0.3s ease; width: 100%;">
@@ -88,8 +94,8 @@
             <div style="color: #517a5b; font-size: 60px; margin-bottom: 20px;">
                 <i class="bi bi-check-circle-fill"></i>
             </div>
-            <h3 style="font-size: 24px; margin-bottom: 15px; color: #333;">Order Successfully Placed!</h3>
-            <p style="font-size: 16px; margin-bottom: 20px; color: #666;">Your order is now under review. Please wait while the seller confirms your order.</p>
+            <h3 style="font-size: 24px; margin-bottom: 15px; color: #333;">Order Request Submitted!</h3>
+            <p style="font-size: 16px; margin-bottom: 20px; color: #666;">Your order request has been submitted for approval. You will be notified when it is approved by the admin.</p>
             <button onclick="closeModal()" style="background: #517a5b; color: white; border: none; padding: 12px 30px; border-radius: 8px; font-size: 16px; cursor: pointer; transition: all 0.3s ease; display: block; margin: 0 auto;">
                 Continue Shopping
             </button>
@@ -99,24 +105,52 @@
 
 <script>
     function placeOrder() {
+        // Show loading state on button
+        const submitButton = document.querySelector('button[onclick="placeOrder()"]');
+        const originalText = submitButton.innerText;
+        submitButton.innerText = 'Processing...';
+        submitButton.disabled = true;
+        
         var quantity = "{{ $quantity }}";
         var post_id = "{{ $post->id }}";
+        
+        // Use a simple fetch request with proper headers and body
         fetch("{{ route('orders.store') }}", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-TOKEN": "{{ csrf_token() }}"
             },
-            body: JSON.stringify({ post_id: post_id, quantity: quantity })
+            body: JSON.stringify({ 
+                post_id: post_id, 
+                quantity: quantity,
+                _token: "{{ csrf_token() }}"
+            })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.message || 'Network response was not ok');
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
-                // Show the order confirmation modal instead of alert
+                // Show the order confirmation modal
                 document.getElementById("orderModal").style.display = "flex";
             } else {
-                alert("Failed to place order.");
+                alert("Failed to place order: " + (data.message || "Unknown error"));
             }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("Error submitting order request: " + error.message);
+        })
+        .finally(() => {
+            // Restore button state
+            submitButton.innerText = originalText;
+            submitButton.disabled = false;
         });
     }
 

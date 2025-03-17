@@ -39,25 +39,36 @@ class AdminController extends Controller
 
     public function orders()
     {
-        // Get all orders with related information
-        $orders = Order::with(['user', 'buyer', 'seller', 'post'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-            
+        $orders = Order::with(['buyer', 'seller', 'post', 'user'])->latest()->get();
         return view('admin.orders', compact('orders'));
     }
     
-    public function updateOrderStatus(Request $request, Order $order)
+    public function updateOrderStatus(Request $request, $orderId)
     {
-        $validated = $request->validate([
-            'status' => 'required|in:pending,approved,completed,cancelled'
-        ]);
-        
-        $order->status = $validated['status'];
+        $order = Order::findOrFail($orderId);
+        $order->status = $request->status;
         $order->save();
         
-        return redirect()->route('admin.orders')
-            ->with('success', "Order #{$order->id} status updated to {$validated['status']}");
+        return redirect()->back()->with('success', 'Order status updated successfully');
+    }
+
+    // New methods for approving/rejecting orders
+    public function approveOrder($orderId)
+    {
+        $order = Order::findOrFail($orderId);
+        $order->status = 'approved';
+        $order->save();
+        
+        return redirect()->back()->with('success', 'Order approved successfully');
+    }
+
+    public function rejectOrder($orderId)
+    {
+        $order = Order::findOrFail($orderId);
+        $order->status = 'cancelled';
+        $order->save();
+        
+        return redirect()->back()->with('success', 'Order rejected successfully');
     }
 
     public function users()

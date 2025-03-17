@@ -232,6 +232,30 @@
                 flex-direction: column;
             }
         }
+
+        /* Adding styles for approve/reject buttons */
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .btn-approve {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .btn-approve:hover {
+            background-color: #218838;
+        }
+        
+        .btn-reject {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-reject:hover {
+            background-color: #c82333;
+        }
     </style>
 </head>
 <body>
@@ -322,35 +346,52 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <div class="dropdown">
-                                            <button class="btn btn-primary">Update Status</button>
-                                            <div class="dropdown-content">
-                                                <form action="/admin/orders/{{ $order->id }}/status" method="POST">
+                                        @if($order->status == 'pending')
+                                            <div class="action-buttons">
+                                                <form action="{{ route('admin.orders.approve', $order->id) }}" method="POST">
                                                     @csrf
-                                                    @method('PUT')
-                                                    <input type="hidden" name="status" value="pending">
-                                                    <button type="submit" class="dropdown-option">Pending</button>
+                                                    <button type="submit" class="btn btn-approve" title="Approve Order">
+                                                        <i class="bi bi-check-circle"></i> Approve
+                                                    </button>
                                                 </form>
-                                                <form action="/admin/orders/{{ $order->id }}/status" method="POST">
+                                                <form action="{{ route('admin.orders.reject', $order->id) }}" method="POST">
                                                     @csrf
-                                                    @method('PUT')
-                                                    <input type="hidden" name="status" value="approved">
-                                                    <button type="submit" class="dropdown-option">Approved</button>
-                                                </form>
-                                                <form action="/admin/orders/{{ $order->id }}/status" method="POST">
-                                                    @csrf
-                                                    @method('PUT')
-                                                    <input type="hidden" name="status" value="completed">
-                                                    <button type="submit" class="dropdown-option">Completed</button>
-                                                </form>
-                                                <form action="/admin/orders/{{ $order->id }}/status" method="POST">
-                                                    @csrf
-                                                    @method('PUT')
-                                                    <input type="hidden" name="status" value="cancelled">
-                                                    <button type="submit" class="dropdown-option">Cancelled</button>
+                                                    <button type="submit" class="btn btn-reject" title="Reject Order">
+                                                        <i class="bi bi-x-circle"></i> Reject
+                                                    </button>
                                                 </form>
                                             </div>
-                                        </div>
+                                        @else
+                                            <div class="dropdown">
+                                                <button class="btn btn-primary">Update Status</button>
+                                                <div class="dropdown-content">
+                                                    <form action="/admin/orders/{{ $order->id }}/status" method="POST">
+                                                        @csrf
+                                                        @method('PUT')
+                                                        <input type="hidden" name="status" value="pending">
+                                                        <button type="submit" class="dropdown-option">Pending</button>
+                                                    </form>
+                                                    <form action="/admin/orders/{{ $order->id }}/status" method="POST">
+                                                        @csrf
+                                                        @method('PUT')
+                                                        <input type="hidden" name="status" value="approved">
+                                                        <button type="submit" class="dropdown-option">Approved</button>
+                                                    </form>
+                                                    <form action="/admin/orders/{{ $order->id }}/status" method="POST">
+                                                        @csrf
+                                                        @method('PUT')
+                                                        <input type="hidden" name="status" value="completed">
+                                                        <button type="submit" class="dropdown-option">Completed</button>
+                                                    </form>
+                                                    <form action="/admin/orders/{{ $order->id }}/status" method="POST">
+                                                        @csrf
+                                                        @method('PUT')
+                                                        <input type="hidden" name="status" value="cancelled">
+                                                        <button type="submit" class="dropdown-option">Cancelled</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        @endif
                                     </td>
                                 </tr>
                                 @endforeach
