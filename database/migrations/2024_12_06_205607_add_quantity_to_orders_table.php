@@ -11,8 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip if orders table doesn't exist
+        if (!Schema::hasTable('orders')) {
+            return;
+        }
+        
         Schema::table('orders', function (Blueprint $table) {
-            $table->string('quantity')->after('post_id');
+            if (!Schema::hasColumn('orders', 'quantity')) {
+                $table->string('quantity')->after('post_id');
+            }
         });
     }
 
@@ -21,8 +28,15 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // Skip if orders table doesn't exist
+        if (!Schema::hasTable('orders')) {
+            return;
+        }
+        
         Schema::table('orders', function (Blueprint $table) {
-            $table->dropColumn('quantity');
+            if (Schema::hasColumn('orders', 'quantity')) {
+                $table->dropColumn('quantity');
+            }
         });
     }
 };

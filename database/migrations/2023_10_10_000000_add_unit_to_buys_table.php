@@ -4,19 +4,15 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddUnitToBuysTable extends Migration
+return new class extends Migration
 {
     public function up()
     {
-        Schema::table('buys', function (Blueprint $table) {
-            $table->string('unit', 10)->after('quantity');
-        });
+        // Skip this migration as unit is already included in create_buys_table
     }
 
     public function down()
     {
-        Schema::table('buys', function (Blueprint $table) {
-            $table->dropColumn('unit');
-        });
+        // No action needed
     }
-}
+};

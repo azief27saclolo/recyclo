@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateBuysTable extends Migration
+return new class extends Migration
 {
     public function up()
     {
@@ -12,8 +12,8 @@ class CreateBuysTable extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('category');
-            $table->string('unit', 10);
             $table->integer('quantity');
+            $table->string('unit', 10);
             $table->text('description');
             $table->timestamps();
         });
@@ -23,4 +23,4 @@ class CreateBuysTable extends Migration
     {
         Schema::dropIfExists('buys');
     }
-}
+};

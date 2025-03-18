@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 
-class CreateAdminsTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -15,22 +15,24 @@ class CreateAdminsTable extends Migration
      */
     public function up()
     {
-        Schema::create('admins', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->string('password');
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('admins')) {
+            Schema::create('admins', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->string('email')->unique();
+                $table->string('password');
+                $table->timestamps();
+            });
 
-        // Insert default admin
-        DB::table('admins')->insert([
-            'name' => 'Admin',
-            'email' => 'admin@gmail.com',
-            'password' => Hash::make('admin12345'),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+            // Insert default admin
+            DB::table('admins')->insert([
+                'name' => 'Admin',
+                'email' => 'admin@gmail.com',
+                'password' => Hash::make('admin12345'),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
     }
 
     /**
@@ -42,4 +44,4 @@ class CreateAdminsTable extends Migration
     {
         Schema::dropIfExists('admins');
     }
-}
+};

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddPostIdToProductsTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,28 @@ class AddPostIdToProductsTable extends Migration
      */
     public function up()
     {
+        // Skip if posts table doesn't exist
+        if (!Schema::hasTable('posts')) {
+            return;
+        }
+        
+        // Skip if products table doesn't exist
+        if (!Schema::hasTable('products')) {
+            return;
+        }
+        
         Schema::table('products', function (Blueprint $table) {
-            $table->foreignId('post_id')->nullable()->after('user_id')->constrained()->onDelete('cascade');
+            if (!Schema::hasColumn('products', 'post_id')) {
+                // First add the column without constraints
+                $table->unsignedBigInteger('post_id')->nullable()->after('user_id');
+            }
+        });
+        
+        // Then add the foreign key constraint in a separate step
+        Schema::table('products', function (Blueprint $table) {
+            if (!Schema::hasColumn('products', 'post_id_foreign')) {
+                $table->foreign('post_id')->references('id')->on('posts')->onDelete('cascade');
+            }
         });
     }
 
@@ -25,9 +45,17 @@ class AddPostIdToProductsTable extends Migration
      */
     public function down()
     {
+        // Skip if products table doesn't exist
+        if (!Schema::hasTable('products')) {
+            return;
+        }
+        
         Schema::table('products', function (Blueprint $table) {
-            $table->dropForeign(['post_id']);
-            $table->dropColumn('post_id');
+            if (Schema::hasColumn('products', 'post_id')) {
+                // Drop foreign key first
+                $table->dropForeign(['post_id']);
+                $table->dropColumn('post_id');
+            }
         });
     }
-}
+};

@@ -4,12 +4,12 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateOrdersTableMigration extends Migration
+return new class extends Migration
 {
     public function up()
     {
         Schema::create('orders', function (Blueprint $table) {
-            $table->id('order_id');
+            $table->id(); // Changed from id('order_id') to standard id() for consistency
             $table->foreignId('seller_id')->constrained('users');
             $table->foreignId('buyer_id')->constrained('users');
             $table->foreignId('post_id')->constrained('posts');
@@ -21,4 +21,4 @@ class CreateOrdersTableMigration extends Migration
     {
         Schema::dropIfExists('orders');
     }
-}
+};

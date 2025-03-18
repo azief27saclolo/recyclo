@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateProductsTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -21,7 +21,7 @@ class CreateProductsTable extends Migration
             $table->string('image')->nullable();
             $table->integer('stock')->default(0);
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('post_id')->nullable()->constrained()->onDelete('cascade');
+            // Remove post_id here as it's added in a separate migration
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
@@ -36,4 +36,4 @@ class CreateProductsTable extends Migration
     {
         Schema::dropIfExists('products');
     }
-}
+};

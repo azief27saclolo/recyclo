@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateOrderItemsTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -13,6 +13,11 @@ class CreateOrderItemsTable extends Migration
      */
     public function up()
     {
+        // Check if required tables exist
+        if (!Schema::hasTable('orders') || !Schema::hasTable('posts')) {
+            return;
+        }
+        
         // Check if the table already exists before attempting to create it
         if (!Schema::hasTable('order_items')) {
             Schema::create('order_items', function (Blueprint $table) {
@@ -39,4 +44,4 @@ class CreateOrderItemsTable extends Migration
     {
         Schema::dropIfExists('order_items');
     }
-}
+};
