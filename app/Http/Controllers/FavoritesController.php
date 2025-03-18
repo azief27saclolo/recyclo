@@ -10,8 +10,9 @@ class FavoritesController extends Controller
 {
     public function index()
     {
-        // Eager load the user relationship
+        // Eager load the user relationship without specifying columns
         $favorites = Auth::user()->favorites()->with('user')->get();
+        
         return view('users.favorites', compact('favorites'));
     }
 

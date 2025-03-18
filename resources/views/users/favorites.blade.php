@@ -244,7 +244,7 @@
                 <div class="shop-name">
                     <i class="bi bi-shop"></i> 
                     @if($post->user)
-                        {{ $post->user->name }}
+                        {{ $post->user->username ? $post->user->username . "'s Shop" : 'Unknown Seller' }}
                     @else
                         Unknown Seller
                     @endif
