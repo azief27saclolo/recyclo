@@ -59,6 +59,9 @@ Route::group(['middleware' => [AdminMiddleware::class]], function() {
     Route::get('/admin/logout', [AdminController::class, 'logout'])->name('admin.logout');
 });
 
+// Product Routes
+Route::get('/products', [App\Http\Controllers\PostController::class, 'index'])->name('products.index');
+
 // Routes for authenticated users
 Route::middleware('auth')->group(function() {
     Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('verified')->name('dashboard');
@@ -90,6 +93,15 @@ Route::middleware('auth')->group(function() {
     Route::get('/shop/register', [ShopController::class, 'create'])->name('shop.register');
     Route::post('/shop/register', [ShopController::class, 'store'])->name('shop.store');
     Route::get('/shop/dashboard', [ShopController::class, 'dashboard'])->name('shop.dashboard');
+
+    // Cart Routes
+    Route::middleware(['auth'])->group(function () {
+    Route::get('/cart', [App\Http\Controllers\CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/add', [App\Http\Controllers\CartController::class, 'addToCart'])->name('cart.add');
+    Route::put('/cart/update/{id}', [App\Http\Controllers\CartController::class, 'updateQuantity'])->name('cart.update');
+    Route::delete('/cart/remove/{id}', [App\Http\Controllers\CartController::class, 'removeItem'])->name('cart.remove');
+    Route::delete('/cart/empty', [App\Http\Controllers\CartController::class, 'emptyCart'])->name('cart.empty');
+    });
 });
 
 // Routes for guests users

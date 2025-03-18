@@ -65,10 +65,10 @@
                 <ion-icon name="heart" aria-hidden="true"></ion-icon>
                 <span class="btn-badge">{{ Auth::check() ? Auth::user()->favorites->count() : 0 }}</span>
               </button>
-              <button class="header-action-btn" aria-label="cart item">
-                <ion-icon name="cart" aria-hidden="true" aria-hidden="true"></ion-icon>
+              <a href="{{ route('cart.index') }}" class="header-action-btn" aria-label="cart item">
+                <ion-icon name="cart" aria-hidden="true"></ion-icon>
                 <span class="btn-badge">0</span>
-              </button>
+              </a>
             </div>
             
             <nav class="navbar">
