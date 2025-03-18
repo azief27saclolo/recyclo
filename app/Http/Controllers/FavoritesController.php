@@ -10,7 +10,8 @@ class FavoritesController extends Controller
 {
     public function index()
     {
-        $favorites = Auth::user()->favorites;
+        // Eager load the user relationship
+        $favorites = Auth::user()->favorites()->with('user')->get();
         return view('users.favorites', compact('favorites'));
     }
 

@@ -1,72 +1,287 @@
 @extends('components.layout')
 
 @section('content')
-<div class="container">
-    @if(session('success'))
-        <div id="flash-message" class="popup-message {{ session('type') }}">
-            {{ session('success') }}
-        </div>
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                setTimeout(function () {
-                    var flashMessage = document.getElementById('flash-message');
-                    if (flashMessage) {
+<style>
+    .favorites-container {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .favorites-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .favorites-title {
+        color: var(--hoockers-green);
+        font-size: 2rem;
+        margin-bottom: 10px;
+    }
+
+    .favorites-subtitle {
+        color: #666;
+        font-size: 1.1rem;
+    }
+
+    .favorites-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 25px;
+    }
+
+    .favorite-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        transition: transform 0.3s ease;
+    }
+
+    .favorite-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .product-image {
+        position: relative;
+        height: 200px;
+        overflow: hidden;
+    }
+
+    .product-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .category-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: white;
+        background: rgba(81, 122, 91, 0.9);
+        backdrop-filter: blur(5px);
+    }
+
+    .product-info {
+        padding: 20px;
+    }
+
+    .shop-name {
+        color: var(--hoockers-green);
+        font-size: 0.9rem;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .product-name {
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+        color: #333;
+    }
+
+    .product-price {
+        color: var(--hoockers-green);
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+
+    .product-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+    }
+
+    .action-btn {
+        padding: 8px 15px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.9rem;
+    }
+
+    .remove-btn {
+        color: #dc3545;
+        background: none;
+    }
+
+    .view-btn {
+        background: var(--hoockers-green);
+        color: white;
+    }
+
+    .view-btn:hover {
+        background: var(--hoockers-green_80);
+    }
+
+    .remove-btn:hover {
+        background: #fff5f5;
+    }
+
+    .empty-favorites {
+        text-align: center;
+        padding: 60px 20px;
+        color: #666;
+    }
+
+    .empty-favorites i {
+        font-size: 4rem;
+        color: #ddd;
+        margin-bottom: 20px;
+    }
+
+    .empty-favorites h3 {
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .empty-favorites p {
+        margin-bottom: 20px;
+    }
+
+    .browse-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 25px;
+        background: var(--hoockers-green);
+        color: white;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .browse-btn:hover {
+        background: var(--hoockers-green_80);
+        transform: translateY(-2px);
+    }
+
+    .popup-message {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        z-index: 1000;
+    }
+    
+    .popup-message.success {
+        background-color: #28a745;
+    }
+    
+    .popup-message.error {
+        background-color: #dc3545;
+    }
+
+    @media (max-width: 768px) {
+        .favorites-grid {
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        }
+    }
+</style>
+
+@if(session('success'))
+    <div id="flash-message" class="popup-message {{ session('type') }}">
+        {{ session('success') }}
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(function () {
+                var flashMessage = document.getElementById('flash-message');
+                if (flashMessage) {
+                    flashMessage.style.opacity = '0';
+                    flashMessage.style.transition = 'opacity 0.5s ease';
+                    setTimeout(function() {
                         flashMessage.remove();
-                    }
-                }, 2000); // 2 seconds before removing
-            });
-        </script>
-    @endif
+                    }, 500);
+                }
+            }, 2000);
+        });
+    </script>
+@endif
+
+<div class="favorites-container">
+    <div class="favorites-header">
+        <h1 class="favorites-title">My Favorites</h1>
+        <p class="favorites-subtitle">Products you've liked and saved for later</p>
+    </div>
 
     @if($favorites->isEmpty())
-        <p>You have no favorite items.</p>
+    <div class="empty-favorites">
+        <i class="bi bi-heart"></i>
+        <h3>No favorites yet</h3>
+        <p>Items you like will appear here</p>
+        <a href="{{ route('posts') }}" class="browse-btn">
+            <i class="bi bi-shop"></i> Browse Products
+        </a>
+    </div>
     @else
-        <section class="section shop" id="shop" aria-label="shop">
-            <div class="container">
-                <div class="title-wrapper">
-                    <h2 class="h2 section-title">Your Favorite Listings</h2>
-                </div>
-                <ul class="has-scrollbar">
-                    @foreach ($favorites as $post)       
-                        <li class="scrollbar-item">
-                            <div class="card h-100">
-                                <div class="card-img-container" style="height: 200px; width: 100%; overflow: hidden;">
-                                    <img src="{{ asset('storage/' . $post->image) }}" class="card-img-top" alt="{{ $post->title }}" style="object-fit: cover; height: 100%; width: 100%;">
-                                </div>
-                                <div class="card-body">
-                                    <h5 class="card-title">{{ $post->title }}</h5>
-                                    <p class="card-text">₱{{ $post->price }}.00</p>
-                                    <a href="{{ route('posts.show', $post) }}" class="btn btn-primary">View</a>
-                                    <form action="{{ route('favorites.remove', $post) }}" method="POST" style="margin-top: 10px;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger" style="background-color: red; color: white;">Remove from Favorites</button>
-                                    </form>
-                                </div>
-                            </div>
-                        </li>
-                    @endforeach
-                </ul>
+    <div class="favorites-grid">
+        @foreach ($favorites as $post)
+        <div class="favorite-card">
+            <div class="product-image">
+                <img src="{{ asset('storage/' . $post->image) }}" alt="{{ $post->title }}">
+                <span class="category-badge">{{ $post->category }}</span>
             </div>
-        </section>
+            <div class="product-info">
+                <div class="shop-name">
+                    <i class="bi bi-shop"></i> 
+                    @if($post->user)
+                        {{ $post->user->name }}
+                    @else
+                        Unknown Seller
+                    @endif
+                </div>
+                <h3 class="product-name">{{ $post->title }}</h3>
+                <div class="product-price">₱{{ $post->price }}.00</div>
+                <div class="product-actions">
+                    <form action="{{ route('favorites.remove', $post) }}" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="action-btn remove-btn">
+                            <i class="bi bi-heart-fill"></i> Remove
+                        </button>
+                    </form>
+                    <a href="{{ route('posts.show', $post) }}" class="action-btn view-btn">
+                        <i class="bi bi-eye"></i> View Details
+                    </a>
+                </div>
+            </div>
+        </div>
+        @endforeach
+    </div>
     @endif
 </div>
 
-<style>
-.popup-message {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    color: white;
-    padding: 10px;
-    border-radius: 5px;
-    z-index: 1000;
-}
-.popup-message.success {
-    background-color: #28a745;
-}
-.popup-message.error {
-    background-color: red;
-}
-</style>
+<script>
+    // Fade effect for remove button
+    document.addEventListener('DOMContentLoaded', function() {
+        const forms = document.querySelectorAll('.product-actions form');
+        forms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const card = this.closest('.favorite-card');
+                card.style.opacity = '0';
+                card.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => {
+                    this.submit();
+                }, 300);
+            });
+        });
+    });
+</script>
 @endsection
