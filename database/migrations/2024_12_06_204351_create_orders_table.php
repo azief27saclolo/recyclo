@@ -4,10 +4,15 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateOrdersTableMigration extends Migration
+return new class extends Migration
 {
     public function up()
     {
+        // Skip creation if table already exists
+        if (Schema::hasTable('orders')) {
+            return;
+        }
+        
         Schema::create('orders', function (Blueprint $table) {
             $table->id('order_id');
             $table->foreignId('seller_id')->constrained('users');
@@ -21,4 +26,4 @@ class CreateOrdersTableMigration extends Migration
     {
         Schema::dropIfExists('orders');
     }
-}
+};
