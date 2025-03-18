@@ -119,7 +119,7 @@
                   <a href="#collection" class="navbar-link has-after">About Us</a>
                 </li>
                 <li>
-                  <a href="#collection" class="navbar-link has-after">Categories</a>
+                  <a href="{{ route('orders.index') }}" class="navbar-link has-after">My Orders</a>
                 </li>
                 <li>
                   <a href="#collection" class="navbar-link has-after">Goals</a>
