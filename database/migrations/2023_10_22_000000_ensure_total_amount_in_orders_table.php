@@ -32,6 +32,15 @@ return new class extends Migration
      */
     public function down()
     {
-        // We don't want to remove the column if it's being used
+        // Skip this migration if the orders table doesn't exist
+        if (!Schema::hasTable('orders')) {
+            return;
+        }
+        
+        Schema::table('orders', function (Blueprint $table) {
+            if (Schema::hasColumn('orders', 'total_amount')) {
+                $table->dropColumn('total_amount');
+            }
+        });
     }
 };

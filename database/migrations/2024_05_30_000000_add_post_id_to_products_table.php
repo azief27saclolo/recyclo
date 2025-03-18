@@ -32,7 +32,7 @@ return new class extends Migration
         
         // Then add the foreign key constraint in a separate step
         Schema::table('products', function (Blueprint $table) {
-            if (!Schema::hasColumn('products', 'post_id_foreign')) {
+            if (!Schema::hasColumn('products', 'post_id')) {
                 $table->foreign('post_id')->references('id')->on('posts')->onDelete('cascade');
             }
         });

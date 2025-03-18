@@ -8,7 +8,8 @@ return new class extends Migration
 {
     public function up()
     {
-        // Skip this migration as unit is already included in create_buys_table
+        // Skip this migration entirely as unit is already included in create_buys_table
+        // Do not attempt to modify the buys table at all
     }
 
     public function down()
