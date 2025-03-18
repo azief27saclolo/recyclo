@@ -66,9 +66,9 @@ form.sign-in-form {
 }
 
 .title {
-    font-size: 2.2rem;
+    font-size: 28px; /* Increased from 2.2rem */
     color: var(--primary-green);
-    margin-bottom: 10px;
+    margin-bottom: 15px; /* Increased from 10px */
 }
 
 .input-field {
@@ -89,7 +89,7 @@ form.sign-in-form {
     line-height: 55px;
     color: #acacac;
     transition: 0.5s;
-    font-size: 1.1rem;
+    font-size: 18px; /* Increased from 1.1rem */
 }
 
 .input-field i.glow {
@@ -104,7 +104,7 @@ form.sign-in-form {
     border: none;
     line-height: 1;
     font-weight: 600;
-    font-size: 1.1rem;
+    font-size: 18px; /* Increased from 1.1rem */
     color: #333;
 }
 
@@ -138,7 +138,7 @@ form.sign-in-form {
 
 .social-text {
     padding: 0.7rem 0;
-    font-size: 1rem;
+    font-size: 16px; /* Increased from 1rem */
     color: #333;
 }
 
@@ -168,18 +168,20 @@ form.sign-in-form {
 }
 
 .btn {
-    width: 150px;
-    height: 49px;
+    width: 180px;  /* Increased from 150px */
+    height: 60px;  /* Increased from 49px */
     border: none;
     outline: none;
-    border-radius: 49px;
+    border-radius: 55px;  /* Slightly increased from 49px */
     cursor: pointer;
     background-color: var(--primary-green);
     color: #fff;
     text-transform: uppercase;
     font-weight: 600;
-    margin: 10px 0;
+    font-size: 16px;  /* Added explicit font size */
+    margin: 15px auto;  /* Changed from 15px 0 to center horizontally */
     transition: 0.5s;
+    display: block;  /* Ensures proper margin centering */
 }
 
 .btn:hover {
@@ -187,13 +189,13 @@ form.sign-in-form {
 }
 
 .btn.transparent {
-    margin: 0;
+    margin: 0 auto;  /* Changed from 0 to center horizontally */
     background: none;
     border: 2px solid #fff;
-    width: 130px;
-    height: 41px;
+    width: 150px;  /* Increased from 130px */
+    height: 50px;  /* Increased from 41px */
     font-weight: 600;
-    font-size: 0.8rem;
+    font-size: 16px;  /* Changed from 0.8rem */
 }
 
 .terms-checkbox {
@@ -243,7 +245,7 @@ form.sign-in-form {
 }
 
 .terms-checkbox label {
-    font-size: 0.95rem;
+    font-size: 16px; /* Increased from 0.95rem */
     color: #333;
     cursor: pointer;
     text-align: left;
@@ -256,7 +258,7 @@ form.sign-in-form {
 
 .password-error {
     color: #ff3e3e;
-    font-size: 0.85rem;
+    font-size: 14px; /* Increased from 0.85rem */
     margin-top: -5px;
     margin-bottom: 5px;
     visibility: hidden;
@@ -305,11 +307,11 @@ form.sign-in-form {
 .panel h3 {
     font-weight: 600;
     line-height: 1;
-    font-size: 1.5rem;
+    font-size: 24px; /* Increased from 1.5rem */
 }
 
 .panel p {
-    font-size: 0.95rem;
+    font-size: 16px; /* Increased from 0.95rem */
     padding: 0.7rem 0;
 }
 
@@ -400,6 +402,13 @@ form.sign-in-form {
     background-color: var(--hover-green) !important;
 }
 
+.panel .button-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 15px;
+}
+
 @media (max-width: 870px) {
     .login-container {
         min-height: 800px;
@@ -433,16 +442,17 @@ form.sign-in-form {
         transition-delay: 0.8s;
     }
     .panel h3 {
-        font-size: 1.2rem;
+        font-size: 20px; /* Increased from 1.2rem */
     }
     .panel p {
-        font-size: 0.7rem;
+        font-size: 14px; /* Increased from 0.7rem */
         padding: 0.5rem 0;
     }
     .btn.transparent {
-        width: 110px;
-        height: 35px;
-        font-size: 0.7rem;
+        width: 130px;  /* Increased from 110px */
+        height: 45px;  /* Increased from 35px */
+        font-size: 14px;
+        margin: 0 auto;  /* Ensure centering in mobile view */
     }
     .login-container::before {
         width: 1500px;
