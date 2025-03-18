@@ -320,6 +320,67 @@
             margin-bottom: 20px;
             border-radius: 5px;
         }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1050;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            position: relative;
+            background-color: #fff;
+            margin: 15% auto;
+            padding: 20px 25px;
+            width: 400px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: modal-appear 0.3s;
+        }
+        
+        @keyframes modal-appear {
+            from {opacity: 0; transform: translateY(-50px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+        
+        .modal-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h4 {
+            margin: 0;
+            flex: 1;
+            font-size: 1.4rem;
+            color: #333;
+        }
+        
+        .modal-close {
+            font-size: 24px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+        }
+        
+        .modal-body {
+            margin-bottom: 20px;
+            font-size: 16px;
+            color: #666;
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
@@ -342,7 +403,8 @@
                 <a href="{{ route('admin.shops') }}" class="nav-link">
                     <i class="bi bi-shop"></i> Shops
                 </a>
-                <a href="{{ route('admin.logout') }}" class="nav-link" onclick="return confirm('Are you sure you want to logout?')">
+                <!-- Change onclick to show modal instead of direct confirmation -->
+                <a href="javascript:void(0)" class="nav-link" onclick="showLogoutModal()">
                     <i class="bi bi-box-arrow-right"></i> Logout
                 </a>
             </nav>
@@ -500,6 +562,23 @@
         </div>
     </div>
 
+    <!-- Logout Confirmation Modal -->
+    <div id="logoutModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>Confirm Logout</h4>
+                <span class="modal-close" onclick="closeLogoutModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to logout from the admin panel?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-reject" onclick="logout()">Yes, Logout</button>
+                <button class="btn" onclick="closeLogoutModal()" style="background-color: #6c757d; color: white;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Simple tab functionality for filtering orders
         document.addEventListener('DOMContentLoaded', function() {
@@ -532,6 +611,27 @@
                 });
             });
         });
+
+        // Logout Modal Functions
+        function showLogoutModal() {
+            document.getElementById('logoutModal').style.display = 'block';
+        }
+        
+        function closeLogoutModal() {
+            document.getElementById('logoutModal').style.display = 'none';
+        }
+        
+        function logout() {
+            window.location.href = "{{ route('admin.logout') }}";
+        }
+        
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const logoutModal = document.getElementById('logoutModal');
+            if (event.target == logoutModal) {
+                closeLogoutModal();
+            }
+        }
     </script>
 </body>
 </html>
