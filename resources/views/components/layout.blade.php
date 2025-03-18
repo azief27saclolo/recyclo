@@ -20,6 +20,28 @@
     <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
     @vite(['resources/css/app.css', 'resources/css/style.css', 'resources/css/login.css', 'resources/js/app.js'])
+    <style>
+        .btn-badge {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: var(--accent, #ff6b6b);
+            color: white;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            border-radius: 50%;
+            line-height: 1;
+            text-align: center;
+        }
+        
+        .header-action-btn {
+            position: relative;
+        }
+    </style>
 </head>
 <body id="top">
     <header class="header">
@@ -67,7 +89,21 @@
               </button>
               <a href="{{ route('cart.index') }}" class="header-action-btn" aria-label="cart item">
                 <ion-icon name="cart" aria-hidden="true"></ion-icon>
-                <span class="btn-badge">0</span>
+                <span class="btn-badge">
+                    @php
+                        $cartCount = 0;
+                        if(Auth::check()) {
+                            $cart = App\Models\Cart::where('user_id', Auth::id())
+                                ->where('status', 'active')
+                                ->first();
+                            if($cart) {
+                                $cartCount = App\Models\CartItem::where('cart_id', $cart->id)
+                                    ->sum('quantity');
+                            }
+                        }
+                    @endphp
+                    {{ $cartCount }}
+                </span>
               </a>
             </div>
             
