@@ -77,7 +77,7 @@
                   <a href="{{ route('posts') }}" class="navbar-link has-after">Selling</a>
                 </li>
                 <li>
-                  <a href="{{ route('buy.index') }}" class="navbar-link has-after">Buying</a>
+                  <a href="{{ route('buy.marketplace') }}" class="navbar-link has-after">Buying</a>
                 </li>
                 <li>
                   <a href="#collection" class="navbar-link has-after">About Us</a>

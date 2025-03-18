@@ -12,6 +12,7 @@ use App\Http\Controllers\ResetPasswordController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\FavoritesController;
 use App\Http\Controllers\BuyController;
+use App\Http\Controllers\BuyMarketplaceController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminLoginController;
 use App\Http\Middleware\AdminMiddleware;
@@ -114,6 +115,7 @@ Route::get('/order-success', function () {
 Route::get('/buy', [BuyController::class, 'create'])->name('buy.create');
 Route::post('/buy', [BuyController::class, 'store'])->name('buy.store');
 Route::get('/buy-requests', [BuyController::class, 'index'])->name('buy.index');
+Route::get('/buy-marketplace', [BuyMarketplaceController::class, 'index'])->name('buy.marketplace');
 Route::put('/buy/{id}', [App\Http\Controllers\BuyController::class, 'update'])->name('buy.update');
 Route::delete('/buy/{id}', [App\Http\Controllers\BuyController::class, 'destroy'])->name('buy.destroy');
 
