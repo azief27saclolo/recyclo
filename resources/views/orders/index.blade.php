@@ -67,10 +67,10 @@
                 </div>
 
                 <!-- New Orders Tab Content -->
-                <div class="order-cards" id="new-orders" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+                <div class="order-cards" id="new-orders" style="display: flex; flex-direction: column; gap: 20px;">
                     @if($orders->where('status', 'pending')->count() > 0)
                         @foreach($orders->where('status', 'pending') as $order)
-                            <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden;">
+                            <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
                                 <div class="order-header" style="padding: 15px;">
                                     <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
                                     <div class="order-details">
@@ -102,10 +102,10 @@
                 </div>
 
                 <!-- To Ship Orders Tab Content -->
-                <div class="order-cards" id="to-ship-orders" style="display: none; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+                <div class="order-cards" id="to-ship-orders" style="display: none; flex-direction: column; gap: 20px;">
                     @if($orders->where('status', 'processing')->count() > 0)
                         @foreach($orders->where('status', 'processing') as $order)
-                            <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden;">
+                            <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
                                 <div class="order-header" style="padding: 15px;">
                                     <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
                                     <div class="order-details">
@@ -133,10 +133,10 @@
                 </div>
 
                 <!-- To Receive Orders Tab Content -->
-                <div class="order-cards" id="to-receive-orders" style="display: none; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+                <div class="order-cards" id="to-receive-orders" style="display: none; flex-direction: column; gap: 20px;">
                     @if($orders->where('status', 'to_receive')->count() > 0)
                         @foreach($orders->where('status', 'to_receive') as $order)
-                            <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden;">
+                            <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
                                 <div class="order-header" style="padding: 15px;">
                                     <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
                                     <div class="order-details">
@@ -164,10 +164,10 @@
                 </div>
 
                 <!-- Completed Orders Tab Content -->
-                <div class="order-cards" id="completed-orders" style="display: none; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+                <div class="order-cards" id="completed-orders" style="display: none; flex-direction: column; gap: 20px;">
                     @if($orders->where('status', 'completed')->count() > 0)
                         @foreach($orders->where('status', 'completed') as $order)
-                            <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden;">
+                            <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
                                 <div class="order-header" style="padding: 15px;">
                                     <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
                                     <div class="order-details">
@@ -199,10 +199,10 @@
                 </div>
 
                 <!-- Cancelled Orders Tab Content -->
-                <div class="order-cards" id="cancelled-orders" style="display: none; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+                <div class="order-cards" id="cancelled-orders" style="display: none; flex-direction: column; gap: 20px;">
                     @if($orders->where('status', 'cancelled')->count() > 0)
                         @foreach($orders->where('status', 'cancelled') as $order)
-                            <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden;">
+                            <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
                                 <div class="order-header" style="padding: 15px;">
                                     <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
                                     <div class="order-details">
@@ -259,9 +259,9 @@
                         cards.style.display = 'none';
                     });
                     
-                    // Show selected tab's cards
+                    // Show selected tab's cards - using flex instead of grid
                     let tabId = button.getAttribute('data-tab');
-                    document.getElementById(`${tabId}-orders`).style.display = 'grid';
+                    document.getElementById(`${tabId}-orders`).style.display = 'flex';
                 });
             });
         });
