@@ -14,6 +14,7 @@ use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use App\Models\User;
 use App\Models\Buy;
+use App\Models\Product;
 
 class PostController extends Controller implements HasMiddleware
 {
@@ -87,8 +88,23 @@ class PostController extends Controller implements HasMiddleware
      */
     public function show(Post $post)
     {
-        $posts = Post::latest()->paginate(10); // Fetch the latest posts with pagination
-        return view('posts.show', ['post' => $post, 'posts' => $posts]);
+        // Add product relation to ensure posts can be added to cart
+        $product = Product::firstOrCreate(
+            ['post_id' => $post->id],
+            [
+                'name' => $post->title,
+                'description' => $post->description,
+                'price' => $post->price,
+                'image' => $post->image,
+                'user_id' => $post->user_id,
+                'stock' => 1 // Default stock
+            ]
+        );
+        
+        return view('posts.show', [
+            'post' => $post,
+            'product_id' => $product->id
+        ]);
     }
 
     /**

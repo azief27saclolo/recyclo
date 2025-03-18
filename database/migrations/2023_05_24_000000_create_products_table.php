@@ -21,6 +21,7 @@ class CreateProductsTable extends Migration
             $table->string('image')->nullable();
             $table->integer('stock')->default(0);
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('post_id')->nullable()->constrained()->onDelete('cascade');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });

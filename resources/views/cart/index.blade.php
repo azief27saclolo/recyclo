@@ -100,7 +100,7 @@
                     </div>
                     <div class="col-md-6 d-flex flex-column align-items-center align-items-md-end">
                         <h5>Total: <span class="text-primary">${{ number_format($cart->total, 2) }}</span></h5>
-                        <a href="{{ route('checkout.index') }}" class="btn btn-success px-4 mt-2" style="min-width: 200px;">
+                        <a href="{{ route('checkout') }}" class="btn btn-success px-4 mt-2" style="min-width: 200px;">
                             Proceed to Checkout <i class="fas fa-arrow-right"></i>
                         </a>
                     </div>

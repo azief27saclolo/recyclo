@@ -16,7 +16,8 @@ class Product extends Model
         'image',
         'stock',
         'user_id',
-        'is_active'
+        'is_active',
+        'post_id'
     ];
 
     /**
@@ -25,6 +26,14 @@ class Product extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the post associated with the product.
+     */
+    public function post()
+    {
+        return $this->belongsTo(Post::class);
     }
 
     /**
