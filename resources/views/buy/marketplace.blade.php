@@ -205,7 +205,7 @@
         padding: 15px 30px;
         border: none;
         border-radius: 25px;
-        font-size: 1.1rem;
+        font-size: 18px; /* Increased from 1.1rem */
         display: inline-flex;
         align-items: center;
         gap: 10px;
@@ -240,7 +240,7 @@
 
     .guide-subtitle {
         color: #666;
-        font-size: 1.1rem;
+        font-size: 18px; /* Increased from 1.1rem */
         margin-top: 10px;
     }
 
@@ -290,7 +290,7 @@
         right: 15px;
         padding: 8px 15px;
         border-radius: 20px;
-        font-size: 0.9rem;
+        font-size: 16px; /* Increased from 0.9rem */
         font-weight: 500;
         color: white;
         background: rgba(81, 122, 91, 0.9);
@@ -335,19 +335,19 @@
 
     .user-info h4 {
         margin: 0;
-        font-size: 1rem;
+        font-size: 17px; /* Increased from 1rem */
         color: #333;
     }
 
     .post-date {
-        font-size: 0.85rem;
+        font-size: 15px; /* Increased from 0.85rem */
         color: #666;
     }
 
     .status-badge {
         padding: 5px 12px;
         border-radius: 15px;
-        font-size: 0.85rem;
+        font-size: 15px; /* Increased from 0.85rem */
         font-weight: 500;
     }
 
@@ -357,7 +357,7 @@
     }
 
     .request-title {
-        font-size: 1.3rem;
+        font-size: 22px; /* Increased from 1.3rem */
         color: #333;
         margin: 15px 0;
     }
@@ -366,7 +366,7 @@
         display: flex;
         gap: 20px;
         color: #666;
-        font-size: 0.95rem;
+        font-size: 16px; /* Increased from 0.95rem */
         margin-bottom: 15px;
     }
 
@@ -376,7 +376,7 @@
 
     .request-description {
         color: #555;
-        font-size: 0.95rem;
+        font-size: 16px; /* Increased from 0.95rem */
         line-height: 1.5;
         margin-bottom: 20px;
         flex-grow: 1;
@@ -399,7 +399,7 @@
         border: none;
         background: none;
         color: #666;
-        font-size: 0.9rem;
+        font-size: 16px; /* Increased from 0.9rem */
         cursor: pointer;
         transition: all 0.2s ease;
     }
@@ -423,7 +423,7 @@
         padding: 8px 20px;
         border: none;
         border-radius: 20px;
-        font-size: 0.9rem;
+        font-size: 16px; /* Increased from 0.9rem */
         cursor: pointer;
         transition: all 0.3s ease;
         text-decoration: none;
@@ -471,7 +471,7 @@
     }
 
     .step-icon i {
-        font-size: 2rem;
+        font-size: 32px; /* Increased from 2rem */
         color: var(--hoockers-green);
     }
 
@@ -479,7 +479,7 @@
         position: absolute;
         top: 20px;
         right: 20px;
-        font-size: 1.5rem;
+        font-size: 24px; /* Increased from 1.5rem */
         font-weight: 700;
         color: rgba(81, 122, 91, 0.2);
     }
@@ -499,18 +499,19 @@
     }
 
     .empty-state h3 {
-        font-size: 1.5rem;
+        font-size: 24px; /* Increased from 1.5rem */
         color: #333;
         margin-bottom: 10px;
     }
 
     .empty-state p {
         color: #666;
+        font-size: 18px; /* Added font size */
         margin-bottom: 20px;
     }
 
     .empty-state i {
-        font-size: 48px;
+        font-size: 60px; /* Increased from 48px */
         color: #dee2e6;
         display: block;
         margin-bottom: 15px;
@@ -524,6 +525,7 @@
         text-decoration: none;
         display: inline-block;
         font-weight: 500;
+        font-size: 16px; /* Added font size */
         transition: all 0.3s ease;
     }
 
@@ -569,7 +571,7 @@
 
     .modal-title {
         color: var(--hoockers-green);
-        font-size: 24px;
+        font-size: 28px; /* Increased from 24px */
         font-weight: 600;
         margin: 0;
     }
@@ -577,7 +579,7 @@
     .close {
         color: #aaa;
         float: right;
-        font-size: 28px;
+        font-size: 32px; /* Increased from 28px */
         font-weight: bold;
         cursor: pointer;
     }
@@ -597,6 +599,7 @@
         display: block;
         margin-bottom: 8px;
         font-weight: 600;
+        font-size: 18px; /* Added font size */
         color: #333;
     }
 
@@ -605,7 +608,7 @@
         padding: 12px;
         border: 1px solid #ddd;
         border-radius: 8px;
-        font-size: 16px;
+        font-size: 18px; /* Increased from 16px */
     }
 
     .form-control:focus {
@@ -620,7 +623,7 @@
         padding: 12px 25px;
         border-radius: 8px;
         cursor: pointer;
-        font-size: 16px;
+        font-size: 18px; /* Increased from 16px */
         width: 100%;
         transition: background-color 0.3s ease;
     }
@@ -642,6 +645,24 @@
             flex-direction: column;
             gap: 10px;
         }
+    }
+    
+    /* Added section titles font size */
+    .section-title {
+        font-size: 28px;
+    }
+    
+    .h2-large {
+        font-size: 32px;
+    }
+    
+    /* Step headings */
+    .step h3 {
+        font-size: 20px;
+    }
+    
+    .step p {
+        font-size: 16px;
     }
 </style>
 
