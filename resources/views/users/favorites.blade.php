@@ -121,10 +121,13 @@
     .view-btn {
         background: var(--hoockers-green);
         color: white;
+        text-decoration: none;
     }
 
     .view-btn:hover {
-        background: var(--hoockers-green_80);
+        background: #3a5a40; /* Explicit color instead of var(--hoockers-green_80) */
+        color: white !important; /* Force text to stay white with !important */
+        text-decoration: none;
     }
 
     .remove-btn:hover {
