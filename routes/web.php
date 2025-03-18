@@ -134,13 +134,3 @@ Route::delete('/buy/{id}', [App\Http\Controllers\BuyController::class, 'destroy'
 // Add this new route for shops
 Route::get('/shops', [ShopsController::class, 'index'])->name('shops');
 Route::get('/shops/{user}', [ShopsController::class, 'show'])->name('shops.show');
-
-// Temporary route to run migrations (DELETE AFTER USE)
-Route::get('/migrate', function () {
-    if (app()->environment('production')) {
-        Artisan::call('migrate', ["--force" => true]);
-        return 'Migrations completed successfully!';
-    } else {
-        return 'This route is disabled in non-production environments.';
-    }
-})->middleware('throttle:3,1');
