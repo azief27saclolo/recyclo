@@ -55,9 +55,9 @@
                         <div class="request-content">
                             <div class="request-header">
                                 <div class="user-info">
-                                    <img src="{{ $request->user->profile_image ? asset('storage/' . $request->user->profile_image) : asset('images/default-avatar.png') }}" alt="{{ $request->user->name }}" class="user-avatar">
+                                    <img src="{{ $request->user->profile_picture ? asset('storage/' . $request->user->profile_picture) : asset('images/default-avatar.png') }}" alt="{{ $request->user->firstname }} {{ $request->user->lastname }}" class="user-avatar">
                                     <div>
-                                        <h4>{{ $request->user->name }}</h4>
+                                        <h4>{{ $request->user->firstname }} {{ $request->user->lastname }}</h4>
                                         <span class="post-date">Posted {{ $request->created_at->diffForHumans() }}</span>
                                     </div>
                                 </div>
