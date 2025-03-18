@@ -38,19 +38,17 @@ class AuthController extends Controller
         // Login
         auth()->login($user);
         
-        // Send verification email
-        $user->sendEmailVerificationNotification();
-        
-        return redirect('/email/verify')->with('message', 'User created and logged in');
+        // Removed email verification - redirect directly to posts page
+        return redirect('/posts')->with('message', 'Account created successfully! Welcome to Recyclo.');
     }
 
-    // Verify Email Notice Handler
+    // Verify Email Notice Handler - kept for future use if needed
     public function verifyEmailNotice()
     {
         return view('auth.verify-email');
     }
 
-    // Email Verification Handler
+    // Email Verification Handler - kept for future use if needed
     public function verifyEmailHandler(EmailVerificationRequest $request)
     {
         $request->fulfill();
@@ -58,7 +56,7 @@ class AuthController extends Controller
         return redirect()->route('dashboard');
     }
 
-    // Resending the Verification Email Handler
+    // Resending the Verification Email Handler - kept for future use if needed
     public function verifyEmailResend(Request $request)
     {
         $request->user()->sendEmailVerificationNotification();
