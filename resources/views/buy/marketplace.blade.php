@@ -36,14 +36,14 @@
                         <div class="request-image">
                             @php
                                 $categoryImages = [
-                                    'Metal' => 'images/categories/metal.jpg',
-                                    'Plastic' => 'images/categories/plastic.jpg',
-                                    'Paper' => 'images/categories/paper.jpg',
-                                    'Glass' => 'images/categories/glass.jpg',
-                                    'Wood' => 'images/categories/wood.jpg',
-                                    'Electronics' => 'images/categories/electronics.jpg',
-                                    'Fabric' => 'images/categories/fabric.jpg',
-                                    'Rubber' => 'images/categories/rubber.jpg',
+                                    'Metal' => 'images/metal.jpg',
+                                    'Plastic' => 'images/plastic.jpg',
+                                    'Paper' => 'images/paper.jpg',
+                                    'Glass' => 'images/glass.jpg',
+                                    'Wood' => 'images/wood.jpg',
+                                    'Electronics' => 'images/electronics.jpg',
+                                    'Fabric' => 'images/fabric.jpg',
+                                    'Rubber' => 'images/rubber.jpg',
                                 ];
                                 $imageUrl = isset($categoryImages[$request->category]) 
                                     ? asset($categoryImages[$request->category]) 
