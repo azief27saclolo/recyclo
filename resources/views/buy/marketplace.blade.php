@@ -12,7 +12,7 @@
         <!-- Add Request Button -->
         <div class="post-request-section">
             @auth
-                <a href="{{ route('buy.create') }}" class="post-btn">
+                <a href="{{ route('buy.index') }}" class="post-btn">
                     <i class="bi bi-plus-circle"></i> Post a Buy Request
                 </a>
                 <a href="{{ route('buy.index') }}" class="post-btn view-btn">
