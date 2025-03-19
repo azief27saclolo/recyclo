@@ -101,9 +101,27 @@ class PostController extends Controller implements HasMiddleware
             ]
         );
         
+        // Get related posts or recent posts to display in the view
+        $posts = Post::where('id', '!=', $post->id)
+                    ->where('category', $post->category)
+                    ->latest()
+                    ->take(5)
+                    ->get();
+        
+        // If we couldn't find enough related posts, fill with recent posts
+        if ($posts->count() < 5) {
+            $additionalPosts = Post::where('id', '!=', $post->id)
+                                ->where('category', '!=', $post->category)
+                                ->latest()
+                                ->take(5 - $posts->count())
+                                ->get();
+            $posts = $posts->merge($additionalPosts);
+        }
+        
         return view('posts.show', [
             'post' => $post,
-            'product_id' => $product->id
+            'product_id' => $product->id,
+            'posts' => $posts
         ]);
     }
 
