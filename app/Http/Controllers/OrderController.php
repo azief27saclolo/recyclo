@@ -33,7 +33,7 @@ class OrderController extends Controller
                 'buyer_id' => Auth::id(),
                 'post_id' => $request->post_id,
                 'quantity' => $request->quantity,
-                'status' => 'pending', // Ensure status is a string
+                'status' => 'pending', 
                 'total_amount' => $totalAmount, 
             ]);
 
