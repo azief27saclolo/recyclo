@@ -61,14 +61,27 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Post::class);
     }
 
+    /**
+     * Get orders where user is the seller
+     */
     public function soldOrders()
     {
-        return $this->hasMany(Order::class, 'seller_id');
+        return $this->hasManyThrough(
+            Order::class,
+            Post::class,
+            'user_id', // Foreign key on posts table...
+            'post_id', // Foreign key on orders table...
+            'id', // Local key on users table...
+            'id' // Local key on posts table...
+        );
     }
 
+    /**
+     * Get orders where user is the buyer
+     */
     public function boughtOrders()
     {
-        return $this->hasMany(Order::class, 'buyer_id');
+        return $this->hasMany(Order::class, 'user_id');
     }
 
     public function favorites()

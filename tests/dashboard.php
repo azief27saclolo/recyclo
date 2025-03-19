@@ -389,7 +389,7 @@
                             <div class="stat-number">{{ Auth::user()->posts()->count() ?? 0 }}</div>
                             <div>Products</div>
                         </div>
-                        <div class="stat-card" id="ordersStatCard" style="cursor: pointer;">
+                        <div class="stat-card" id="ordersStatCard">id="ordersStatCard" style="cursor: pointer;">
                             <i class="bi bi-cart-check"></i>
                             <div class="stat-number">{{ Auth::user()->soldOrders()->count() ?? 0 }}</div>
                             <div>Orders</div>
@@ -697,227 +697,402 @@
         </div>
     </div>
 
-    <!-- Orders Modal -->
-    <div id="ordersModal" class="modal">
-        <div class="modal-content" style="max-width: 900px;">
-            <div class="modal-header">
-                <h2 class="modal-title">Recent Orders</h2>
+    <!-- Orders Modal -->ers Modal -->er Details Modal -->
+    <div id="ordersModal" class="modal">dal">ss="modal">
+        <div class="modal-content">nt" style="max-width: 900px;">nt">
+            <div class="modal-header">ass="modal-header">ass="modal-header">
+                <h2 class="modal-title">Orders</h2>ecent Orders</h2>rder Details</h2>
                 <span class="close">&times;</span>
             </div>
-            <div class="modal-body">
-                <div class="form-group" style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
-                    <label for="order-status-filter" style="margin-right: 10px; font-weight: 600;">Filter by Status:</label>
-                    <select id="order-status-filter" class="form-control" style="display: inline-block; width: auto; padding: 8px;">
-                        <option value="all">All Orders</option>
-                        <option value="pending">Pending</option>
-                        <option value="processing">Processing</option>
-                        <option value="shipped">Shipped</option>
-                        <option value="delivered">Delivered</option>
-                        <option value="cancelled">Cancelled</option>
-                    </select>
-                    
-                    <div class="search-box">
-                        <input type="text" id="order-search" class="form-control" placeholder="Search orders..." style="padding: 8px;">
-                    </div>
+            <div class="modal-body">ainer">>
+                <div class="form-group"> style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">ng> 12345</p>
+                    <label class="form-label" for="order-status-filter">Filter by Status</label>oe</p>
+                    <select id="order-status-filter" class="form-control">tus-filter" style="margin-right: 10px; font-weight: 600;">Filter by Status:</label>Example Product</p>
+                        <option value="all">All</option>r-status-filter" class="form-control" style="display: inline-block; width: auto; padding: 8px;">rong> 2</p>
+                        <option value="pending">Pending</option>option value="all">All Orders</option>tal Amount:</strong> ₱500.00</p>
+                        <option value="processing">Processing</option>alue="pending">Pending</option>trong> Shipped</p>
+                        <option value="completed">Completed</option>g</option>
+                        <option value="cancelled">Cancelled</option>               <option value="shipped">Shipped</option>>
+                    </select>                 <option value="delivered">Delivered</option>
+                </div>                   </select>
+                <div class="form-group">                    </div>    <script>
+                    <label class="form-label" for="order-search">Search Orders</label>arch-box">{
+                    <input type="text" id="order-search" class="form-control" placeholder="Search by customer name, order ID, etc.">lass="form-control" placeholder="Search orders..." style="padding: 8px;">
                 </div>
-                
-                <div style="max-height: 500px; overflow-y: auto;">
-                    <table class="orders-table" style="width: 100%; border-collapse: collapse;">
-                        <thead>
-                            <tr style="background-color: var(--hoockers-green); color: white;">
-                                <th style="padding: 12px; text-align: left;">Order ID</th>
-                                <th style="padding: 12px; text-align: left;">Customer</th>
-                                <th style="padding: 12px; text-align: left;">Date</th>
-                                <th style="padding: 12px; text-align: left;">Items</th>
-                                <th style="padding: 12px; text-align: right;">Total</th>
-                                <th style="padding: 12px; text-align: center;">Status</th>
-                                <th style="padding: 12px; text-align: center;">Actions</th>
+                <table class="orders-table" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                    <thead>
+                        <tr>le="max-height: 500px; overflow-y: auto;">
+                            <th style="border-bottom: 1px solid #ddd; padding: 10px;">Order ID</th>                    <table class="orders-table" style="width: 100%; border-collapse: collapse;">            showCancelButton: true,
+                            <th style="border-bottom: 1px solid #ddd; padding: 10px;">Customer</th>
+                            <th style="border-bottom: 1px solid #ddd; padding: 10px;">Date</th>olor: var(--hoockers-green); color: white;">
+                            <th style="border-bottom: 1px solid #ddd; padding: 10px;">Items</th> <th style="padding: 12px; text-align: left;">Order ID</th>'Yes, logout',
+                            <th style="border-bottom: 1px solid #ddd; padding: 10px;">Total Amount</th>"padding: 12px; text-align: left;">Customer</th>
+                            <th style="border-bottom: 1px solid #ddd; padding: 10px;">Status</th>                     <th style="padding: 12px; text-align: left;">Date</th>then((result) => {
+                            <th style="border-bottom: 1px solid #ddd; padding: 10px;">Actions</th>                                <th style="padding: 12px; text-align: left;">Items</th>            if (result.isConfirmed) {
+                        </tr>e="padding: 12px; text-align: right;">Total</th>'logout-form').submit();
+                    </thead>x; text-align: center;">Status</th>
+                    <tbody>="padding: 12px; text-align: center;">Actions</th>
+                        @foreach($orders as $order)                 </tr>
+                            <tr>                        </thead>
+                                <td style="border-bottom: 1px solid #ddd; padding: 10px;">{{ $order->id }}</td>
+                                <td style="border-bottom: 1px solid #ddd; padding: 10px;">{{ $order->customer_name }}</td>() {
+                                <td style="border-bottom: 1px solid #ddd; padding: 10px;">{{ $order->created_at->format('Y-m-d') }}</td>="border-bottom: 1px solid #eee;">
+                                <td style="border-bottom: 1px solid #ddd; padding: 10px;">{{ $order->items_count }}</td>dding: 12px;">#ORD-2023-001</td>('addProductModal');
+                                <td style="border-bottom: 1px solid #ddd; padding: 10px;">₱{{ number_format($order->total_amount, 2) }}</td>                   <td style="padding: 12px;">Juan Dela Cruz</td> btn = document.getElementById('addProductBtn');
+                                <td style="border-bottom: 1px solid #ddd; padding: 10px;">                     <td style="padding: 12px;">May 15, 2023</td>st closeBtn = modal.querySelector('.close');
+                                    <span class="status-badge" style="padding: 5px 10px; border-radius: 5px; background-color: {{ $order->status_color }}; color: white;">{{ ucfirst($order->status) }}</span>                                <td style="padding: 12px;">Aluminum Cans (20kg)</td>
+                                </td>adding: 12px; text-align: right;">₱1,600.00</td>n is clicked
+                                <td style="border-bottom: 1px solid #ddd; padding: 10px;">center;">
+                                    <button class="action-btn view-order-btn" style="font-size: 0.85rem; padding: 8px 5px;">style="background-color: #ffc107; color: #212529; padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: 600;">Pending</span>
+                                        <i class="bi bi-eye"></i> View
+                                    </button>                        <td style="padding: 12px; text-align: center;">});
+                                </td><button class="view-order-btn" style="background-color: var(--hoockers-green); color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer;">View</button>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @php
-                                $soldOrders = Auth::user()->soldOrders()->latest()->take(20)->get();
-                            @endphp
-                            
-                            @if(count($soldOrders) > 0)
-                                @foreach($soldOrders as $order)
-                                    <tr style="border-bottom: 1px solid #eee;">
-                                        <td style="padding: 12px;">#ORD-{{ $order->id }}</td>
-                                        <td style="padding: 12px;">{{ $order->user->username ?? 'Customer' }}</td>
-                                        <td style="padding: 12px;">{{ $order->created_at->format('M d, Y') }}</td>
-                                        <td style="padding: 12px;">{{ $order->post->title ?? 'Product' }} ({{ $order->quantity }} {{ $order->post->unit ?? 'units' }})</td>
-                                        <td style="padding: 12px; text-align: right;">₱{{ number_format($order->total_amount ?? ($order->quantity * $order->post->price), 2) }}</td>
-                                        <td style="padding: 12px; text-align: center;">
-                                            @php
-                                                $statusColor = [
-                                                    'pending' => '#ffc107',
-                                                    'processing' => '#17a2b8',
-                                                    'shipped' => '#007bff',
-                                                    'delivered' => '#28a745',
-                                                    'cancelled' => '#dc3545'
-                                                ];
-                                                $status = $order->status ?? 'pending';
-                                                $color = $statusColor[$status] ?? '#ffc107';
-                                            @endphp
-                                            <span class="status-badge" style="background-color: {{ $color }}; color: {{ in_array($status, ['pending']) ? '#212529' : 'white' }}; padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: 600;">
-                                                {{ ucfirst($status) }}
-                                            </span>
-                                        </td>
-                                        <td style="padding: 12px; text-align: center;">
-                                            <button class="view-order-btn" style="background-color: var(--hoockers-green); color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer;" data-order-id="{{ $order->id }}">View</button>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            @else
-                                <tr>
-                                    <td colspan="7" style="padding: 20px; text-align: center;">No orders found</td>
-                                </tr>
-                            @endif
-                        </tbody>
-                    </table>
-                    
-                    <div style="margin-top: 20px; text-align: center;">
-                        <button class="pagination-btn" style="background-color: var(--hoockers-green); color: white; border: none; border-radius: 4px; padding: 8px 15px; margin: 0 5px; cursor: pointer;">Previous</button>
-                        <button class="pagination-btn" style="background-color: var(--hoockers-green); color: white; border: none; border-radius: 4px; padding: 8px 15px; margin: 0 5px; cursor: pointer;">Next</button>
-                    </div>
-                </div>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
         </div>
-    </div>
+    </div>>
 
-    <!-- Order Details Modal -->
-    <div id="orderDetailsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Order Details</h2>
-                <span class="close">&times;</span>
-            </div>
-            <div id="orderDetailsContent" class="modal-body">
-                <!-- Order details will be injected here -->
-            </div>
-        </div>
-    </div>
-
-    <script>
-    function confirmLogout(event) {
-        event.preventDefault();
-        Swal.fire({
+    <script>board (10kg)</td>
+    function confirmLogout(event) {>
+        event.preventDefault();                <td style="padding: 12px; text-align: center;">
+        Swal.fire({color: #17a2b8; color: white; padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: 600;">Processing</span>
             title: 'Logout Confirmation',
-            text: "Do you really want to logout?",
-            icon: 'question',
+            text: "Do you really want to logout?",                <td style="padding: 12px; text-align: center;">itModal = document.getElementById('editProductModal');
+            icon: 'question',tton class="view-order-btn" style="background-color: var(--hoockers-green); color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer;">View</button>querySelector('.close');
             showCancelButton: true,
             confirmButtonColor: '#517A5B',
             cancelButtonColor: '#6c757d',
             confirmButtonText: 'Yes, logout',
             cancelButtonText: 'No, stay'
-        }).then((result) => {
+        }).then((result) => {d>
             if (result.isConfirmed) {
-                document.getElementById('logout-form').submit();
-            }
+                document.getElementById('logout-form').submit();                <td style="padding: 12px;">May 20, 2023</td>const productCategory = this.getAttribute('data-product-category');
+            }td style="padding: 12px;">PET Bottles (30kg)</td>tion = this.getAttribute('data-product-location');
+        });: 12px; text-align: right;">₱2,250.00</td>ute('data-product-unit');
+    }                 <td style="padding: 12px; text-align: center;"> const productQuantity = this.getAttribute('data-product-quantity');
+                         <span class="status-badge" style="background-color: #007bff; color: white; padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: 600;">Shipped</span>     const productPrice = this.getAttribute('data-product-price');
+    // Product Modal Functionality                        </td>        const productDescription = this.getAttribute('data-product-description');
+    document.addEventListener('DOMContentLoaded', function() {dding: 12px; text-align: center;">
+        // Get modal elementser-btn" style="background-color: var(--hoockers-green); color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer;">View</button>m posts.index to posts
+        const modal = document.getElementById('addProductModal');osts') }}/${productId}`;
+        const btn = document.getElementById('addProductBtn');                 </tr>     
+        const closeBtn = modal.querySelector('.close');                            // Populate form fields
+>le').value = productTitle;
+        // Orders Modal1px solid #eee;">').value = productCategory;
+        const ordersModal = document.getElementById('ordersModal');="padding: 12px;">#ORD-2023-004</td>edit-location').value = productLocation;
+        const ordersStatCard = document.getElementById('ordersStatCard');g: 12px;">Elena Gonzales</td>t').value = productUnit;
+        const ordersCloseBtn = ordersModal.querySelector('.close');                   <td style="padding: 12px;">May 22, 2023</td>   document.getElementById('edit-quantity').value = productQuantity;
+                     <td style="padding: 12px;">Scrap Metal (50kg), Electronic Waste (5kg)</td>     document.getElementById('edit-price').value = productPrice;
+        // Open orders modal when Orders stat card is clicked                        <td style="padding: 12px; text-align: right;">₱4,250.00</td>        document.getElementById('edit-description').value = productDescription;
+        ordersStatCard.addEventListener('click', function() {yle="padding: 12px; text-align: center;">
+            ordersModal.style.display = 'block';ound-color: #28a745; color: white; padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: 600;">Delivered</span>
         });
-    }
+enter;">
+        // Close orders modal when X is clickedkground-color: var(--hoockers-green); color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer;">View</button>
+        ordersCloseBtn.addEventListener('click', function() {                </td>
+            ordersModal.style.display = 'none'; </tr> when X is clicked
+        });{
 
-    // Product Modal Functionality
-    document.addEventListener('DOMContentLoaded', function() {
-        // Get modal elements
-        const modal = document.getElementById('addProductModal');
-        const btn = document.getElementById('addProductBtn');
-        const closeBtn = modal.querySelector('.close');
+        // Close orders modal when clicking outsidee="border-bottom: 1px solid #eee;">
+        window.addEventListener('click', function(e) {padding: 12px;">#ORD-2023-005</td>
+            if (e.target === ordersModal) {: 12px;">Roberto Mendoza</td>
+                ordersModal.style.display = 'none';g: 12px;">May 25, 2023</td>(e) {
+            }">Glass Bottles (25kg)</td>
+        }); 12px; text-align: right;">₱1,875.00</td>
+tyle="padding: 12px; text-align: center;">
+        // View order button handlerss="status-badge" style="background-color: #ffc107; color: #212529; padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: 600;">Pending</span>
+        document.querySelectorAll('.view-order-btn').forEach(button => {
+            button.addEventListener('click', function() {: center;">
+                Swal.fire({lass="view-order-btn" style="background-color: var(--hoockers-green); color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer;">View</button>oduct-btn').forEach(button => {
+                    title: 'Order Details',
+                    html: `
+                        <div style="text-align: left;"></tbody>oductTitle = this.getAttribute('data-product-title');
+                            <p><strong>Order ID:</strong> ${this.closest('tr').cells[0].textContent}</p>
+                            <p><strong>Customer:</strong> ${this.closest('tr').cells[1].textContent}</p>
+                            <p><strong>Date:</strong> ${this.closest('tr').cells[2].textContent}</p>
+                            <p><strong>Items:</strong> ${this.closest('tr').cells[3].textContent}</p>p: 20px; text-align: center;">uctTitle}"? This cannot be undone.`,
+                            <p><strong>Total Amount:</strong> ${this.closest('tr').cells[4].textContent}</p>ton class="pagination-btn" style="background-color: var(--hoockers-green); color: white; border: none; border-radius: 4px; padding: 8px 15px; margin: 0 5px; cursor: pointer;">Previous</button>: 'warning',
+                            <p><strong>Status:</strong> ${this.closest('tr').cells[5].textContent.trim()}</p>
+                            <hr>tyle="background-color: var(--hoockers-green); color: white; border: none; border-radius: 4px; padding: 8px 15px; margin: 0 5px; cursor: pointer;">Next</button>
+                            <p><strong>Shipping Address:</strong> 123 Sample Street, Barangay Sample, City Sample, 1234</p>
+                            <p><strong>Contact Number:</strong> +63 912 345 6789</p>
+                            <p><strong>Payment Method:</strong> Cash on Delivery</p>xt: 'No, keep it'
+                        </div>
+                    `,
+                    icon: 'info',
+                    confirmButtonColor: '#517A5B',ut(event) {const form = document.createElement('form');
+                    confirmButtonText: 'Close'
+                }); form.action = `{{ route('posts') }}/${productId}`; // Fix the route name
+            });'Logout Confirmation',     form.style.display = 'none';
+            text: "Do you really want to logout?",     
+            icon: 'question',  const csrfToken = document.createElement('input');
+            showCancelButton: true, // Filter functionality                 csrfToken.type = 'hidden';
+            confirmButtonColor: '#517A5B', statusFilter = document.getElementById('order-status-filter');           csrfToken.name = '_token';
+            cancelButtonColor: '#6c757d', const searchInput = document.getElementById('order-search');                 csrfToken.value = '{{ csrf_token() }}';
+            confirmButtonText: 'Yes, logout', const orderRows = document.querySelectorAll('.orders-table tbody tr');                 
+            cancelButtonText: 'No, stay'                        const methodField = document.createElement('input');
 
-        // Open modal when Add Product button is clicked
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            modal.style.display = 'block';
-        });
 
-        // Close modal when X is clicked
-        closeBtn.addEventListener('click', function() {
-            modal.style.display = 'none';
-        });
 
-        // Close modal when clicking outside the modal
-        window.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                modal.style.display = 'none';
-            }
-        });
 
-        // Get modal elements for edit modal
-        const editModal = document.getElementById('editProductModal');
-        const editCloseBtn = editModal.querySelector('.close');
-        const editProductForm = document.getElementById('editProductForm');
-        
-        // Edit Product Button Click
-        document.querySelectorAll('.edit-product-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const productId = this.getAttribute('data-product-id');
-                const productTitle = this.getAttribute('data-product-title');
-                const productCategory = this.getAttribute('data-product-category');
-                const productLocation = this.getAttribute('data-product-location');
-                const productUnit = this.getAttribute('data-product-unit');
-                const productQuantity = this.getAttribute('data-product-quantity');
-                const productPrice = this.getAttribute('data-product-price');
-                const productDescription = this.getAttribute('data-product-description');
-                
-                // Set form action - Fix the route name from posts.index to posts
-                editProductForm.action = `{{ route('posts') }}/${productId}`;
-                
-                // Populate form fields
-                document.getElementById('edit-title').value = productTitle;
-                document.getElementById('edit-category').value = productCategory;
-                document.getElementById('edit-location').value = productLocation;
-                document.getElementById('edit-unit').value = productUnit;
-                document.getElementById('edit-quantity').value = productQuantity;
-                document.getElementById('edit-price').value = productPrice;
-                document.getElementById('edit-description').value = productDescription;
-                
-                // Show the modal
-                editModal.style.display = 'block';
-            });
-        });
-        
-        // Close edit modal when X is clicked
-        editCloseBtn.addEventListener('click', function() {
-            editModal.style.display = 'none';
-        });
-        
-        // Close edit modal when clicking outside
-        window.addEventListener('click', function(e) {
-            if (e.target === editModal) {
-                editModal.style.display = 'none';
-            }
-        });
-        
-        // Delete Product Button Click
-        document.querySelectorAll('.delete-product-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const productId = this.getAttribute('data-product-id');
-                const productTitle = this.getAttribute('data-product-title');
-                
-                Swal.fire({
-                    title: 'Are you sure?',
-                    text: `Do you really want to delete "${productTitle}"? This cannot be undone.`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#dc3545',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Yes, delete it!',
-                    cancelButtonText: 'No, keep it'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Create form and submit for DELETE request
-                        const form = document.createElement('form');
-                        form.method = 'POST';
-                        form.action = `{{ route('posts') }}/${productId}`; // Fix the route name
-                        form.style.display = 'none';
-                        
-                        const csrfToken = document.createElement('input');
-                        csrfToken.type = 'hidden';
-                        csrfToken.name = '_token';
-                        csrfToken.value = '{{ csrf_token() }}';
-                        
-                        const methodField = document.createElement('input');
-                        methodField.type = 'hidden';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</html></body>    </script>    });        });            });                });                    }                        form.submit();                                                document.body.appendChild(form);                        form.appendChild(methodField);                        form.appendChild(csrfToken);                                                methodField.value = 'DELETE';                        methodField.name = '_method';                        methodField.type = 'hidden';                        const methodField = document.createElement('input');                                                csrfToken.value = '{{ csrf_token() }}';                        csrfToken.name = '_token';                        csrfToken.type = 'hidden';                        const csrfToken = document.createElement('input');                                                form.style.display = 'none';                        form.action = `{{ route('posts') }}/${productId}`; // Fix the route name                        form.method = 'POST';                        const form = document.createElement('form');                        // Create form and submit for DELETE request                    if (result.isConfirmed) {                }).then((result) => {                    cancelButtonText: 'No, keep it'                    confirmButtonText: 'Yes, delete it!',                    cancelButtonColor: '#6c757d',                    confirmButtonColor: '#dc3545',                    showCancelButton: true,                    icon: 'warning',                    text: `Do you really want to delete "${productTitle}"? This cannot be undone.`,                    title: 'Are you sure?',                Swal.fire({                                const productTitle = this.getAttribute('data-product-title');                const productId = this.getAttribute('data-product-id');            button.addEventListener('click', function() {        document.querySelectorAll('.delete-product-btn').forEach(button => {        // Delete Product Button Click                });            }                editModal.style.display = 'none';            if (e.target === editModal) {        window.addEventListener('click', function(e) {        // Close edit modal when clicking outside                });            editModal.style.display = 'none';        editCloseBtn.addEventListener('click', function() {        // Close edit modal when X is clicked                });            });                editModal.style.display = 'block';                // Show the modal                                document.getElementById('edit-description').value = productDescription;                document.getElementById('edit-price').value = productPrice;                document.getElementById('edit-quantity').value = productQuantity;                document.getElementById('edit-unit').value = productUnit;                document.getElementById('edit-location').value = productLocation;                document.getElementById('edit-category').value = productCategory;                document.getElementById('edit-title').value = productTitle;                // Populate form fields                                editProductForm.action = `{{ route('posts') }}/${productId}`;                // Set form action - Fix the route name from posts.index to posts                                const productDescription = this.getAttribute('data-product-description');                const productPrice = this.getAttribute('data-product-price');                const productQuantity = this.getAttribute('data-product-quantity');                const productUnit = this.getAttribute('data-product-unit');                const productLocation = this.getAttribute('data-product-location');                const productCategory = this.getAttribute('data-product-category');                const productTitle = this.getAttribute('data-product-title');                const productId = this.getAttribute('data-product-id');            button.addEventListener('click', function() {        document.querySelectorAll('.edit-product-btn').forEach(button => {        // Edit Product Button Click                const editProductForm = document.getElementById('editProductForm');        const editCloseBtn = editModal.querySelector('.close');        const editModal = document.getElementById('editProductModal');        // Get modal elements for edit modal        });            }                modal.style.display = 'none';            if (e.target === modal) {        window.addEventListener('click', function(e) {        // Close modal when clicking outside the modal        });            modal.style.display = 'none';        closeBtn.addEventListener('click', function() {        // Close modal when X is clicked        });            modal.style.display = 'block';            e.preventDefault();        btn.addEventListener('click', function(e) {        // Open modal when Add Product button is clicked        }            });                }                    row.style.display = 'none';                } else {                    row.style.display = '';                if (statusMatch && searchMatch) {                                const searchMatch = rowText.includes(searchValue);                const statusMatch = statusValue === 'all' || statusText === statusValue;                                const rowText = row.textContent.toLowerCase();                const statusText = row.querySelector('.status-badge').textContent.toLowerCase();            orderRows.forEach(row => {            const searchValue = searchInput.value.toLowerCase();            const statusValue = statusFilter.value.toLowerCase();        function filterOrders() {        searchInput.addEventListener('input', filterOrders);        statusFilter.addEventListener('change', filterOrders);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</html></body>    </script>    });        });            });                });                    }                        form.submit();                                                document.body.appendChild(form);                        form.appendChild(methodField);                        form.appendChild(csrfToken);                                                methodField.value = 'DELETE';                        methodField.name = '_method';                        methodField.type = 'hidden';                        const methodField = document.createElement('input');                                                csrfToken.value = '{{ csrf_token() }}';                        csrfToken.name = '_token';                        csrfToken.type = 'hidden';                        const csrfToken = document.createElement('input');                                                form.style.display = 'none';                        form.action = `{{ route('posts') }}/${productId}`; // Fix the route name                        form.method = 'POST';                        const form = document.createElement('form');                        // Create form and submit for DELETE request                    if (result.isConfirmed) {                }).then((result) => {                    cancelButtonText: 'No, keep it'                    confirmButtonText: 'Yes, delete it!',                    cancelButtonColor: '#6c757d',                    confirmButtonColor: '#dc3545',                    showCancelButton: true,                    icon: 'warning',                    text: `Do you really want to delete "${productTitle}"? This cannot be undone.`,                    title: 'Are you sure?',                Swal.fire({                                const productTitle = this.getAttribute('data-product-title');                const productId = this.getAttribute('data-product-id');            button.addEventListener('click', function() {        document.querySelectorAll('.delete-product-btn').forEach(button => {        // Delete Product Button Click                });            }                editModal.style.display = 'none';            if (e.target === editModal) {        window.addEventListener('click', function(e) {        // Close edit modal when clicking outside                });            editModal.style.display = 'none';        editCloseBtn.addEventListener('click', function() {        // Close edit modal when X is clicked                });            });                editModal.style.display = 'block';                // Show the modal                                document.getElementById('edit-description').value = productDescription;                document.getElementById('edit-price').value = productPrice;                document.getElementById('edit-quantity').value = productQuantity;                document.getElementById('edit-unit').value = productUnit;                document.getElementById('edit-location').value = productLocation;                document.getElementById('edit-category').value = productCategory;                document.getElementById('edit-title').value = productTitle;                // Populate form fields                                editProductForm.action = `{{ route('posts') }}/${productId}`;                // Set form action - Fix the route name from posts.index to posts                                const productDescription = this.getAttribute('data-product-description');                const productPrice = this.getAttribute('data-product-price');                const productQuantity = this.getAttribute('data-product-quantity');                const productUnit = this.getAttribute('data-product-unit');                const productLocation = this.getAttribute('data-product-location');                const productCategory = this.getAttribute('data-product-category');                const productTitle = this.getAttribute('data-product-title');                const productId = this.getAttribute('data-product-id');            button.addEventListener('click', function() {        document.querySelectorAll('.edit-product-btn').forEach(button => {        // Edit Product Button Click                const editProductForm = document.getElementById('editProductForm');        const editCloseBtn = editModal.querySelector('.close');        const editModal = document.getElementById('editProductModal');        // Get modal elements for edit modal        });            }                modal.style.display = 'none';            if (e.target === modal) {        window.addEventListener('click', function(e) {        // Close modal when clicking outside the modal        });            modal.style.display = 'none';        closeBtn.addEventListener('click', function() {        // Close modal when X is clicked        });            modal.style.display = 'block';            e.preventDefault();        btn.addEventListener('click', function(e) {        // Open modal when Add Product button is clicked        const closeBtn = modal.querySelector('.close');        const btn = document.getElementById('addProductBtn');        const modal = document.getElementById('addProductModal');        // Get modal elements    document.addEventListener('DOMContentLoaded', function() {    // Product Modal Functionality    }        });            }                document.getElementById('logout-form').submit();            if (result.isConfirmed) {        }).then((result) => {                        methodField.type = 'hidden';
                         methodField.name = '_method';
                         methodField.value = 'DELETE';
                         
@@ -931,146 +1106,26 @@
             });
         });
 
-        // Orders Modal Functionality
-        const ordersModal = document.getElementById('ordersModal');
+        // Order Details Modal Functionality
         const ordersStatCard = document.getElementById('ordersStatCard');
-        const ordersCloseBtn = ordersModal.querySelector('.close');
+        const orderDetailsModal = document.getElementById('orderDetailsModal');
+        const orderDetailsCloseBtn = orderDetailsModal.querySelector('.close');
 
-        // Open orders modal when Orders stat card is clicked
+        // Open order details modal when Orders stat card is clicked
         ordersStatCard.addEventListener('click', function() {
-            ordersModal.style.display = 'block';
+            orderDetailsModal.style.display = 'block';
         });
 
-        // Close orders modal when X is clicked
-        ordersCloseBtn.addEventListener('click', function() {
-            ordersModal.style.display = 'none';
+        // Close order details modal when X is clicked
+        orderDetailsCloseBtn.addEventListener('click', function() {
+            orderDetailsModal.style.display = 'none';
         });
 
-        // Close orders modal when clicking outside
+        // Close order details modal when clicking outside the modal
         window.addEventListener('click', function(e) {
-            if (e.target === ordersModal) {
-                ordersModal.style.display = 'none';
+            if (e.target === orderDetailsModal) {
+                orderDetailsModal.style.display = 'none';
             }
-        });
-
-        // Filter functionality for orders
-        const statusFilter = document.getElementById('order-status-filter');
-        const searchInput = document.getElementById('order-search');
-        const orderRows = document.querySelectorAll('.orders-table tbody tr');
-
-        function filterOrders() {
-            const statusValue = statusFilter.value.toLowerCase();
-            const searchValue = searchInput.value.toLowerCase();
-            
-            orderRows.forEach(row => {
-                if (row.cells.length < 6) return; // Skip rows without enough cells (like "No orders found")
-                
-                const statusText = row.querySelector('.status-badge')?.textContent.toLowerCase() || '';
-                const rowText = row.textContent.toLowerCase();
-                
-                const statusMatch = statusValue === 'all' || statusText === statusValue;
-                const searchMatch = rowText.includes(searchValue);
-                
-                if (statusMatch && searchMatch) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        }
-
-        statusFilter.addEventListener('change', filterOrders);
-        searchInput.addEventListener('input', filterOrders);
-
-        // View order button handlers
-        document.querySelectorAll('.view-order-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const orderId = this.getAttribute('data-order-id');
-                const orderRow = this.closest('tr');
-                
-                // Get data from the row
-                const orderNumber = orderRow.cells[0].textContent;
-                const customer = orderRow.cells[1].textContent;
-                const date = orderRow.cells[2].textContent;
-                const items = orderRow.cells[3].textContent;
-                const total = orderRow.cells[4].textContent;
-                const status = orderRow.cells[5].textContent.trim();
-                
-                // Create order details HTML
-                const orderDetailsHTML = `
-                    <div style="text-align: left;">
-                        <p><strong>Order ID:</strong> ${orderNumber}</p>
-                        <p><strong>Customer:</strong> ${customer}</p>
-                        <p><strong>Date:</strong> ${date}</p>
-                        <p><strong>Items:</strong> ${items}</p>
-                        <p><strong>Total Amount:</strong> ${total}</p>
-                        <p><strong>Status:</strong> ${status}</p>
-                        <hr>
-                        <p><strong>Shipping Address:</strong> ${customer}'s Default Address</p>
-                        <p><strong>Contact Number:</strong> Not available</p>
-                        <p><strong>Payment Method:</strong> Cash on Delivery</p>
-                        
-                        <div style="margin-top: 20px;">
-                            <h4 style="font-weight: 600; margin-bottom: 10px;">Update Order Status</h4>
-                            <select id="update-status" class="form-control" style="width: 100%; padding: 8px; margin-bottom: 10px;">
-                                <option value="pending">Pending</option>
-                                <option value="processing">Processing</option>
-                                <option value="shipped">Shipped</option>
-                                <option value="delivered">Delivered</option>
-                                <option value="cancelled">Cancelled</option>
-                            </select>
-                            <button id="update-status-btn" class="submit-btn" style="width: 100%;">Update Status</button>
-                        </div>
-                    </div>
-                `;
-                
-                // Inject HTML into the modal
-                document.getElementById('orderDetailsContent').innerHTML = orderDetailsHTML;
-                
-                // Show the modal
-                document.getElementById('orderDetailsModal').style.display = 'block';
-                
-                // Close order details modal
-                const orderDetailsCloseBtn = document.getElementById('orderDetailsModal').querySelector('.close');
-                orderDetailsCloseBtn.addEventListener('click', function() {
-                    document.getElementById('orderDetailsModal').style.display = 'none';
-                });
-                
-                // Close order details modal when clicking outside
-                window.addEventListener('click', function(e) {
-                    if (e.target === document.getElementById('orderDetailsModal')) {
-                        document.getElementById('orderDetailsModal').style.display = 'none';
-                    }
-                });
-                
-                // Update Status button click
-                document.getElementById('update-status-btn').addEventListener('click', function() {
-                    const newStatus = document.getElementById('update-status').value;
-                    
-                    Swal.fire({
-                        title: 'Update Order Status',
-                        text: `Are you sure you want to change the status to ${newStatus}?`,
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonColor: '#517A5B',
-                        cancelButtonColor: '#6c757d',
-                        confirmButtonText: 'Yes, update it'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            // Here you would usually make an AJAX call to update the status
-                            // For now, just show a success message
-                            Swal.fire(
-                                'Updated!',
-                                'Order status has been updated.',
-                                'success'
-                            ).then(() => {
-                                // Close the modal after status update
-                                document.getElementById('orderDetailsModal').style.display = 'none';
-                            });
-                        }
-                    });
-                });
-            });
         });
     });
     </script>
