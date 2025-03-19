@@ -271,7 +271,7 @@
 
         .modal-title {
             color: var(--hoockers-green);
-            font-size: 24px;
+            font-size: 32px; /* Increased from 24px */
             font-weight: 600;
             margin: 0;
         }
@@ -279,7 +279,7 @@
         .close {
             color: #aaa;
             float: right;
-            font-size: 28px;
+            font-size: 36px; /* Increased from 28px */
             font-weight: bold;
             cursor: pointer;
         }
@@ -292,22 +292,23 @@
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 24px; /* Increased from 20px */
         }
 
         .form-label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px; /* Increased from 8px */
             font-weight: 600;
             color: #333;
+            font-size: 18px; /* Increased from ~16px */
         }
 
         .form-control {
             width: 100%;
-            padding: 10px;
+            padding: 12px; /* Increased from 10px */
             border: 1px solid #ddd;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 18px; /* Increased from 16px */
         }
 
         .form-control:focus {
@@ -317,7 +318,7 @@
 
         .error-message {
             color: #dc3545;
-            font-size: 14px;
+            font-size: 16px; /* Increased from 14px */
             margin-top: 5px;
         }
 
@@ -325,15 +326,31 @@
             background: var(--hoockers-green);
             color: white;
             border: none;
-            padding: 12px 25px;
+            padding: 16px 25px; /* Increased height */
             border-radius: 8px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 20px; /* Increased from 16px */
             width: 100%;
         }
 
         .submit-btn:hover {
             background: var(--hoockers-green_80);
+        }
+        
+        /* Modal body content text size */
+        .modal-body p {
+            font-size: 18px; /* Added larger text size for paragraphs */
+            line-height: 28px; /* Added for better readability */
+            margin-bottom: 10px;
+        }
+        
+        /* Modal dialog text */
+        #orderDetailsContent p {
+            font-size: 18px; /* Larger text for order details */
+        }
+        
+        #orderDetailsContent h4 {
+            font-size: 22px; /* Larger heading in order details */
         }
     </style>
 </head>
@@ -819,6 +836,28 @@
 
     // Product Modal Functionality
     document.addEventListener('DOMContentLoaded', function() {
+        // Check for success message in session and show popup
+        @if(session('success'))
+            Swal.fire({
+                title: 'Success!',
+                text: "{{ session('success') }}",
+                icon: 'success',
+                confirmButtonColor: '#517A5B',
+                confirmButtonText: 'OK'
+            });
+        @endif
+
+        // Check for delete message in session and show popup
+        @if(session('delete'))
+            Swal.fire({
+                title: 'Deleted!',
+                text: "{{ session('delete') }}",
+                icon: 'warning',
+                confirmButtonColor: '#517A5B',
+                confirmButtonText: 'OK'
+            });
+        @endif
+
         // Get modal elements
         const modal = document.getElementById('addProductModal');
         const btn = document.getElementById('addProductBtn');

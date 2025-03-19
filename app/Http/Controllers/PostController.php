@@ -131,8 +131,13 @@ class PostController extends Controller implements HasMiddleware
     public function edit(Post $post)
     {
         Gate::authorize('modify', $post);
-
-        return view('posts.edit', [ 'post' => $post ]);
+        
+        // Explicitly prevent redirection to email verification
+        if (Auth::check()) {
+            return view('posts.edit', [ 'post' => $post ]);
+        }
+        
+        return redirect()->route('login');
     }
 
     /**
@@ -140,7 +145,7 @@ class PostController extends Controller implements HasMiddleware
      */
     public function update(Request $request, Post $post)
     {
-        // Aurhorizing the action
+        // Authorizing the action
         Gate::authorize('modify', $post);
 
         // Validate
@@ -173,7 +178,15 @@ class PostController extends Controller implements HasMiddleware
             'quantity' => $request->quantity,
         ]);
 
-        // Redirect to dashboard
+        // Check referrer and redirect accordingly
+        $referer = $request->headers->get('referer');
+        
+        if (strpos($referer, 'shop/dashboard') !== false) {
+            // If editing from shop dashboard, redirect back there
+            return redirect()->route('shop.dashboard')->with('success', 'Your product was updated!');
+        }
+        
+        // Default redirect to dashboard
         return redirect()->route('dashboard')->with('success', 'Your post was updated!');
     }
 

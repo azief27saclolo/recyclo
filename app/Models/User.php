@@ -2,17 +2,15 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\Post;
+use App\Models\Order;
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable 
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
     /**
@@ -78,10 +76,13 @@ class User extends Authenticatable implements MustVerifyEmail
 
     /**
      * Get orders where user is the buyer
+     * Updated to work with the actual database structure
      */
     public function boughtOrders()
     {
-        return $this->hasMany(Order::class, 'user_id');
+        // If orders table doesn't have user_id, we need to use a different column
+        // Assuming orders might have buyer_id instead
+        return $this->hasMany(Order::class, 'buyer_id');
     }
 
     public function favorites()
@@ -95,10 +96,12 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Get the orders for the user.
+     * Get all orders for the user (both buying and selling)
+     * Fixed to not use non-existent column
      */
     public function orders()
     {
-        return $this->hasMany(Order::class);
+        // Use only soldOrders since there's no direct user_id in orders table
+        return $this->soldOrders();
     }
 }

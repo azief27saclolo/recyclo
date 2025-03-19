@@ -20,8 +20,17 @@ use App\Http\Middleware\AdminMiddleware;
 // Landing page route
 Route::redirect('/', 'landingpage');
 
+// Define post edit routes with only plain auth middleware
+Route::get('/posts/{post}/edit', [PostController::class, 'edit'])
+    ->middleware('auth')
+    ->name('posts.edit');
+
+Route::put('/posts/{post}', [PostController::class, 'update'])
+    ->middleware('auth')
+    ->name('posts.update');
+
 // Posts route
-Route::resource('posts', PostController::class);
+Route::resource('posts', PostController::class)->except(['edit', 'update']);
 
 // Landing page route
 Route::view('/landingpage', 'landingpage.landingpage')->name('landingpage');
@@ -64,7 +73,8 @@ Route::get('/products', [App\Http\Controllers\PostController::class, 'index'])->
 
 // Routes for authenticated users
 Route::middleware('auth')->group(function() {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('verified')->name('dashboard');
+    // Remove the 'verified' middleware from the dashboard route
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
     // Update logout route to accept both GET and POST methods
     Route::match(['get', 'post'], '/logout', [AuthController::class, 'logout'])->name('logout');

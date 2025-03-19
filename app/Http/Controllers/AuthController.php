@@ -42,10 +42,11 @@ class AuthController extends Controller
         return redirect('/posts')->with('message', 'Account created successfully! Welcome to Recyclo.');
     }
 
-    // Verify Email Notice Handler - kept for future use if needed
+    // Verify Email Notice Handler - Modified to redirect to dashboard
     public function verifyEmailNotice()
     {
-        return view('auth.verify-email');
+        // Bypass verification by redirecting to dashboard
+        return redirect('/dashboard');
     }
 
     // Email Verification Handler - kept for future use if needed
