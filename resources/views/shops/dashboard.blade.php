@@ -403,8 +403,8 @@
                         @if(count($recentProducts) > 0)
                             @foreach($recentProducts as $product)
                                 <div class="product-card">
-                                    @if($product->image_path)
-                                        <img src="{{ asset('storage/' . $product->image_path) }}" alt="{{ $product->title }}">
+                                    @if($product->image)
+                                        <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->title }}">
                                     @else
                                         <img src="{{ asset('images/placeholder.png') }}" alt="No image">
                                     @endif
