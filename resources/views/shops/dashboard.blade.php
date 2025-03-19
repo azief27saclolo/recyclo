@@ -44,10 +44,9 @@
         .stat-card {
             background-color: #517A5B !important; /* Explicit color instead of variable */
             color: white !important;
-            padding: 20px;
             border-radius: 10px;
             text-align: center;
-            min-height: 120px; /* Ensure minimum height */
+            height: 100px; /* Ensure minimum height */
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -56,7 +55,7 @@
         .stat-number {
             font-size: 2rem;
             font-weight: bold;
-            margin: 10px 0;
+            margin: -5px 0;
             min-height: 2.5rem; /* Ensure height even when empty */
             color: white !important; /* Ensure number is visible */
         }
