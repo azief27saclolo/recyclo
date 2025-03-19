@@ -42,17 +42,23 @@
         }
 
         .stat-card {
-            background: var(--hoockers-green);
-            color: white;
+            background-color: #517A5B !important; /* Explicit color instead of variable */
+            color: white !important;
             padding: 20px;
             border-radius: 10px;
             text-align: center;
+            min-height: 120px; /* Ensure minimum height */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .stat-number {
             font-size: 2rem;
             font-weight: bold;
             margin: 10px 0;
+            min-height: 2.5rem; /* Ensure height even when empty */
+            color: white !important; /* Ensure number is visible */
         }
 
         .quick-actions {
@@ -175,60 +181,11 @@
             }
         }
 
-        /* Sidebar styles from profile page */
+        /* Profile container and main content styles */
         .profile-container {
             display: flex;
             min-height: 100vh;
             background-color: #f5f5f5;
-        }
-
-        .sidebar {
-            width: 250px;
-            background: var(--hoockers-green);
-            padding: 20px;
-            color: white;
-            position: fixed;
-            height: 100vh;
-        }
-
-        .sidebar-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .sidebar-header img {
-            width: 40px;
-            height: 40px;
-            margin-right: 10px;
-        }
-
-        .sidebar-header h2 {
-            margin: 0;
-            font-size: 22px;
-        }
-
-        .menu-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 15px;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            margin-bottom: 5px;
-            transition: all 0.3s ease;
-        }
-
-        .menu-item:hover, .menu-item.active {
-            background: rgba(255,255,255,0.1);
-            transform: translateX(5px);
-        }
-
-        .menu-item i {
-            margin-right: 10px;
-            font-size: 18px;
         }
 
         .main-content {
@@ -356,42 +313,8 @@
 </head>
 <body>
     <div class="profile-container">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <img src="{{ asset('images/mainlogo.png') }}" alt="Recyclo Logo">
-                <h2>Recyclo</h2>
-            </div>
-            <nav>
-                <a href="{{ url('/') }}" class="menu-item">
-                    <i class="bi bi-house-door"></i>
-                    <span>Home</span>
-                </a>
-                <a href="{{ route('profile') }}" class="menu-item">
-                    <i class="bi bi-person"></i>
-                    <span>Profile</span>
-                </a>
-                <a href="{{ route('shop.dashboard') }}" class="menu-item active">
-                    <i class="bi bi-shop"></i>
-                    <span>My Shop</span>
-                </a>
-                <a href="{{ route('buy.index') }}" class="menu-item">
-                    <i class="bi bi-bag"></i>
-                    <span>Buy Requests</span>
-                </a>
-                <a href="#" class="menu-item">
-                    <i class="bi bi-shield-lock"></i>
-                    <span>Privacy Settings</span>
-                </a>
-                <form action="{{ route('logout') }}" method="GET" id="logout-form" style="display: none;">
-                    <!-- Remove @csrf token since it's not needed for GET requests -->
-                </form>
-                <a href="#" class="menu-item" style="color: #dc3545;" onclick="confirmLogout(event)">
-                    <i class="bi bi-box-arrow-right"></i>
-                    <span>Logout</span>
-                </a>
-            </nav>
-        </div>
+        <!-- Use the sidebar component instead of hardcoded sidebar -->
+        <x-sidebar activePage="shop" />
 
         <!-- Main Content -->
         <div class="main-content">
@@ -401,29 +324,50 @@
                     <p>{{ $shop->shop_address }}</p>
                     
                     <div class="shop-stats">
-                        <div class="stat-card">
+                        <div class="stat-card" style="background-color: #517A5B; color: white;">
                             <i class="bi bi-box-seam"></i>
-                            <div class="stat-number">{{ Auth::user()->posts()->count() ?? 0 }}</div>
-                            <div>Products</div>
-                        </div>
-                        <div class="stat-card" id="ordersStatCard" style="cursor: pointer;">
-                            <i class="bi bi-cart-check"></i>
-                            <div class="stat-number">{{ Auth::user()->soldOrders()->count() ?? 0 }}</div>
-                            <div>Orders</div>
-                        </div>
-                        <div class="stat-card">
-                            <i class="bi bi-currency-dollar"></i>
-                            <div class="stat-number">
+                            <div class="stat-number" style="color: white;">
                                 @php
                                     try {
-                                        $earnings = Auth::user()->soldOrders()->sum('total_amount') ?? 0;
-                                        echo '₱' . number_format($earnings, 2);
+                                        // Use direct DB query for reliable count
+                                        $productsCount = \App\Models\Post::where('user_id', Auth::id())->count();
+                                        echo $productsCount;
+                                    } catch (\Exception $e) {
+                                        echo '0';
+                                    }
+                                @endphp
+                            </div>
+                            <div style="color: white;">Products</div>
+                        </div>
+                        <div class="stat-card" id="ordersStatCard" style="background-color: #517A5B; color: white; cursor: pointer;">
+                            <i class="bi bi-cart-check"></i>
+                            <div class="stat-number" style="color: white;">
+                                @php
+                                    try {
+                                        // Use direct DB query for reliable count
+                                        $ordersCount = \App\Models\Order::where('seller_id', Auth::id())->count();
+                                        echo $ordersCount;
+                                    } catch (\Exception $e) {
+                                        echo '0';
+                                    }
+                                @endphp
+                            </div>
+                            <div style="color: white;">Orders</div>
+                        </div>
+                        <div class="stat-card" style="background-color: #517A5B; color: white;">
+                            <i class="bi bi-currency-dollar"></i>
+                            <div class="stat-number" style="color: white;">
+                                @php
+                                    try {
+                                        // Use direct DB query for reliable sum
+                                        $earnings = \App\Models\Order::where('seller_id', Auth::id())->sum('total_amount');
+                                        echo '₱' . number_format($earnings ?? 0, 2);
                                     } catch (\Exception $e) {
                                         echo '₱0.00';
                                     }
                                 @endphp
                             </div>
-                            <div>Earnings</div>
+                            <div style="color: white;">Earnings</div>
                         </div>
                     </div>
                 </div>
@@ -447,7 +391,14 @@
                     <h2>Recent Products</h2>
                     <div class="product-grid">
                         @php
-                            $recentProducts = Auth::user()->posts()->latest()->take(5)->get();
+                            try {
+                                $recentProducts = \App\Models\Post::where('user_id', Auth::id())
+                                    ->latest()
+                                    ->take(5)
+                                    ->get();
+                            } catch (\Exception $e) {
+                                $recentProducts = collect([]);
+                            }
                         @endphp
                         
                         @if(count($recentProducts) > 0)
