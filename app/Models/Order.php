@@ -9,45 +9,31 @@ class Order extends Model
 {
     use HasFactory;
 
-    // Remove custom primary key - use Laravel's default 'id'
-    // protected $primaryKey = 'order_id';
-
     protected $fillable = [
-        'user_id',
+        'post_id',
+        'buyer_id',  // This should be a foreign key to users.id
+        'seller_id', // This should be a foreign key to users.id
+        'quantity',
         'total_amount',
         'status',
-        'seller_id',
-        'buyer_id',
-        'post_id',
-        'quantity',
     ];
 
+    // Relationship with the buyer (User who placed the order)
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'buyer_id');
+    }
+
+    // Relationship with the seller (User who owns the post)
     public function seller()
     {
         return $this->belongsTo(User::class, 'seller_id');
     }
 
-    public function buyer()
-    {
-        return $this->belongsTo(User::class, 'buyer_id');
-    }
-
+    // Relationship with the post being ordered
     public function post()
     {
-        return $this->belongsTo(Post::class, 'post_id');
-    }
-
-    public function buyerOrders()
-    {
-        return $this->hasMany(Order::class, 'buyer_id');
-    }
-
-    /**
-     * Get the user that owns the order.
-     */
-    public function user()
-    {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Post::class);
     }
 
     /**

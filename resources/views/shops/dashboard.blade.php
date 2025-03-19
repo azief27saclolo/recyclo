@@ -726,14 +726,25 @@
                         </thead>
                         <tbody>
                             @php
-                                $soldOrders = Auth::user()->soldOrders()->latest()->take(20)->get();
+                                // Use direct query to fetch orders with eager loading of relationships
+                                $soldOrders = \App\Models\Order::where('seller_id', Auth::id())
+                                                ->with(['user', 'post'])
+                                                ->latest()
+                                                ->take(20)
+                                                ->get();
                             @endphp
                             
                             @if(count($soldOrders) > 0)
                                 @foreach($soldOrders as $order)
                                     <tr style="border-bottom: 1px solid #eee;">
                                         <td style="padding: 12px;">#ORD-{{ $order->id }}</td>
-                                        <td style="padding: 12px;">{{ $order->user->username ?? 'Customer' }}</td>
+                                        <td style="padding: 12px;">
+                                            @if($order->user)
+                                                {{ $order->user->username ?: ($order->user->firstname . ' ' . $order->user->lastname) }}
+                                            @else
+                                                Customer
+                                            @endif
+                                        </td>
                                         <td style="padding: 12px;">{{ $order->created_at->format('M d, Y') }}</td>
                                         <td style="padding: 12px;">{{ $order->post->title ?? 'Product' }} ({{ $order->quantity }} {{ $order->post->unit ?? 'units' }})</td>
                                         <td style="padding: 12px; text-align: right;">₱{{ number_format($order->total_amount ?? ($order->quantity * $order->post->price), 2) }}</td>
@@ -754,7 +765,11 @@
                                             </span>
                                         </td>
                                         <td style="padding: 12px; text-align: center;">
-                                            <button class="view-order-btn" style="background-color: var(--hoockers-green); color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer;" data-order-id="{{ $order->id }}">View</button>
+                                            <button class="view-order-btn" style="background-color: var(--hoockers-green); color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer;" 
+                                                data-order-id="{{ $order->id }}"
+                                                data-customer-name="{{ $order->user ? ($order->user->username ?: ($order->user->firstname . ' ' . $order->user->lastname)) : 'Customer' }}">
+                                                View
+                                            </button>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -998,11 +1013,11 @@
         document.querySelectorAll('.view-order-btn').forEach(button => {
             button.addEventListener('click', function() {
                 const orderId = this.getAttribute('data-order-id');
+                const customerName = this.getAttribute('data-customer-name');
                 const orderRow = this.closest('tr');
                 
                 // Get data from the row
                 const orderNumber = orderRow.cells[0].textContent;
-                const customer = orderRow.cells[1].textContent;
                 const date = orderRow.cells[2].textContent;
                 const items = orderRow.cells[3].textContent;
                 const total = orderRow.cells[4].textContent;
@@ -1012,13 +1027,13 @@
                 const orderDetailsHTML = `
                     <div style="text-align: left;">
                         <p><strong>Order ID:</strong> ${orderNumber}</p>
-                        <p><strong>Customer:</strong> ${customer}</p>
+                        <p><strong>Customer:</strong> ${customerName}</p>
                         <p><strong>Date:</strong> ${date}</p>
                         <p><strong>Items:</strong> ${items}</p>
                         <p><strong>Total Amount:</strong> ${total}</p>
                         <p><strong>Status:</strong> ${status}</p>
                         <hr>
-                        <p><strong>Shipping Address:</strong> ${customer}'s Default Address</p>
+                        <p><strong>Shipping Address:</strong> ${customerName}'s Default Address</p>
                         <p><strong>Contact Number:</strong> Not available</p>
                         <p><strong>Payment Method:</strong> Cash on Delivery</p>
                         
