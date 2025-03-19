@@ -462,10 +462,10 @@
                                     <p>₱{{ number_format($product->price, 2) }}</p>
                                     <p>Stock: {{ $product->quantity ?? 'N/A' }}</p>
                                     
-                                    <!-- Add action buttons -->
-                                    <div class="product-actions" style="margin-top: 10px; display: flex; justify-content: space-between;">
+                                    <!-- Updated action buttons with larger size -->
+                                    <div class="product-actions" style="margin-top: 15px; display: flex; justify-content: space-between;">
                                         <button class="action-btn edit-product-btn" 
-                                                style="flex: 1; margin-right: 5px; font-size: 0.85rem; padding: 8px 5px;"
+                                                style="flex: 1; margin-right: 5px; font-size: 16px; padding: 12px 10px; height: 48px;"
                                                 data-product-id="{{ $product->id }}"
                                                 data-product-title="{{ $product->title }}"
                                                 data-product-category="{{ $product->category }}"
@@ -474,13 +474,13 @@
                                                 data-product-quantity="{{ $product->quantity }}"
                                                 data-product-price="{{ $product->price }}"
                                                 data-product-description="{{ $product->description }}">
-                                            <i class="bi bi-pencil"></i> Edit
+                                            <i class="bi bi-pencil" style="font-size: 18px;"></i> Edit
                                         </button>
                                         <button class="action-btn delete-product-btn" 
-                                                style="flex: 1; margin-left: 5px; font-size: 0.85rem; padding: 8px 5px; background-color: #dc3545;"
+                                                style="flex: 1; margin-left: 5px; font-size: 16px; padding: 12px 10px; height: 48px; background-color: #dc3545;"
                                                 data-product-id="{{ $product->id }}"
                                                 data-product-title="{{ $product->title }}">
-                                            <i class="bi bi-trash"></i> Delete
+                                            <i class="bi bi-trash" style="font-size: 18px;"></i> Delete
                                         </button>
                                     </div>
                                 </div>
