@@ -27,10 +27,16 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
-        .profile-container {
+        body {
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            font-family: 'Urbanist', sans-serif;
+        }
+        
+        .page-container {
             display: flex;
             min-height: 100vh;
-            background-color: #f5f5f5;
         }
 
         .main-content {
@@ -249,8 +255,8 @@
     </style>
 </head>
 <body>
-    <div class="profile-container">
-        <!-- Using the sidebar component instead of hardcoded sidebar -->
+    <div class="page-container">
+        <!-- Sidebar component - properly positioned -->
         <x-sidebar activePage="profile" />
 
         <!-- Main Content -->
