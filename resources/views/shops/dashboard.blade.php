@@ -209,9 +209,9 @@
         .modal-content {
             background-color: white;
             margin: 50px auto;
-            padding: 30px;
-            width: 80%;
-            max-width: 800px;
+            padding: 20px; /* Reduced padding */
+            width: 90%; /* Increased width from 80% */
+            max-width: 900px; /* Increased from 800px */
             border-radius: 15px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
@@ -223,6 +223,8 @@
             margin-bottom: 20px;
             border-bottom: 1px solid #eee;
             padding-bottom: 15px;
+            padding-left: 5px; /* Added smaller padding */
+            padding-right: 5px; /* Added smaller padding */
         }
 
         .modal-title {
@@ -249,6 +251,9 @@
 
         .form-group {
             margin-bottom: 24px; /* Increased from 20px */
+            padding: 0 5px; /* Reduced horizontal padding */
+            width: 100%; /* Ensure full width */
+            box-sizing: border-box; /* Include padding in width calculation */
         }
 
         .form-label {
@@ -260,11 +265,12 @@
         }
 
         .form-control {
-            width: 100%;
+            width: 100%; /* Full width */
             padding: 12px; /* Increased from 10px */
             border: 1px solid #ddd;
             border-radius: 8px;
             font-size: 18px; /* Increased from 16px */
+            box-sizing: border-box; /* Include padding in width calculation */
         }
 
         .form-control:focus {
@@ -286,7 +292,9 @@
             border-radius: 8px;
             cursor: pointer;
             font-size: 20px; /* Increased from 16px */
-            width: 100%;
+            width: calc(100% - 10px); /* Adjusted width with padding consideration */
+            margin: 0 5px; /* Centered with small margin */
+            box-sizing: border-box; /* Include padding in width calculation */
         }
 
         .submit-btn:hover {
@@ -307,6 +315,21 @@
         
         #orderDetailsContent h4 {
             font-size: 22px; /* Larger heading in order details */
+        }
+
+        /* Specific styles for add/edit product forms */
+        #addProductModal form, #editProductModal form {
+            width: 100%;
+        }
+
+        #addProductModal .form-group, #editProductModal .form-group {
+            width: 100%;
+        }
+
+        /* Ensure textareas expand fully */
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
         }
     </style>
 </head>
