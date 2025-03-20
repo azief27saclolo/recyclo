@@ -619,6 +619,56 @@
                 });
             });
         }
+        
+        // Edit form submission handler
+        const editRequestForm = document.getElementById('editRequestForm');
+        if (editRequestForm) {
+            editRequestForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Close the modal
+                        document.getElementById('editRequestModal').style.display = 'none';
+                        document.body.style.overflow = 'auto';
+                        
+                        // Show success message
+                        Swal.fire({
+                            title: 'Success!',
+                            text: 'Buy request updated successfully!',
+                            icon: 'success',
+                            confirmButtonColor: '#517A5B'
+                        });
+                        
+                        // Reload the page after a short delay to show updated data
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        throw new Error('Failed to update buy request');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Something went wrong. Please try again.',
+                        icon: 'error',
+                        confirmButtonColor: '#517A5B'
+                    });
+                });
+            });
+        }
     });
     
     // Function to open add request modal
