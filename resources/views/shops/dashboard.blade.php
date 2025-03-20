@@ -373,7 +373,7 @@
                     <p>{{ $shop->shop_address }}</p>
                     
                     <div class="shop-stats">
-                        <div class="stat-card" style="background-color: #517A5B; color: white;">
+                        <div class="stat-card" id="productsStatCard" style="background-color: #517A5B; color: white; cursor: pointer;">
                             <i class="bi bi-box-seam"></i>
                             <div class="stat-number" style="color: white;">
                                 @php
@@ -1271,9 +1271,16 @@
         const allProductsModal = document.getElementById('allProductsModal');
         const allProductsBtn = document.getElementById('allProductsBtn');
         const allProductsCloseBtn = allProductsModal.querySelector('.close');
+        const productsStatCard = document.getElementById('productsStatCard');
         
         // Open all products modal when All Products button is clicked
         allProductsBtn.addEventListener('click', function() {
+            allProductsModal.style.display = 'block';
+            loadAllProducts();
+        });
+        
+        // Open all products modal when Products stat card is clicked
+        productsStatCard.addEventListener('click', function() {
             allProductsModal.style.display = 'block';
             loadAllProducts();
         });
