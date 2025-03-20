@@ -231,4 +231,31 @@ class PostController extends Controller implements HasMiddleware
             'query' => $query
         ]);
     }
+
+    /**
+     * Get all products for the authenticated user
+     */
+    public function getUserProducts()
+    {
+        try {
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json(['error' => 'Unauthorized'], 401);
+            }
+            
+            $products = $user->posts()->latest()->get();
+            
+            return response()->json([
+                'success' => true,
+                'products' => $products
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching user products: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => 'Server error occurred',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

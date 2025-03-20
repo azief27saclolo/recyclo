@@ -115,6 +115,12 @@ Route::middleware('auth')->group(function() {
 
     // Add new route for updating order status
     Route::post('/orders/{order}/update-status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
+    
+    // Route for getting all user products
+    Route::get('/posts/get-user-products', [PostController::class, 'getUserProducts']);
+    
+    // Route for getting all user products - use specific naming to avoid conflicts
+    Route::get('/user-products', [PostController::class, 'getUserProducts'])->name('user.products');
 });
 
 // Routes for guests users

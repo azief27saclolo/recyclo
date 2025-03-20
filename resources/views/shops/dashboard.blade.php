@@ -331,6 +331,33 @@
             resize: vertical;
             min-height: 100px;
         }
+
+        /* Loading spinner animation */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .pagination-btn {
+            background-color: var(--hoockers-green);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 15px;
+            cursor: pointer;
+        }
+        
+        .pagination-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -408,9 +435,9 @@
                     <a href="{{ route('profile') }}" class="action-btn">
                         <i class="bi bi-gear"></i> Shop Settings
                     </a>
-                    <a href="{{ route('posts') }}" class="action-btn">
+                    <button id="allProductsBtn" class="action-btn" style="border: none; display: block; width: 100%; text-align: center; cursor: pointer;">
                         <i class="bi bi-grid"></i> All Products
-                    </a>
+                    </button>
                 </div>
 
                 <div class="recent-products">
@@ -420,7 +447,7 @@
                             try {
                                 $recentProducts = \App\Models\Post::where('user_id', Auth::id())
                                     ->latest()
-                                    ->take(5)
+                                    ->take(4) // Changed from 5 to 4
                                     ->get();
                             } catch (\Exception $e) {
                                 $recentProducts = collect([]);
@@ -807,6 +834,32 @@
         </div>
     </div>
 
+    <!-- All Products Modal -->
+    <div id="allProductsModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h2 class="modal-title">All Products</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom: 15px; display: flex; align-items: center;">
+                    <div class="search-box" style="margin-left: auto;">
+                        <input type="text" id="product-search" class="form-control" placeholder="Search products..." style="padding: 8px;">
+                    </div>
+                </div>
+                
+                <div id="all-products-container" style="max-height: 500px; overflow-y: auto;">
+                    <div class="product-grid" id="allProductsGrid">
+                        <div class="loading-spinner" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                            <i class="bi bi-arrow-repeat" style="font-size: 48px; animation: spin 1s linear infinite;"></i>
+                            <p>Loading products...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
     function confirmLogout(event) {
         event.preventDefault();
@@ -1153,6 +1206,230 @@
                 });
             });
         });
+
+        // All Products Modal Functionality
+        const allProductsModal = document.getElementById('allProductsModal');
+        const allProductsBtn = document.getElementById('allProductsBtn');
+        const allProductsCloseBtn = allProductsModal.querySelector('.close');
+        
+        // Open all products modal when All Products button is clicked
+        allProductsBtn.addEventListener('click', function() {
+            allProductsModal.style.display = 'block';
+            loadAllProducts();
+        });
+        
+        // Close all products modal when X is clicked
+        allProductsCloseBtn.addEventListener('click', function() {
+            allProductsModal.style.display = 'none';
+        });
+        
+        // Close all products modal when clicking outside
+        window.addEventListener('click', function(e) {
+            if (e.target === allProductsModal) {
+                allProductsModal.style.display = 'none';
+            }
+        });
+        
+        // Load all products
+        function loadAllProducts() {
+            const productsContainer = document.getElementById('allProductsGrid');
+            
+            // Show loading spinner
+            productsContainer.innerHTML = `
+                <div class="loading-spinner" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                    <i class="bi bi-arrow-repeat" style="font-size: 48px; animation: spin 1s linear infinite;"></i>
+                    <p>Loading products...</p>
+                </div>
+            `;
+            
+            // Fix: Use the correct route URL with error handling
+            fetch('{{ route("user.products") }}', {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Network response was not ok (Status: ${response.status})`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Clear loading spinner
+                productsContainer.innerHTML = '';
+                
+                if (data.products.length === 0) {
+                    productsContainer.innerHTML = `
+                        <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                            <i class="bi bi-box"></i>
+                            <h3>No products yet</h3>
+                            <p>Start selling by adding your first product</p>
+                            <button id="emptyStateAddBtn" class="action-btn" style="display: inline-block; margin-top: 15px;">
+                                <i class="bi bi-plus-circle"></i> Add Product
+                            </button>
+                        </div>
+                    `;
+                    
+                    document.getElementById('emptyStateAddBtn').addEventListener('click', function() {
+                        allProductsModal.style.display = 'none';
+                        document.getElementById('addProductBtn').click();
+                    });
+                    
+                    return;
+                }
+                
+                // Create product cards
+                data.products.forEach(product => {
+                    const productCard = document.createElement('div');
+                    productCard.className = 'product-card';
+                    
+                    const imagePath = product.image ? "{{ asset('storage') }}/" + product.image : "{{ asset('images/placeholder.png') }}";
+                    
+                    productCard.innerHTML = `
+                        <img src="${imagePath}" alt="${product.title}">
+                        <h3>${product.title}</h3>
+                        <p>₱${parseFloat(product.price).toFixed(2)}</p>
+                        <p>Stock: ${product.quantity ?? 'N/A'}</p>
+                        
+                        <div class="product-actions" style="margin-top: 15px; display: flex; justify-content: space-between;">
+                            <button class="action-btn edit-product-btn" 
+                                    style="flex: 1; margin-right: 5px; font-size: 16px; padding: 12px 10px; height: 48px;"
+                                    data-product-id="${product.id}"
+                                    data-product-title="${product.title}"
+                                    data-product-category="${product.category}"
+                                    data-product-location="${product.location}"
+                                    data-product-unit="${product.unit}"
+                                    data-product-quantity="${product.quantity}"
+                                    data-product-price="${product.price}"
+                                    data-product-description="${product.description || ''}">
+                                <i class="bi bi-pencil" style="font-size: 18px;"></i> Edit
+                            </button>
+                            <button class="action-btn delete-product-btn" 
+                                    style="flex: 1; margin-left: 5px; font-size: 16px; padding: 12px 10px; height: 48px; background-color: #dc3545;"
+                                    data-product-id="${product.id}"
+                                    data-product-title="${product.title}">
+                                <i class="bi bi-trash" style="font-size: 18px;"></i> Delete
+                            </button>
+                        </div>
+                    `;
+                    
+                    productsContainer.appendChild(productCard);
+                });
+                
+                // Add event listeners to the new buttons
+                addButtonEventListeners();
+            })
+            .catch(error => {
+                console.error('Error loading products:', error);
+                productsContainer.innerHTML = `
+                    <div class="error-state" style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #dc3545;">
+                        <i class="bi bi-exclamation-triangle" style="font-size: 48px;"></i>
+                        <h3>Error loading products</h3>
+                        <p>Something went wrong. Please try again later.</p>
+                        <p>Details: ${error.message}</p>
+                    </div>
+                `;
+            });
+        }
+        
+        // Add event listeners to edit and delete buttons
+        function addButtonEventListeners() {
+            // Add event listeners to edit buttons
+            document.querySelectorAll('#allProductsGrid .edit-product-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const productId = this.getAttribute('data-product-id');
+                    const productTitle = this.getAttribute('data-product-title');
+                    const productCategory = this.getAttribute('data-product-category');
+                    const productLocation = this.getAttribute('data-product-location');
+                    const productUnit = this.getAttribute('data-product-unit');
+                    const productQuantity = this.getAttribute('data-product-quantity');
+                    const productPrice = this.getAttribute('data-product-price');
+                    const productDescription = this.getAttribute('data-product-description');
+                    
+                    // Close all products modal
+                    allProductsModal.style.display = 'none';
+                    
+                    // Set form action
+                    editProductForm.action = `{{ route('posts') }}/${productId}`;
+                    
+                    // Populate form fields
+                    document.getElementById('edit-title').value = productTitle;
+                    document.getElementById('edit-category').value = productCategory;
+                    document.getElementById('edit-location').value = productLocation;
+                    document.getElementById('edit-unit').value = productUnit;
+                    document.getElementById('edit-quantity').value = productQuantity;
+                    document.getElementById('edit-price').value = productPrice;
+                    document.getElementById('edit-description').value = productDescription;
+                    
+                    // Show the edit modal
+                    document.getElementById('editProductModal').style.display = 'block';
+                });
+            });
+            
+            // Add event listeners to delete buttons
+            document.querySelectorAll('#allProductsGrid .delete-product-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const productId = this.getAttribute('data-product-id');
+                    const productTitle = this.getAttribute('data-product-title');
+                    
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: `Do you really want to delete "${productTitle}"? This cannot be undone.`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, delete it!',
+                        cancelButtonText: 'No, keep it'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Create form and submit for DELETE request
+                            const form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = `{{ route('posts') }}/${productId}`;
+                            form.style.display = 'none';
+                            
+                            const csrfToken = document.createElement('input');
+                            csrfToken.type = 'hidden';
+                            csrfToken.name = '_token';
+                            csrfToken.value = '{{ csrf_token() }}';
+                            
+                            const methodField = document.createElement('input');
+                            methodField.type = 'hidden';
+                            methodField.name = '_method';
+                            methodField.value = 'DELETE';
+                            
+                            form.appendChild(csrfToken);
+                            form.appendChild(methodField);
+                            document.body.appendChild(form);
+                            
+                            form.submit();
+                        }
+                    });
+                });
+            });
+        }
+        
+        // Filter products with search input
+        const productSearchInput = document.getElementById('product-search');
+        productSearchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const productCards = document.querySelectorAll('#allProductsGrid .product-card');
+            
+            productCards.forEach(card => {
+                const productTitle = card.querySelector('h3').textContent.toLowerCase();
+                if (productTitle.includes(searchTerm)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+        
+        // ...existing code...
     });
     </script>
 </body>
