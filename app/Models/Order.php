@@ -18,6 +18,34 @@ class Order extends Model
         'status',
     ];
 
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'status' => 'string',
+    ];
+
+    /**
+     * Get the standardized status value.
+     *
+     * @param  string  $value
+     * @return string
+     */
+    public function getStatusAttribute($value)
+    {
+        // Standardize status to one of our defined values - remove pending from this list
+        $validStatuses = ['processing', 'shipped', 'delivered', 'cancelled'];
+        
+        // If status is pending or not valid, return processing as default (after admin approval)
+        if ($value === 'pending' || !in_array($value, $validStatuses)) {
+            return 'processing';
+        }
+        
+        return $value;
+    }
+
     // Relationship with the buyer (User who placed the order)
     public function user()
     {

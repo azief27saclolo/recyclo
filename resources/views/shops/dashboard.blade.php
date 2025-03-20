@@ -699,7 +699,6 @@
                     <label for="order-status-filter" style="margin-right: 3px; font-weight: 600;">Filter by Status:</label>
                     <select id="order-status-filter" class="form-control" style="display: inline-block; width: auto; padding: 8px;">
                         <option value="all">All Orders</option>
-                        <option value="pending">Pending</option>
                         <option value="processing">Processing</option>
                         <option value="shipped">Shipped</option>
                         <option value="delivered">Delivered</option>
@@ -726,8 +725,9 @@
                         </thead>
                         <tbody>
                             @php
-                                // Use direct query to fetch orders with eager loading of relationships
+                                // Use direct query to fetch APPROVED orders only with eager loading of relationships
                                 $soldOrders = \App\Models\Order::where('seller_id', Auth::id())
+                                                ->where('status', '!=', 'pending') // Exclude pending orders
                                                 ->with(['user', 'post'])
                                                 ->latest()
                                                 ->take(20)
@@ -1027,7 +1027,7 @@
                 const date = orderRow.cells[2].textContent;
                 const items = orderRow.cells[3].textContent;
                 const total = orderRow.cells[4].textContent;
-                const status = orderRow.cells[5].textContent.trim();
+                const status = orderRow.cells[5].textContent.trim().toLowerCase();
                 
                 // Create order details HTML
                 const orderDetailsHTML = `
@@ -1046,11 +1046,10 @@
                         <div style="margin-top: 20px;">
                             <h4 style="font-weight: 600; margin-bottom: 10px;">Update Order Status</h4>
                             <select id="update-status" class="form-control" style="width: 100%; padding: 8px; margin-bottom: 10px;">
-                                <option value="pending">Pending</option>
-                                <option value="processing">Processing</option>
-                                <option value="shipped">Shipped</option>
-                                <option value="delivered">Delivered</option>
-                                <option value="cancelled">Cancelled</option>
+                                <option value="processing" ${status.includes('processing') ? 'selected' : ''}>Processing</option>
+                                <option value="shipped" ${status.includes('shipped') ? 'selected' : ''}>Shipped</option>
+                                <option value="delivered" ${status.includes('delivered') ? 'selected' : ''}>Delivered</option>
+                                <option value="cancelled" ${status.includes('cancelled') ? 'selected' : ''}>Cancelled</option>
                             </select>
                             <button id="update-status-btn" class="submit-btn" style="width: 100%;">Update Status</button>
                         </div>
