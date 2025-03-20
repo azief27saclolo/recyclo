@@ -382,16 +382,18 @@
                                 @php
                                     try {
                                         // Only count earnings from delivered orders
-                                        $earnings = \App\Models\Order::where('seller_id', Auth::id())
+                                        // Apply 10% commission fee deduction (multiply by 0.9)
+                                        $totalEarnings = \App\Models\Order::where('seller_id', Auth::id())
                                                     ->where('status', 'delivered')
                                                     ->sum('total_amount');
-                                        echo '₱' . number_format($earnings ?? 0, 2);
+                                        $netEarnings = $totalEarnings * 0.9; // Deduct 10% commission fee
+                                        echo '₱' . number_format($netEarnings ?? 0, 2);
                                     } catch (\Exception $e) {
                                         echo '₱0.00';
                                     }
                                 @endphp
                             </div>
-                            <div style="color: white;">Earnings</div>
+                            <div style="color: white;">Earnings (after 10% fee)</div>
                         </div>
                     </div>
                 </div>
