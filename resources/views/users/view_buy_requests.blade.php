@@ -355,7 +355,7 @@
                         <i class="bi bi-basket" style="font-size: 48px; color: #dee2e6; display: block; margin-bottom: 15px;"></i>
                         <h3>You haven't posted any buy requests yet</h3>
                         <p>Create a buy request to let sellers know what you're looking for</p>
-                        <a href="{{ route('buy.create') }}" class="create-btn">Create Buy Request</a>
+                        <a href="#" class="create-btn" onclick="openAddRequestModal(event)">Create Buy Request</a>
                     </div>
                 @endif
             </div>
@@ -526,8 +526,7 @@
         // Open modal when Add Request button is clicked
         addBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            addModal.style.display = 'flex';
-            document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
+            openAddRequestModal(e);
         });
 
         // Close add modal when X is clicked
@@ -621,6 +620,14 @@
             });
         }
     });
+    
+    // Function to open add request modal
+    function openAddRequestModal(e) {
+        e.preventDefault();
+        const addModal = document.getElementById('addRequestModal');
+        addModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
+    }
     
     // Function to open edit modal with current data
     function openEditModal(id, category, quantity, unit, description) {
