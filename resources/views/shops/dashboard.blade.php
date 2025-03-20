@@ -381,8 +381,10 @@
                             <div class="stat-number" style="color: white;">
                                 @php
                                     try {
-                                        // Use direct DB query for reliable sum
-                                        $earnings = \App\Models\Order::where('seller_id', Auth::id())->sum('total_amount');
+                                        // Only count earnings from delivered orders
+                                        $earnings = \App\Models\Order::where('seller_id', Auth::id())
+                                                    ->where('status', 'delivered')
+                                                    ->sum('total_amount');
                                         echo '₱' . number_format($earnings ?? 0, 2);
                                     } catch (\Exception $e) {
                                         echo '₱0.00';
