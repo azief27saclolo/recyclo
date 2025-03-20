@@ -261,11 +261,6 @@
 
         <!-- Main Content -->
         <div class="main-content">
-            @if (session('success'))
-                <div class="alert alert-success" style="background-color: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                    {{ session('success') }}
-                </div>
-            @endif
             
             <div class="profile-header">
                 <h1>My Profile</h1>
@@ -298,6 +293,11 @@
                 <div class="info-group">
                     <label>Location</label>
                     <div class="value">{{ auth()->user()->location }}</div>
+                </div>
+
+                <div class="info-group">
+                    <label>Contact Number</label>
+                    <div class="value">{{ auth()->user()->number ?? 'Not provided' }}</div>
                 </div>
 
                 <div class="info-group">
@@ -371,6 +371,14 @@
                 </div>
 
                 <div class="info-group">
+                    <label for="number">Contact Number</label>
+                    <input type="text" name="number" value="{{ auth()->user()->number }}" class="form-control">
+                    @error('number')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="info-group">
                     <button type="submit" class="edit-btn" style="width: 100%; margin-bottom: 15px;">Update Profile</button>
                 </div>
             </form>
@@ -382,6 +390,17 @@
         const modal = document.getElementById('editProfileModal');
         const showEditFormBtn = document.getElementById('showEditForm');
         const closeModalBtn = document.querySelector('.close-modal');
+        
+        // Check for success message in session and show popup
+        @if(session('success'))
+            Swal.fire({
+                title: 'Success!',
+                text: "{{ session('success') }}",
+                icon: 'success',
+                confirmButtonColor: '#517A5B',
+                confirmButtonText: 'OK'
+            });
+        @endif
         
         showEditFormBtn.addEventListener('click', function() {
             modal.style.display = 'flex';

@@ -39,48 +39,36 @@ class DashboardController extends Controller
 
     public function updateProfile(Request $request)
     {
-        $user = Auth::user();
+        $user = auth()->user();
         
-        // Validate the form data
-        $validatedData = $request->validate([
-            'username' => [
-                'required', 
-                'string', 
-                'max:255',
-                Rule::unique('users')->ignore($user->id)
-            ],
-            'password' => 'nullable|string|min:8',
-            'location' => 'nullable|string|max:255',
-            'profile_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
+        $formFields = $request->validate([
+            'username' => ['required', 'min:3', Rule::unique('users', 'username')->ignore($user->id)],
+            'location' => 'nullable|string',
+            'number' => 'nullable|string',  // Add validation for number field
+            'password' => 'nullable|min:8',
+            'profile_picture' => 'nullable|image|max:2048',
         ]);
-        
-        // Update username and location
-        $user->username = $validatedData['username'];
-        
-        if ($request->filled('location')) {
-            $user->location = $validatedData['location'];
-        }
-        
-        // Update password if provided
+
+        // Only update password if provided
         if ($request->filled('password')) {
-            $user->password = Hash::make($validatedData['password']);
+            $formFields['password'] = bcrypt($formFields['password']);
+        } else {
+            unset($formFields['password']);
         }
-        
+
         // Handle profile picture upload
         if ($request->hasFile('profile_picture')) {
-            // Delete old profile picture if exists
+            // Delete old image if exists
             if ($user->profile_picture) {
-                Storage::disk('public')->delete($user->profile_picture);
+                Storage::delete($user->profile_picture);
             }
             
-            // Store the new image
-            $profilePath = $request->file('profile_picture')->store('profile_pictures', 'public');
-            $user->profile_picture = $profilePath;
+            $formFields['profile_picture'] = $request->file('profile_picture')->store('profile_pictures', 'public');
         }
-        
-        // Save changes
-        $user->save();
-        
-        return redirect()->route('profile')->with('success', 'Profile updated successfully!');
+
+        // Update the user
+        $user->update($formFields);
+
+        return back()->with('success', 'Profile updated successfully!');
     }
 }
