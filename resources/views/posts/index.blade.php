@@ -43,44 +43,68 @@
       </div>
     </section>
 
-    {{-- User's Posts --}}
+    {{-- All Products Section in Grid Layout --}}
     <section class="section shop" id="shop" aria-label="shop">
       <div class="container">
         <div class="title-wrapper">
-          <h2 class="h2 section-title">Latest Listings</h2>
-          <a href="{{ route('posts') }}" class="btn-link">
-            <span class="span">View More Products</span>
-            <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
-          </a>
+          <h2 class="h2 section-title">All Products</h2>
         </div>
-        <ul class="has-scrollbar">
+        
+        <div class="products-grid">
           @foreach ($posts as $post)       
-            <li class="scrollbar-item">
+            <div class="grid-item">
               <x-postCard :post="$post"/>
-            </li>
+            </div>
           @endforeach
-        </ul>
-      </div>
-    </section>
-
-    <section class="section shop" id="shop" aria-label="shop">
-      <div class="container">
-        <div class="title-wrapper">
-          <h2 class="h2 section-title">Budget Friendly Products</h2>
-          <a href="{{ route('posts') }}" class="btn-link">
-            <span class="span">View More Products</span>
-            <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
-          </a>
         </div>
-        <ul class="has-scrollbar">
-          @foreach ($posts as $post)       
-            <li class="scrollbar-item">
-              <x-postCard :post="$post"/>
-            </li>
-          @endforeach
-        </ul>
+        
+        {{-- Pagination Controls --}}
+        <div class="pagination-container">
+          {{ $posts->links() }}
+        </div>
       </div>
     </section>
 
   </div>
+</div>
+
+<style>
+  /* Grid Layout Styles */
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+  }
+  
+  .grid-item {
+    transition: transform 0.3s ease;
+  }
+  
+  .grid-item:hover {
+    transform: translateY(-5px);
+  }
+  
+  /* Pagination Styling */
+  .pagination-container {
+    margin-top: 40px;
+    display: flex;
+    justify-content: center;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .products-grid {
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .products-grid {
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+    }
+  }
+</style>
 @endsection
