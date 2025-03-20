@@ -842,7 +842,22 @@
                 <span class="close">&times;</span>
             </div>
             <div class="modal-body">
-                <div class="form-group" style="margin-bottom: 15px; display: flex; align-items: center;">
+                <div class="form-group" style="margin-bottom: 15px; display: flex; align-items: center; gap: 15px;">
+                    <!-- Add category filter dropdown -->
+                    <div class="category-filter">
+                        <select id="category-filter" class="form-control" style="padding: 8px; min-width: 150px;">
+                            <option value="all">All Categories</option>
+                            <option value="Metal">Metal</option>
+                            <option value="Plastic">Plastic</option>
+                            <option value="Paper">Paper</option>
+                            <option value="Glass">Glass</option>
+                            <option value="Wood">Wood</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Fabric">Fabric</option>
+                            <option value="Rubber">Rubber</option>
+                        </select>
+                    </div>
+                    
                     <div class="search-box" style="margin-left: auto;">
                         <input type="text" id="product-search" class="form-control" placeholder="Search products..." style="padding: 8px;">
                     </div>
@@ -1285,6 +1300,7 @@
                 data.products.forEach(product => {
                     const productCard = document.createElement('div');
                     productCard.className = 'product-card';
+                    productCard.setAttribute('data-category', product.category);
                     
                     const imagePath = product.image ? "{{ asset('storage') }}/" + product.image : "{{ asset('images/placeholder.png') }}";
                     
@@ -1292,6 +1308,7 @@
                         <img src="${imagePath}" alt="${product.title}">
                         <h3>${product.title}</h3>
                         <p>₱${parseFloat(product.price).toFixed(2)}</p>
+                        <p><span class="badge" style="background-color: var(--hoockers-green); color: white; padding: 3px 8px; border-radius: 12px; font-size: 12px;">${product.category}</span></p>
                         <p>Stock: ${product.quantity ?? 'N/A'}</p>
                         
                         <div class="product-actions" style="margin-top: 15px; display: flex; justify-content: space-between;">
@@ -1413,21 +1430,32 @@
             });
         }
         
-        // Filter products with search input
+        // Filter products with search input and category dropdown
         const productSearchInput = document.getElementById('product-search');
-        productSearchInput.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
+        const categoryFilter = document.getElementById('category-filter');
+        
+        function filterProducts() {
+            const searchTerm = productSearchInput.value.toLowerCase();
+            const categoryValue = categoryFilter.value;
             const productCards = document.querySelectorAll('#allProductsGrid .product-card');
             
             productCards.forEach(card => {
                 const productTitle = card.querySelector('h3').textContent.toLowerCase();
-                if (productTitle.includes(searchTerm)) {
+                const productCategory = card.getAttribute('data-category') || '';
+                
+                const matchesSearch = productTitle.includes(searchTerm);
+                const matchesCategory = categoryValue === 'all' || productCategory === categoryValue;
+                
+                if (matchesSearch && matchesCategory) {
                     card.style.display = '';
                 } else {
                     card.style.display = 'none';
                 }
             });
-        });
+        }
+        
+        productSearchInput.addEventListener('input', filterProducts);
+        categoryFilter.addEventListener('change', filterProducts);
         
         // ...existing code...
     });
