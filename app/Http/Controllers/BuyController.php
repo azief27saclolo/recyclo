@@ -124,10 +124,23 @@ class BuyController extends Controller
         
         // Check if the user is authorized to delete this request
         if ($buyRequest->user_id !== Auth::id()) {
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You are not authorized to delete this buy request.'
+                ], 403);
+            }
             return redirect()->back()->with('error', 'You are not authorized to delete this buy request.');
         }
 
         $buyRequest->delete();
+
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Buy request deleted successfully.'
+            ]);
+        }
 
         return redirect()->route('buy.index')->with('success', 'Buy request deleted successfully.');
     }
