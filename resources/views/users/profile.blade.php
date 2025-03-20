@@ -319,7 +319,7 @@
                         <div class="stat-label">Listings</div>
                     </div>
                     <div class="stat-box">
-                        <div class="stat-number">{{ auth()->user()->soldOrders()->count() }}</div>
+                        <div class="stat-number">{{ auth()->user()->soldOrders()->where('status', 'delivered')->count() }}</div>
                         <div class="stat-label">Sold Items</div>
                     </div>
                     <div class="stat-box">
