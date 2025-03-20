@@ -87,9 +87,9 @@
                                 </button>
                                 
                                 @auth
-                                    <button class="contact-btn" onclick="contactBuyer({{ $request->id }}, '{{ $request->user->name }}')">Contact Buyer</button>
+                                    <button class="contact-btn" onclick="notifyBuyer({{ $request->id }}, '{{ $request->user->name }}')">Notify Buyer</button>
                                 @else
-                                    <a href="{{ route('login') }}" class="contact-btn">Login to Contact</a>
+                                    <a href="{{ route('login') }}" class="contact-btn">Login to Notify</a>
                                 @endauth
                             </div>
                         </div>
@@ -164,7 +164,7 @@
 <div id="contactModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2 class="modal-title">Contact Buyer</h2>
+            <h2 class="modal-title">Notify Buyer</h2>
             <span class="close">&times;</span>
         </div>
         <div id="contactModalContent">
@@ -182,7 +182,7 @@
                         <option value="phone">Phone</option>
                     </select>
                 </div>
-                <button type="submit" class="submit-btn">Send Message</button>
+                <button type="submit" class="submit-btn">Send Notification</button>
             </form>
         </div>
     </div>
@@ -673,8 +673,8 @@
         let closeBtn = contactModal.querySelector('.close');
         let currentRequestId = null;
         
-        // Add contact buyer function to window
-        window.contactBuyer = function(requestId, buyerName) {
+        // Add notify buyer function to window
+        window.notifyBuyer = function(requestId, buyerName) {
             document.getElementById('requestId').value = requestId;
             document.getElementById('buyerName').textContent = buyerName;
             contactModal.style.display = 'block';
@@ -699,7 +699,7 @@
             // Here you would send the data to your server
             // This is a placeholder for the actual AJAX call
             
-            alert('Message sent! The buyer will contact you soon.');
+            alert('Notification sent! The buyer will contact you soon.');
             
             contactModal.style.display = 'none';
             document.body.style.overflow = 'auto';
