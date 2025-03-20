@@ -73,41 +73,7 @@
 
         </div>
 
-        <div class="card-action">
-            <div class="price">
-                <span class="current">₱{{ $post->price }}.00</span>
-            </div>
-            
-            <div class="action-buttons">
-                <!-- Add to favorites button -->
-                <form action="{{ route('favorites.add', $post) }}" method="POST" id="favorite-form-{{ $post->id }}">
-                    @csrf
-                    <button type="submit" class="card-action-btn" aria-label="add to wishlist">
-                        <ion-icon name="heart" aria-hidden="true"></ion-icon>
-                    </button>
-                </form>
-                
-                <!-- Add to cart button -->
-                <form action="{{ route('cart.add') }}" method="POST" class="cart-form">
-                    @csrf
-                    <input type="hidden" name="product_id" value="{{ 
-                        App\Models\Product::firstOrCreate(
-                            ['name' => $post->title, 'user_id' => $post->user_id],
-                            [
-                                'description' => $post->description,
-                                'price' => $post->price,
-                                'image' => $post->image,
-                                'stock' => !empty($post->quantity) && is_numeric($post->quantity) ? (int)$post->quantity : 1
-                            ]
-                        )->id 
-                    }}">
-                    <input type="hidden" name="quantity" value="1">
-                    <button type="submit" class="card-action-btn" aria-label="add to cart" onclick="event.preventDefault(); this.closest('form').submit();">
-                        <ion-icon name="cart-outline"></ion-icon>
-                    </button>
-                </form>
-            </div>
-        </div>
+        <!-- Removed the duplicate card-action div that contained the duplicate cart and favorite buttons -->
 
       </div>
 </a>
