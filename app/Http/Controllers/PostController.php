@@ -148,35 +148,49 @@ class PostController extends Controller implements HasMiddleware
         // Authorizing the action
         Gate::authorize('modify', $post);
 
-        // Validate
-        $request->validate([
+        // Validate with image as optional
+        $validationRules = [
             'title' => ['required', 'max:255'],
             'category' => ['required'],
             'location' => ['required', 'max:255'],
             'price' => ['required', 'numeric'],
             'description' => ['required', 'string'],
-            'image' => ['required', 'file', 'max:3000', 'mimes:webp,png,jpg'],
             'unit' => ['required'],
             'quantity' => ['required', 'numeric'],
-        ]);
+        ];
 
-        // Update image
-        if ($post->image) {
-            Storage::disk('public')->delete($post->image);
+        // Only validate image if one is provided
+        if ($request->hasFile('image')) {
+            $validationRules['image'] = ['file', 'max:3000', 'mimes:webp,png,jpg'];
         }
-        $path = Storage::disk('public')->put('posts_images', $request->image);
 
-        // Update a post
-        $post->update([
+        $request->validate($validationRules);
+
+        // Prepare update data
+        $updateData = [
             'title' => $request->title,
             'category' => $request->category,
             'location' => $request->location,
             'price' => $request->price,
             'description' => $request->description,
-            'image' => $path,
             'unit' => $request->unit,
             'quantity' => $request->quantity,
-        ]);
+        ];
+
+        // Update image only if a new one is provided
+        if ($request->hasFile('image')) {
+            // Delete old image if it exists
+            if ($post->image) {
+                Storage::disk('public')->delete($post->image);
+            }
+            
+            // Store new image
+            $path = Storage::disk('public')->put('posts_images', $request->image);
+            $updateData['image'] = $path;
+        }
+
+        // Update the post with the new data
+        $post->update($updateData);
 
         // Check referrer and redirect accordingly
         $referer = $request->headers->get('referer');

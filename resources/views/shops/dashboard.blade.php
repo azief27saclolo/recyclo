@@ -708,6 +708,7 @@
                 <div class="form-group">
                     <label class="form-label" for="edit-image">Photo (leave blank to keep current image)</label>
                     <input type="file" name="image" id="edit-image" class="form-control" accept="image/*">
+                    <small style="display: block; margin-top: 5px; color: #666;">Upload a new image only if you want to change the current one</small>
                     @error('image')
                         <p class="error-message">{{ $message }}</p>
                     @enderror
@@ -1014,6 +1015,9 @@
                 document.getElementById('edit-quantity').value = productQuantity;
                 document.getElementById('edit-price').value = productPrice;
                 document.getElementById('edit-description').value = productDescription;
+                
+                // Reset the file input field to ensure it's empty
+                document.getElementById('edit-image').value = '';
                 
                 // Show the modal
                 editModal.style.display = 'block';
