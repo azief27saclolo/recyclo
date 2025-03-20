@@ -398,9 +398,9 @@
                     <a href="#" class="action-btn" id="addProductBtn">
                         <i class="bi bi-plus-circle"></i> Add Product
                     </a>
-                    <a href="{{ route('orders.index') }}" class="action-btn">
+                    <button id="manageOrdersBtn" class="action-btn" style="border: none; display: block; width: 100%; text-align: center; cursor: pointer;">
                         <i class="bi bi-list-check"></i> Manage Orders
-                    </a>
+                    </button>
                     <a href="{{ route('profile') }}" class="action-btn">
                         <i class="bi bi-gear"></i> Shop Settings
                     </a>
@@ -961,10 +961,16 @@
         // Orders Modal Functionality
         const ordersModal = document.getElementById('ordersModal');
         const ordersStatCard = document.getElementById('ordersStatCard');
+        const manageOrdersBtn = document.getElementById('manageOrdersBtn');
         const ordersCloseBtn = ordersModal.querySelector('.close');
 
         // Open orders modal when Orders stat card is clicked
         ordersStatCard.addEventListener('click', function() {
+            ordersModal.style.display = 'block';
+        });
+
+        // Open orders modal when Manage Orders button is clicked
+        manageOrdersBtn.addEventListener('click', function() {
             ordersModal.style.display = 'block';
         });
 
