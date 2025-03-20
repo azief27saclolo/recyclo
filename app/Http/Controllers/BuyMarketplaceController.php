@@ -21,7 +21,7 @@ class BuyMarketplaceController extends Controller
         // Get all buy requests with their users, paginated
         $buyRequests = Buy::with('user')
                         ->latest()
-                        ->paginate(12);
+                        ->paginate(15); // Changed from 12 to 15
                         
         return view('buy.marketplace', compact('buyRequests'));
     }

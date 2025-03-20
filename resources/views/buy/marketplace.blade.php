@@ -99,6 +99,7 @@
                     @endforeach
                 </div>
 
+                <!-- Enhanced Pagination Container -->
                 <div class="pagination-container">
                     {{ $buyRequests->links() }}
                 </div>
@@ -648,6 +649,11 @@
             flex-direction: column;
             gap: 10px;
         }
+
+        /* Pagination responsiveness */
+        .pagination-container {
+            flex-wrap: wrap;
+        }
     }
     
     /* Added section titles font size */
@@ -666,6 +672,72 @@
     
     .step p {
         font-size: 16px;
+    }
+
+    /* Pagination Styling (copied from the selling page) */
+    .pagination-container {
+        margin-top: 40px;
+        display: flex;
+        justify-content: center;
+    }
+    
+    /* Make pagination info display horizontally and larger */
+    .pagination-container > div {
+        width: 100%;
+    }
+    
+    .pagination-container p.text-sm {
+        font-size: 16px !important;
+        margin-bottom: 15px;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+    }
+    
+    .pagination-container p.text-sm span {
+        display: inline-block;
+        font-size: 16px !important;
+    }
+    
+    /* Enhanced themed pagination buttons */
+    .pagination-container svg {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .pagination-container .flex-1 span {
+        padding: 10px 16px;
+        font-size: 16px;
+    }
+    
+    .pagination-container button, 
+    .pagination-container a {
+        padding: 8px 14px !important;
+        font-size: 16px !important;
+        background-color: #f0f7f0 !important; /* Light green background */
+        border: 1px solid #4CAF50 !important; /* Green border */
+        border-radius: 12px !important; /* Rounder corners for all buttons */
+        color: #2E7D32 !important; /* Dark green text */
+        transition: all 0.3s ease !important;
+        margin: 0 3px !important;
+    }
+    
+    .pagination-container [aria-current="page"] span {
+        background-color: #4CAF50 !important;
+        color: white !important;
+        border-color: #2E7D32 !important;
+        font-weight: bold;
+        box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);
+        font-size: 17px !important; /* Changed from 20px to 17px to match other numbers */
+        padding: 8px 14px !important; /* Changed from 6px 12px to 8px 14px to match other numbers */
+        border-radius: 12px !important; /* Changed from 14px to 12px to match other numbers */
+    }
+    
+    /* Regular page numbers */
+    .pagination-container span[aria-label="pagination.goto"] {
+        font-size: 17px !important; 
+        padding: 8px 14px !important;
     }
 </style>
 
