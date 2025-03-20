@@ -691,12 +691,12 @@
     <div id="ordersModal" class="modal">
         <div class="modal-content" style="max-width: 900px;">
             <div class="modal-header">
-                <h2 class="modal-title">Recent Orders</h2>
+                <h2 class="modal-title">Orders</h2>
                 <span class="close">&times;</span>
             </div>
             <div class="modal-body">
-                <div class="form-group" style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
-                    <label for="order-status-filter" style="margin-right: 10px; font-weight: 600;">Filter by Status:</label>
+                <div class="form-group" style="margin-bottom: 15px; display: flex; align-items: center;">
+                    <label for="order-status-filter" style="margin-right: 3px; font-weight: 600;">Filter by Status:</label>
                     <select id="order-status-filter" class="form-control" style="display: inline-block; width: auto; padding: 8px;">
                         <option value="all">All Orders</option>
                         <option value="pending">Pending</option>
@@ -706,7 +706,7 @@
                         <option value="cancelled">Cancelled</option>
                     </select>
                     
-                    <div class="search-box">
+                    <div class="search-box" style="margin-left: auto;">
                         <input type="text" id="order-search" class="form-control" placeholder="Search orders..." style="padding: 8px;">
                     </div>
                 </div>
@@ -781,9 +781,9 @@
                         </tbody>
                     </table>
                     
-                    <div style="margin-top: 20px; text-align: center;">
-                        <button class="pagination-btn" style="background-color: var(--hoockers-green); color: white; border: none; border-radius: 4px; padding: 8px 15px; margin: 0 5px; cursor: pointer;">Previous</button>
-                        <button class="pagination-btn" style="background-color: var(--hoockers-green); color: white; border: none; border-radius: 4px; padding: 8px 15px; margin: 0 5px; cursor: pointer;">Next</button>
+                    <div style="margin-top: 20px; text-align: center; display: flex; justify-content: center; gap: 10px;">
+                        <button class="pagination-btn" style="background-color: var(--hoockers-green); color: white; border: none; border-radius: 4px; padding: 8px 15px; cursor: pointer;">Previous</button>
+                        <button class="pagination-btn" style="background-color: var(--hoockers-green); color: white; border: none; border-radius: 4px; padding: 8px 15px; cursor: pointer;">Next</button>
                     </div>
                 </div>
             </div>
