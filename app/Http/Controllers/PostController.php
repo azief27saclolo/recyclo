@@ -28,11 +28,49 @@ class PostController extends Controller implements HasMiddleware
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $posts = Post::latest()->paginate(20);
+        // Get unique categories for the filter
+        $categories = Post::select('category')->distinct()->pluck('category')->toArray();
+        
+        // Apply category filter if selected
+        $category = $request->input('category');
+        $query = Post::query();
+        
+        if ($category && $category !== 'all') {
+            $query->where('category', $category);
+        }
+        
+        // Apply price sorting if selected
+        $priceSort = $request->input('price_sort');
+        
+        // Reset any previous ordering to avoid conflicts
+        if ($priceSort) {
+            switch ($priceSort) {
+                case 'low_high':
+                    // Force numeric ordering to ensure correct results
+                    $query->orderByRaw('CAST(price AS DECIMAL(10,2)) ASC');
+                    break;
+                case 'high_low':
+                    // Force numeric ordering to ensure correct results
+                    $query->orderByRaw('CAST(price AS DECIMAL(10,2)) DESC');
+                    break;
+                default:
+                    $query->latest();
+                    break;
+            }
+        } else {
+            $query->latest(); // Default sorting by latest
+        }
+        
+        $posts = $query->paginate(20)->withQueryString();
 
-        return view('posts.index', [ 'posts' => $posts ]);
+        return view('posts.index', [
+            'posts' => $posts,
+            'categories' => $categories,
+            'selectedCategory' => $category,
+            'priceSort' => $priceSort
+        ]);
     }
 
     /**
