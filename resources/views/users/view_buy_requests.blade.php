@@ -301,6 +301,172 @@
         .action-buttons i {
             margin-right: 5px;
         }
+
+        /* Responses Section Styles */
+        .responses-container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-top: 30px;
+        }
+
+        .responses-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .responses-header h2 {
+            color: var(--hoockers-green);
+            font-size: 24px;
+            margin: 0;
+        }
+
+        .response-list {
+            margin-top: 20px;
+        }
+
+        .response-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid var(--hoockers-green);
+            margin-bottom: 15px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .response-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+
+        .response-card.unread {
+            background-color: #e8f4ea;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .seller-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .seller-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 15px;
+        }
+        
+        .seller-details {
+            flex: 1;
+        }
+        
+        .seller-name {
+            font-weight: 600;
+            font-size: 18px;
+            color: #333;
+            margin: 0 0 5px;
+        }
+        
+        .response-meta {
+            color: #666;
+            font-size: 14px;
+            display: flex;
+            gap: 15px;
+        }
+        
+        .response-message {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .response-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            align-items: center;
+        }
+        
+        .response-button {
+            padding: 8px 15px;
+            border-radius: 20px;
+            color: white;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .view-shop-btn {
+            background-color: var(--hoockers-green);
+        }
+        
+        .view-shop-btn:hover {
+            background-color: #3c5c44;
+        }
+        
+        .mark-read-btn {
+            background-color: #3b82f6;
+        }
+        
+        .mark-read-btn:hover {
+            background-color: #2563eb;
+        }
+        
+        .empty-responses {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .empty-responses i {
+            font-size: 48px;
+            color: #dee2e6;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .empty-responses h3 {
+            font-size: 20px;
+            color: #495057;
+            margin-bottom: 10px;
+        }
+        
+        .empty-responses p {
+            color: #6c757d;
+        }
+
+        .response-badge {
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .badge-unread {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .badge-read {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .request-label {
+            font-weight: 600;
+            color: #495057;
+            margin-right: 5px;
+        }
     </style>
 </head>
 <body>
@@ -356,6 +522,70 @@
                         <h3>You haven't posted any buy requests yet</h3>
                         <p>Create a buy request to let sellers know what you're looking for</p>
                         <a href="#" class="create-btn" onclick="openAddRequestModal(event)">Create Buy Request</a>
+                    </div>
+                @endif
+            </div>
+
+            <!-- Responses From Sellers Section -->
+            <div class="responses-container">
+                <div class="responses-header">
+                    <h2><i class="bi bi-reply-all"></i> Responses From Sellers</h2>
+                    @if(isset($responses) && $responses->where('status', 'pending')->count() > 0)
+                        <span class="response-badge badge-unread">{{ $responses->where('status', 'pending')->count() }} New</span>
+                    @endif
+                </div>
+                
+                @if(isset($responses) && $responses->count() > 0)
+                    <div class="response-list">
+                        @foreach($responses as $response)
+                            <div class="response-card {{ $response->status === 'pending' ? 'unread' : '' }}" id="response-{{ $response->id }}">
+                                <div class="seller-info">
+                                    <img src="{{ $response->seller->profile_picture ? asset('storage/' . $response->seller->profile_picture) : asset('images/default-avatar.png') }}" 
+                                         alt="{{ $response->seller->username }}" 
+                                         class="seller-avatar">
+                                    <div class="seller-details">
+                                        <h3 class="seller-name">{{ $response->seller->firstname }} {{ $response->seller->lastname }}</h3>
+                                        <div class="response-meta">
+                                            <span><i class="bi bi-clock"></i> {{ $response->created_at->diffForHumans() }}</span>
+                                            <span><i class="bi bi-telephone"></i> Contact via {{ ucfirst($response->contact_method) }}</span>
+                                            
+                                            @if($response->status === 'pending')
+                                                <span class="response-badge badge-unread">New</span>
+                                            @else
+                                                <span class="response-badge badge-read">Read</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <span class="request-label">Responding to your request for:</span> 
+                                    <span>{{ $response->buy->category }} ({{ $response->buy->quantity }} {{ $response->buy->unit }})</span>
+                                </div>
+                                
+                                <div class="response-message">
+                                    {{ $response->message }}
+                                </div>
+                                
+                                <div class="response-actions">
+                                    <a href="{{ route('shops.show', $response->seller->id) }}" class="response-button view-shop-btn">
+                                        <i class="bi bi-shop"></i> View Seller's Shop
+                                    </a>
+                                    
+                                    @if($response->status === 'pending')
+                                        <button class="response-button mark-read-btn" onclick="markAsRead({{ $response->id }})">
+                                            <i class="bi bi-check-circle"></i> Mark as Read
+                                        </button>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="empty-responses">
+                        <i class="bi bi-envelope-open"></i>
+                        <h3>No responses yet</h3>
+                        <p>When sellers respond to your buy requests, they'll appear here.</p>
                     </div>
                 @endif
             </div>
@@ -756,6 +986,58 @@
                     });
                 });
             }
+        });
+    }
+    
+    // Function to mark response as read
+    function markAsRead(responseId) {
+        fetch(`/buy-responses/${responseId}/mark-read`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update UI
+                const responseCard = document.getElementById(`response-${responseId}`);
+                responseCard.classList.remove('unread');
+                
+                // Remove the mark as read button
+                const markReadBtn = responseCard.querySelector('.mark-read-btn');
+                if (markReadBtn) {
+                    markReadBtn.remove();
+                }
+                
+                // Update the badge
+                const badge = responseCard.querySelector('.response-badge');
+                if (badge) {
+                    badge.textContent = 'Read';
+                    badge.classList.remove('badge-unread');
+                    badge.classList.add('badge-read');
+                }
+                
+                // Show success message
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Response marked as read',
+                    icon: 'success',
+                    confirmButtonColor: '#517A5B',
+                    timer: 1500
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                title: 'Error!',
+                text: 'Failed to update response status',
+                icon: 'error',
+                confirmButtonColor: '#517A5B'
+            });
         });
     }
     </script>

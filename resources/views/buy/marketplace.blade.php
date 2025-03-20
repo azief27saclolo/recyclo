@@ -1,6 +1,8 @@
 @extends('components.layout')
 
 @section('content')
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
 <section class="section buying-guide" aria-label="buying guide">
     <div class="container">
         <!-- Page Header -->
@@ -87,7 +89,7 @@
                                 </button>
                                 
                                 @auth
-                                    <button class="contact-btn" onclick="notifyBuyer({{ $request->id }}, '{{ $request->user->name }}')">Notify Buyer</button>
+                                    <button class="contact-btn" onclick="notifyBuyer({{ $request->id }}, '{{ $request->user->firstname }} {{ $request->user->lastname }}')">Notify Buyer</button>
                                 @else
                                     <a href="{{ route('login') }}" class="contact-btn">Login to Notify</a>
                                 @endauth
@@ -168,7 +170,8 @@
             <span class="close">&times;</span>
         </div>
         <div id="contactModalContent">
-            <form id="contactForm">
+            <form id="contactForm" action="{{ route('marketplace.notify') }}" method="POST">
+                @csrf
                 <input type="hidden" id="requestId" name="request_id">
                 <div class="form-group">
                     <label for="message">Your Message to <span id="buyerName"></span></label>
@@ -669,15 +672,24 @@
 <script>
     // Contact Modal Functionality
     document.addEventListener('DOMContentLoaded', function() {
+        // Make sure we have SweetAlert2
+        if (typeof Swal === 'undefined') {
+            console.error('SweetAlert2 is not loaded. Loading it now...');
+            // Dynamically load SweetAlert2 if it's not already loaded
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
+            document.head.appendChild(script);
+        }
+        
         let contactModal = document.getElementById('contactModal');
         let closeBtn = contactModal.querySelector('.close');
-        let currentRequestId = null;
+        let contactForm = document.getElementById('contactForm');
         
         // Add notify buyer function to window
         window.notifyBuyer = function(requestId, buyerName) {
             document.getElementById('requestId').value = requestId;
             document.getElementById('buyerName').textContent = buyerName;
-            contactModal.style.display = 'block';
+            contactModal.style.display = 'flex'; // Changed from 'block' to 'flex' for better centering
             document.body.style.overflow = 'hidden';
         }
 
@@ -693,18 +705,74 @@
             }
         });
 
-        document.getElementById('contactForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Here you would send the data to your server
-            // This is a placeholder for the actual AJAX call
-            
-            alert('Notification sent! The buyer will contact you soon.');
-            
-            contactModal.style.display = 'none';
-            document.body.style.overflow = 'auto';
-            this.reset();
-        });
+        // Completely rewritten form submission handler
+        if (contactForm) {
+            contactForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                console.log('Form submission started');
+                
+                // Get the CSRF token from meta tag
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                
+                // Create form data object
+                const formData = new FormData(this);
+                
+                // Debug: Log the form data
+                for (const pair of formData.entries()) {
+                    console.log(`${pair[0]}: ${pair[1]}`);
+                }
+                
+                // Send the AJAX request
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin' // Send cookies
+                })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.message || 'Server error occurred');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Response data:', data);
+                    if (data.success) {
+                        // Success message
+                        Swal.fire({
+                            title: 'Success!',
+                            text: data.message || 'Your notification has been sent!',
+                            icon: 'success',
+                            confirmButtonColor: '#517A5B'
+                        });
+                        
+                        // Close modal and reset form
+                        contactModal.style.display = 'none';
+                        document.body.style.overflow = 'auto';
+                        contactForm.reset();
+                    } else {
+                        throw new Error(data.message || 'An error occurred');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Error!',
+                        text: error.message || 'Something went wrong. Please try again.',
+                        icon: 'error',
+                        confirmButtonColor: '#517A5B'
+                    });
+                });
+            });
+        } else {
+            console.error('Contact form not found!');
+        }
         
         // Like button functionality
         document.querySelectorAll('.like-btn').forEach(btn => {

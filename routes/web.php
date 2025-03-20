@@ -154,3 +154,10 @@ Route::delete('/buy/{id}', [App\Http\Controllers\BuyController::class, 'destroy'
 // Add this new route for shops
 Route::get('/shops', [ShopsController::class, 'index'])->name('shops');
 Route::get('/shops/{user}', [ShopsController::class, 'show'])->name('shops.show');
+
+// Buy request marketplace routes
+Route::get('/buy-marketplace', [App\Http\Controllers\BuyMarketplaceController::class, 'index'])->name('buy.marketplace');
+Route::post('/buy-marketplace/notify', [App\Http\Controllers\BuyMarketplaceController::class, 'notifyBuyer'])->name('marketplace.notify')->middleware('auth');
+
+// Buy response routes
+Route::post('/buy-responses/{id}/mark-read', [App\Http\Controllers\BuyController::class, 'markResponseAsRead'])->name('buy.responses.mark-read')->middleware('auth');

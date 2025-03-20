@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Buy;
+use App\Models\BuyResponse;
 use Illuminate\Support\Facades\Auth;
 
 class BuyController extends Controller
@@ -57,8 +58,14 @@ class BuyController extends Controller
         $buyRequests = Buy::where('user_id', Auth::id())
                         ->latest()
                         ->get();
+        
+        // Get all responses for the user's buy requests
+        $responses = BuyResponse::whereIn('buy_id', $buyRequests->pluck('id'))
+                              ->with('seller')
+                              ->latest()
+                              ->get();
                         
-        return view('users.view_buy_requests', compact('buyRequests'));
+        return view('users.view_buy_requests', compact('buyRequests', 'responses'));
     }
 
     /**
@@ -143,5 +150,33 @@ class BuyController extends Controller
         }
 
         return redirect()->route('buy.index')->with('success', 'Buy request deleted successfully.');
+    }
+
+    /**
+     * Mark a seller response as read.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function markResponseAsRead($id)
+    {
+        $response = BuyResponse::findOrFail($id);
+        
+        // Check if the user owns the associated buy request
+        $buyRequest = Buy::findOrFail($response->buy_id);
+        
+        if ($buyRequest->user_id !== Auth::id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not authorized to manage this response.'
+            ], 403);
+        }
+        
+        $response->update(['status' => 'read']);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Response marked as read'
+        ]);
     }
 }

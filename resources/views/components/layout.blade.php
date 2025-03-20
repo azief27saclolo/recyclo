@@ -42,6 +42,8 @@
             position: relative;
         }
     </style>
+    <!-- SweetAlert2 for notifications -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body id="top">
     <header class="header">
