@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta http-equiv="X-UA-Compatible"="ie=edge">
     <title>My Buy Requests - Recyclo</title>
     
     <!-- Required imports as specified -->
@@ -522,6 +522,17 @@
         const addBtn = document.getElementById('addRequestBtn');
         const addCloseBtn = addModal.querySelector('.close');
         const editCloseBtn = editModal.querySelector('.close');
+
+        // Check if we need to open the modal automatically
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('open_modal') && urlParams.get('open_modal') === 'true') {
+            addModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
+            
+            // Remove the query parameter from the URL to prevent reopening on refresh
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, newUrl);
+        }
 
         // Open modal when Add Request button is clicked
         addBtn.addEventListener('click', function(e) {
