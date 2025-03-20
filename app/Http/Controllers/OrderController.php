@@ -77,4 +77,33 @@ class OrderController extends Controller
         $totalPrice = ($post->price * $quantity) + 35; // Add delivery fee
         return view('orders.checkout', ['post' => $post, 'quantity' => $quantity, 'totalPrice' => $totalPrice]);
     }
+
+    /**
+     * Update order status
+     */
+    public function updateStatus(Request $request, Order $order)
+    {
+        // Validate seller owns this order
+        if ($order->seller_id !== Auth::id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized action.'
+            ], 403);
+        }
+
+        // Validate the status
+        $validStatus = $request->validate([
+            'status' => 'required|in:processing,shipped,delivered,cancelled'
+        ]);
+
+        // Update order status
+        $order->status = $validStatus['status'];
+        $order->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Order status updated successfully',
+            'status' => $order->status
+        ]);
+    }
 }

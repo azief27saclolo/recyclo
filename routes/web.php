@@ -112,6 +112,9 @@ Route::middleware('auth')->group(function() {
     Route::delete('/cart/remove/{id}', [App\Http\Controllers\CartController::class, 'removeItem'])->name('cart.remove');
     Route::delete('/cart/empty', [App\Http\Controllers\CartController::class, 'emptyCart'])->name('cart.empty');
     });
+
+    // Add new route for updating order status
+    Route::post('/orders/{order}/update-status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
 });
 
 // Routes for guests users

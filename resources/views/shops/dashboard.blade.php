@@ -1089,15 +1089,60 @@
                         confirmButtonText: 'Yes, update it'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            // Here you would usually make an AJAX call to update the status
-                            // For now, just show a success message
-                            Swal.fire(
-                                'Updated!',
-                                'Order status has been updated.',
-                                'success'
-                            ).then(() => {
-                                // Close the modal after status update
-                                document.getElementById('orderDetailsModal').style.display = 'none';
+                            // Extract order ID from the orderNumber
+                            const orderIdMatch = orderNumber.match(/#ORD-(\d+)/);
+                            const extractedOrderId = orderIdMatch ? orderIdMatch[1] : null;
+                            
+                            if (!extractedOrderId) {
+                                Swal.fire('Error', 'Could not determine order ID', 'error');
+                                return;
+                            }
+                            
+                            // AJAX call to update the order status
+                            fetch(`/orders/${extractedOrderId}/update-status`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({ status: newStatus })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    // Update status badge in the table
+                                    const statusBadge = orderRow.querySelector('.status-badge');
+                                    if (statusBadge) {
+                                        // Update status text
+                                        statusBadge.textContent = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
+                                        
+                                        // Update badge color
+                                        const statusColor = {
+                                            'processing': '#17a2b8',
+                                            'shipped': '#007bff',
+                                            'delivered': '#28a745',
+                                            'cancelled': '#dc3545'
+                                        };
+                                        statusBadge.style.backgroundColor = statusColor[newStatus] || '#ffc107';
+                                        statusBadge.style.color = newStatus === 'pending' ? '#212529' : 'white';
+                                    }
+                                    
+                                    Swal.fire(
+                                        'Updated!',
+                                        'Order status has been updated.',
+                                        'success'
+                                    ).then(() => {
+                                        // Close the modal after status update
+                                        document.getElementById('orderDetailsModal').style.display = 'none';
+                                    });
+                                } else {
+                                    Swal.fire('Error', data.message || 'Failed to update order status', 'error');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error updating status:', error);
+                                Swal.fire('Error', 'Something went wrong. Please try again.', 'error');
                             });
                         }
                     });
