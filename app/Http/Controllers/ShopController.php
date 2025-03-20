@@ -62,4 +62,47 @@ class ShopController extends Controller
         
         return view('shops.dashboard', compact('shop'));
     }
+
+    /**
+     * Update shop details
+     */
+    public function update(Request $request)
+    {
+        $shop = Shop::where('user_id', Auth::id())
+                    ->where('status', 'approved')
+                    ->firstOrFail();
+        
+        $request->validate([
+            'shop_name' => 'required|string|max:255',
+            'shop_address' => 'required|string',
+            'shop_image' => 'nullable|file|mimes:jpg,jpeg,png|max:5120',
+        ]);
+        
+        // Update shop details
+        $shop->shop_name = $request->shop_name;
+        $shop->shop_address = $request->shop_address;
+        
+        // Update shop image if provided
+        if ($request->hasFile('shop_image')) {
+            // Delete old image if exists
+            if ($shop->image) {
+                Storage::disk('public')->delete($shop->image);
+            }
+            
+            // Upload new image
+            $imagePath = $request->file('shop_image')->store('shop_images', 'public');
+            $shop->image = $imagePath;
+        }
+        
+        $shop->save();
+        
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Shop settings updated successfully!'
+            ]);
+        }
+        
+        return redirect()->route('shop.dashboard')->with('success', 'Shop settings updated successfully!');
+    }
 }

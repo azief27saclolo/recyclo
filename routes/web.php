@@ -103,6 +103,7 @@ Route::middleware('auth')->group(function() {
     Route::get('/shop/register', [ShopController::class, 'create'])->name('shop.register');
     Route::post('/shop/register', [ShopController::class, 'store'])->name('shop.store');
     Route::get('/shop/dashboard', [ShopController::class, 'dashboard'])->name('shop.dashboard');
+    Route::put('/shop/update', [ShopController::class, 'update'])->name('shop.update');
 
     // Cart Routes
     Route::middleware(['auth'])->group(function () {

@@ -432,9 +432,9 @@
                     <button id="manageOrdersBtn" class="action-btn" style="border: none; display: block; width: 100%; text-align: center; cursor: pointer;">
                         <i class="bi bi-list-check"></i> Manage Orders
                     </button>
-                    <a href="{{ route('profile') }}" class="action-btn">
+                    <button id="shopSettingsBtn" class="action-btn" style="border: none; display: block; width: 100%; text-align: center; cursor: pointer;">
                         <i class="bi bi-gear"></i> Shop Settings
-                    </a>
+                    </button>
                     <button id="allProductsBtn" class="action-btn" style="border: none; display: block; width: 100%; text-align: center; cursor: pointer;">
                         <i class="bi bi-grid"></i> All Products
                     </button>
@@ -871,6 +871,51 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shop Settings Modal -->
+    <div id="shopSettingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Shop Settings</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="shopSettingsForm" method="post" enctype="multipart/form-data">
+                    @csrf
+                    @method('PUT')
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="shop-name">Shop Name</label>
+                        <input type="text" name="shop_name" id="shop-name" class="form-control" placeholder="Enter shop name..." value="{{ $shop->shop_name }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="shop-address">Shop Location</label>
+                        <input type="text" name="shop_address" id="shop-address" class="form-control" placeholder="Enter shop location..." value="{{ $shop->shop_address }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="shop-image">Shop Banner Image (Optional)</label>
+                        <input type="file" name="shop_image" id="shop-image" class="form-control" accept="image/*">
+                        <small style="display: block; margin-top: 5px; color: #666;">Leave empty to keep current image</small>
+                    </div>
+
+                    @if($shop->image)
+                    <div class="form-group">
+                        <label class="form-label">Current Banner</label>
+                        <div style="width: 100%; max-height: 150px; overflow: hidden; border-radius: 8px;">
+                            <img src="{{ asset('storage/' . $shop->image) }}" alt="Shop Banner" style="width: 100%; object-fit: cover;">
+                        </div>
+                    </div>
+                    @endif
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <button type="submit" class="submit-btn">Update Shop Settings</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -1456,6 +1501,82 @@
         
         productSearchInput.addEventListener('input', filterProducts);
         categoryFilter.addEventListener('change', filterProducts);
+        
+        // Shop Settings Modal Functionality
+        const shopSettingsModal = document.getElementById('shopSettingsModal');
+        const shopSettingsBtn = document.getElementById('shopSettingsBtn');
+        const shopSettingsCloseBtn = shopSettingsModal.querySelector('.close');
+        const shopSettingsForm = document.getElementById('shopSettingsForm');
+        
+        // Open shop settings modal when Shop Settings button is clicked
+        shopSettingsBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            shopSettingsModal.style.display = 'block';
+        });
+        
+        // Close shop settings modal when X is clicked
+        shopSettingsCloseBtn.addEventListener('click', function() {
+            shopSettingsModal.style.display = 'none';
+        });
+        
+        // Close shop settings modal when clicking outside
+        window.addEventListener('click', function(e) {
+            if (e.target === shopSettingsModal) {
+                shopSettingsModal.style.display = 'none';
+            }
+        });
+        
+        // Handle shop settings form submission
+        shopSettingsForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Create form data object from the form
+            const formData = new FormData(shopSettingsForm);
+            
+            // Send AJAX request
+            fetch('{{ route("shop.update") }}', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Network response was not ok (Status: ${response.status})`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Close the modal
+                    shopSettingsModal.style.display = 'none';
+                    
+                    // Show success message
+                    Swal.fire({
+                        title: 'Success!',
+                        text: data.message || 'Shop settings updated successfully!',
+                        icon: 'success',
+                        confirmButtonColor: '#517A5B'
+                    }).then(() => {
+                        // Reload the page to reflect changes
+                        window.location.reload();
+                    });
+                } else {
+                    throw new Error(data.message || 'Failed to update shop settings');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating shop settings:', error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: error.message || 'Something went wrong. Please try again.',
+                    icon: 'error',
+                    confirmButtonColor: '#517A5B'
+                });
+            });
+        });
         
         // ...existing code...
     });
