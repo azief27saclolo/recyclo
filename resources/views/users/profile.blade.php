@@ -322,6 +322,14 @@
                         <div class="stat-number">{{ auth()->user()->soldOrders()->count() }}</div>
                         <div class="stat-label">Sold Items</div>
                     </div>
+                    <div class="stat-box">
+                        <div class="stat-number">{{ auth()->user()->boughtOrders()->count() }}</div>
+                        <div class="stat-label">My Orders</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">{{ \App\Models\Buy::where('user_id', auth()->id())->count() }}</div>
+                        <div class="stat-label">Buy Requests</div>
+                    </div>
                 </div>
             </div>
         </div>
