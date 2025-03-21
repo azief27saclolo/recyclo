@@ -52,7 +52,7 @@
                     <button class="tab-btn" data-tab="to-ship" style="background: #f1f1f1; color: #333; border: none; padding: 10px 20px; border-radius: 8px; display: flex; align-items: center; white-space: nowrap; cursor: pointer;">
                         <ion-icon name="airplane-outline" style="margin-right: 5px;"></ion-icon>
                         Delivering
-                        <span class="badge" style="background: #517a5b; color: white; border-radius: 50%; width: 20px; height: 20px; display: inline-flex; justify-content: center; align-items: center; margin-left: 5px; font-size: 12px;">{{ $orders->where('status', 'processing')->count() }}</span>
+                        <span class="badge" style="background: #517a5b; color: white; border-radius: 50%; width: 20px; height: 20px; display: inline-flex; justify-content: center; align-items: center; margin-left: 5px; font-size: 12px;">{{ $orders->where('status', 'delivering')->count() }}</span>
                     </button>
                     <button class="tab-btn" data-tab="to-receive" style="background: #f1f1f1; color: #333; border: none; padding: 10px 20px; border-radius: 8px; display: flex; align-items: center; white-space: nowrap; cursor: pointer;">
                         <ion-icon name="checkbox-outline" style="margin-right: 5px;"></ion-icon>
@@ -155,7 +155,7 @@
                                         <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
                                     </div>
                                     <div class="order-status" style="margin-top: 10px;">
-                                        <span class="status-badge in-transit" style="background: #17a2b8; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">To Ship</span>
+                                        <span class="status-badge in-transit" style="background: #17a2b8; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Delivering</span>
                                     </div>
                                 </div>
                                 <div class="order-footer" style="background: #f8f9fa; padding: 15px; display: flex; gap: 10px;">
