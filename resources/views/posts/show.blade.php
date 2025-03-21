@@ -51,25 +51,37 @@
                     </a>
                 </div>
                 <ul class="has-scrollbar shop-slider">
-                    @foreach ($posts as $similarPost)
-                        @if($similarPost->id != $post->id)
+                    @php
+                        // Filter posts to only include those with the same category
+                        $similarCategoryPosts = $posts->filter(function($similarPost) use ($post) {
+                            return $similarPost->id != $post->id && $similarPost->category == $post->category;
+                        });
+                        
+                        // Count how many valid products we have
+                        $displayCount = $similarCategoryPosts->count();
+                    @endphp
+                    
+                    @if($displayCount > 0)
+                        @foreach($similarCategoryPosts as $similarPost)
                             <li class="scrollbar-item">
                                 <x-postCard :post="$similarPost"/>
                             </li>
+                        @endforeach
+                        
+                        {{-- Add placeholder items if needed to maintain slider appearance --}}
+                        @if($displayCount < 5)
+                            @for($i = 0; $i < (5 - $displayCount); $i++)
+                                <li class="scrollbar-item placeholder-item"></li>
+                            @endfor
                         @endif
-                    @endforeach
-                    
-                    @if($posts->where('id', '!=', $post->id)->count() == 0)
+                    @else
                         <li class="scrollbar-item">
                             <div class="empty-shop-card">
-                                <p>No similar {{ $post->category }} products available.</p>
+                                <p>No other {{ $post->category }} products available at the moment.</p>
                             </div>
                         </li>
-                    @endif
-                    
-                    {{-- Add placeholder items for sliders with few products to ensure slider works --}}
-                    @if($posts->where('id', '!=', $post->id)->count() > 0 && $posts->where('id', '!=', $post->id)->count() < 5)
-                        @for($i = 0; $i < (5 - $posts->where('id', '!=', $post->id)->count()); $i++)
+                        {{-- Add placeholders to maintain slider width --}}
+                        @for($i = 0; $i < 4; $i++)
                             <li class="scrollbar-item placeholder-item"></li>
                         @endfor
                     @endif
