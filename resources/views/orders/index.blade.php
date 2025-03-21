@@ -106,10 +106,10 @@
                     @endif
                 </div>
 
-                <!-- New Orders Tab Content (renamed to Processing in title only) -->
+                <!-- Processing Orders Tab Content (previously "New Orders") -->
                 <div class="order-cards" id="new-orders" style="display: none; flex-direction: column; gap: 20px;">
-                    @if($orders->where('status', 'pending')->count() > 0)
-                        @foreach($orders->where('status', 'pending') as $order)
+                    @if($orders->where('status', 'processing')->count() > 0)
+                        @foreach($orders->where('status', 'processing') as $order)
                             <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
                                 <div class="order-header" style="padding: 15px;">
                                     <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
@@ -123,12 +123,11 @@
                                         <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
                                     </div>
                                     <div class="order-status" style="margin-top: 10px;">
-                                        <span class="status-badge pending" style="background: #ffc107; color: #212529; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Pending</span>
+                                        <span class="status-badge processing" style="background: #17a2b8; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Processing</span>
                                     </div>
                                 </div>
                                 <div class="order-footer" style="background: #f8f9fa; padding: 15px; display: flex; gap: 10px;">
                                     <button class="btn btn-primary" style="background: #517a5b; color: white; border: none; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer;">Track Order</button>
-                                    <button class="btn btn-secondary" style="background: white; border: 1px solid #517a5b; color: #517a5b; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer;">Cancel Order</button>
                                 </div>
                             </div>
                         @endforeach
@@ -143,8 +142,8 @@
 
                 <!-- To Ship Orders Tab Content (renamed to Delivering) -->
                 <div class="order-cards" id="to-ship-orders" style="display: none; flex-direction: column; gap: 20px;">
-                    @if($orders->where('status', 'processing')->count() > 0)
-                        @foreach($orders->where('status', 'processing') as $order)
+                    @if($orders->where('status', 'delivering')->count() > 0)
+                        @foreach($orders->where('status', 'delivering') as $order)
                             <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
                                 <div class="order-header" style="padding: 15px;">
                                     <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
