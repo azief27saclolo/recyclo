@@ -93,11 +93,45 @@ class OrderController extends Controller
 
         // Validate the status
         $validStatus = $request->validate([
-            'status' => 'required|in:processing,delivering,for_pickup,cancelled'
+            'status' => 'required|in:processing,delivering,for_pickup,cancelled,completed'
         ]);
 
+        $newStatus = $validStatus['status'];
+        
+        // If status is being changed to completed, update product quantity
+        if ($newStatus === 'completed') {
+            // Get the post (product) associated with the order
+            $post = Post::find($order->post_id);
+            
+            if (!$post) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Product not found.'
+                ], 404);
+            }
+            
+            // Check if there's enough quantity to fulfill the order
+            if ($post->quantity < $order->quantity) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Not enough product quantity available to complete this order.'
+                ], 400);
+            }
+            
+            // Decrease the product quantity
+            $post->quantity -= $order->quantity;
+            $post->save();
+            
+            Log::info('Product quantity updated after order completion', [
+                'order_id' => $order->id,
+                'post_id' => $post->id,
+                'old_quantity' => $post->quantity + $order->quantity,
+                'new_quantity' => $post->quantity
+            ]);
+        }
+
         // Update order status
-        $order->status = $validStatus['status'];
+        $order->status = $newStatus;
         $order->save();
 
         return response()->json([

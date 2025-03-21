@@ -1197,7 +1197,8 @@
                         'processing': '#17a2b8',
                         'delivering': '#007bff',
                         'for_pickup': '#28a745',
-                        'cancelled': '#dc3545'
+                        'cancelled': '#dc3545',
+                        'completed': '#198754'
                     };
                     
                     const status = order.status || 'pending';
@@ -1280,6 +1281,7 @@
                                         <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>Processing</option>
                                         <option value="delivering" ${order.status === 'delivering' ? 'selected' : ''}>Delivering</option>
                                         <option value="for_pickup" ${order.status === 'for_pickup' ? 'selected' : ''}>For Pick Up</option>
+                                        <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>Completed</option>
                                         <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
                                     </select>
                                     <button id="update-status-btn" data-order-id="${order.id}" class="submit-btn" style="width: 100%;">Update Status</button>
