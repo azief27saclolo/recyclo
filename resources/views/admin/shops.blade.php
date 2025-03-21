@@ -6,6 +6,8 @@
     <title>Shops Management - Recyclo Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Add SweetAlert2 library -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
             --hoockers-green: #517A5B;
@@ -397,7 +399,8 @@
                 <a href="{{ route('admin.shops') }}" class="nav-link active">
                     <i class="bi bi-shop"></i> Shops
                 </a>
-                <a href="{{ route('admin.logout') }}" class="nav-link" onclick="return confirm('Are you sure you want to logout?')">
+                <!-- Change to use SweetAlert2 for logout -->
+                <a href="javascript:void(0)" class="nav-link" onclick="confirmLogout()">
                     <i class="bi bi-box-arrow-right"></i> Logout
                 </a>
             </nav>
@@ -615,6 +618,24 @@
             if (event.target == rejectModal) {
                 rejectModal.style.display = "none";
             }
+        }
+
+        // Function to confirm logout with SweetAlert2
+        function confirmLogout() {
+            Swal.fire({
+                title: 'Confirm Logout',
+                text: "Are you sure you want to logout from the admin panel?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#517A5B',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Logout',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "{{ route('admin.logout') }}";
+                }
+            });
         }
     </script>
 </body>

@@ -405,8 +405,8 @@
                 <a href="{{ route('admin.shops') }}" class="nav-link">
                     <i class="bi bi-shop"></i> Shops
                 </a>
-                <!-- Change onclick to show modal instead of direct confirmation -->
-                <a href="javascript:void(0)" class="nav-link" onclick="showLogoutModal()">
+                <!-- Change to use SweetAlert2 directly instead of showing custom modal -->
+                <a href="javascript:void(0)" class="nav-link" onclick="confirmLogout()">
                     <i class="bi bi-box-arrow-right"></i> Logout
                 </a>
             </nav>
@@ -559,23 +559,6 @@
         </div>
     </div>
 
-    <!-- Logout Confirmation Modal -->
-    <div id="logoutModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4>Confirm Logout</h4>
-                <span class="modal-close" onclick="closeLogoutModal()">&times;</span>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to logout from the admin panel?</p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-reject" onclick="logout()">Yes, Logout</button>
-                <button class="btn" onclick="closeLogoutModal()" style="background-color: #6c757d; color: white;">Cancel</button>
-            </div>
-        </div>
-    </div>
-
     <script>
         // Simple tab functionality for filtering orders
         document.addEventListener('DOMContentLoaded', function() {
@@ -682,25 +665,29 @@
             });
         });
 
-        // Logout Modal Functions
-        function showLogoutModal() {
-            document.getElementById('logoutModal').style.display = 'block';
+        // New confirmLogout function using SweetAlert2
+        function confirmLogout() {
+            Swal.fire({
+                title: 'Confirm Logout',
+                text: "Are you sure you want to logout from the admin panel?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#517A5B',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Logout',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "{{ route('admin.logout') }}";
+                }
+            });
         }
         
-        function closeLogoutModal() {
-            document.getElementById('logoutModal').style.display = 'none';
-        }
-        
-        function logout() {
-            window.location.href = "{{ route('admin.logout') }}";
-        }
+        // Remove the old logout modal functions since we're using SweetAlert2 now
         
         // Close modal when clicking outside of it
         window.onclick = function(event) {
-            const logoutModal = document.getElementById('logoutModal');
-            if (event.target == logoutModal) {
-                closeLogoutModal();
-            }
+            // ...existing code for other modals if needed...
         }
     </script>
 </body>
