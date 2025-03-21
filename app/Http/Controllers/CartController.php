@@ -75,24 +75,42 @@ class CartController extends Controller
      */
     public function updateQuantity(Request $request, $id)
     {
-        $request->validate([
-            'quantity' => 'required|integer|min:1'
-        ]);
-        
-        $cartItem = CartItem::findOrFail($id);
-        $cart = $cartItem->cart;
-        
-        // Ensure the cart belongs to the current user
-        if ($cart->user_id !== Auth::id()) {
-            return redirect()->route('cart.index')->with('error', 'Unauthorized action.');
+        try {
+            $request->validate([
+                'quantity' => 'required|integer|min:1'
+            ]);
+            
+            $cartItem = CartItem::findOrFail($id);
+            $cart = $cartItem->cart;
+            
+            // Ensure the cart belongs to the current user
+            if ($cart->user_id !== Auth::id()) {
+                return redirect()->route('cart.index')->with('error', 'Unauthorized action.');
+            }
+            
+            // Update quantity
+            $cartItem->quantity = $request->quantity;
+            $cartItem->save();
+            
+            // Refresh cart from database to get accurate data
+            $cart->refresh();
+            $cart->load('items');
+            
+            // Calculate total
+            $total = 0;
+            foreach($cart->items as $item) {
+                $total += $item->quantity * $item->price;
+            }
+            
+            $cart->total = $total;
+            $cart->save();
+            
+            // Return to cart without success message
+            return redirect()->route('cart.index');
+        } catch (\Exception $e) {
+            \Log::error('Error updating cart: ' . $e->getMessage());
+            return redirect()->route('cart.index')->with('error', 'Error updating cart: ' . $e->getMessage());
         }
-        
-        $cartItem->quantity = $request->quantity;
-        $cartItem->save();
-        
-        $this->updateCartTotal($cart);
-        
-        return redirect()->route('cart.index')->with('success', 'Cart updated successfully!');
     }
 
     /**

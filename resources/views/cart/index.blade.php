@@ -1,110 +1,258 @@
 @extends('components.layout')
 
 @section('content')
-<div class="container">
-    <h1 class="my-4 text-center">Your Shopping Cart</h1>
+<style>
+    .cart-container {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .cart-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .cart-title {
+        color: var(--hoockers-green);
+        font-size: 32px; /* Changed from 2rem */
+        margin-bottom: 10px;
+    }
     
+    .cart-subtitle {
+        font-size: 18px; /* Added bigger font size */
+    }
+
+    .cart-content {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 30px;
+    }
+
+    .cart-items {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .cart-item {
+        display: flex;
+        align-items: center;
+        padding: 20px;
+        border-bottom: 1px solid #eee;
+        gap: 20px;
+    }
+
+    .item-image {
+        width: 120px;
+        height: 120px;
+        border-radius: 10px;
+        object-fit: cover;
+    }
+
+    .item-details {
+        flex: 1;
+    }
+
+    .item-name {
+        font-size: 20px; /* Changed from 1.2rem */
+        margin-bottom: 5px;
+        color: #333;
+    }
+
+    .shop-name {
+        color: var(--hoockers-green);
+        font-size: 16px; /* Changed from 0.9rem */
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .quantity-controls {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+        margin: 15px 0;
+    }
+    
+    .quantity-controls form {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .qty-btn {
+        padding: 5px 12px;
+        border: none;
+        background: var(--hoockers-green);
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+        height: 35px;
+        width: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .qty-input {
+        width: 50px;
+        text-align: center;
+        padding: 5px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        height: 35px;
+        font-size: 16px; /* Added font size */
+    }
+
+    .item-price {
+        font-size: 20px; /* Changed from 1.2rem */
+        color: var(--hoockers-green);
+        font-weight: 600;
+    }
+
+    .remove-btn {
+        color: #dc3545;
+        background: none;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        border-radius: 5px;
+    }
+
+    .remove-btn:hover {
+        background: #fff5f5;
+    }
+
+    .cart-summary {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        height: fit-content;
+    }
+
+    .summary-title {
+        font-size: 22px; /* Changed from 1.3rem */
+        color: #333;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        color: #666;
+        font-size: 16px; /* Added font size */
+    }
+
+    .summary-total {
+        font-size: 20px; /* Changed from 1.2rem */
+        color: var(--hoockers-green);
+        font-weight: 600;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 2px solid #eee;
+    }
+
+    .checkout-btn {
+        width: 100%;
+        padding: 15px;
+        background: var(--hoockers-green);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 18px; /* Changed from 1.1rem */
+        margin-top: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .checkout-btn:hover {
+        background: var(--hoockers-green_80);
+        transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+        .cart-content {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="cart-container">
+    <div class="cart-header">
+        <h1 class="cart-title">Shopping Cart</h1>
+        <p class="cart-subtitle">Review your items before checkout</p>
+    </div>
+
     @if(session('success'))
         <div class="alert alert-success">
             {{ session('success') }}
         </div>
     @endif
-    
+
     @if(session('error'))
         <div class="alert alert-danger">
             {{ session('error') }}
         </div>
     @endif
-    
+
     @if($cart->items->count() > 0)
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <div class="row align-items-center">
-                    <div class="col-md-6">
-                        <h4>Cart Items ({{ $cart->items->sum('quantity') }} items)</h4>
-                    </div>
-                    <div class="col-md-6 text-end d-flex justify-content-end">
-                        <form action="{{ route('cart.empty') }}" method="POST">
+        <div class="cart-content">
+            <div class="cart-items">
+                @foreach($cart->items as $item)
+                    <div class="cart-item">
+                        <img src="{{ asset('storage/' . $item->product->image) }}" alt="{{ $item->product->name }}" class="item-image">
+                        <div class="item-details">
+                            <div class="shop-name">
+                                <i class="bi bi-shop"></i> {{ $item->product->user->shop->name ?? 'Unknown Shop' }}
+                            </div>
+                            <h3 class="item-name">{{ $item->product->name }}</h3>
+                            <div class="quantity-controls">
+                                <button class="qty-btn" type="button" onclick="updateCartItem({{ $item->id }}, '-')">-</button>
+                                <input type="number" id="qty-input-{{ $item->id }}" class="qty-input" value="{{ $item->quantity }}" min="1" readonly>
+                                <button class="qty-btn" type="button" onclick="updateCartItem({{ $item->id }}, '+')">+</button>
+                            </div>
+                            <div class="item-price">₱{{ number_format($item->price, 2) }} per kg</div>
+                        </div>
+                        <form action="{{ route('cart.remove', $item->id) }}" method="POST">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-danger px-3" style="min-width: 120px;" onclick="return confirm('Are you sure you want to empty your cart?')">
-                                Empty Cart
+                            <button type="submit" class="remove-btn">
+                                <i class="bi bi-trash"></i> Remove
                             </button>
                         </form>
                     </div>
-                </div>
+                @endforeach
             </div>
-            
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Product</th>
-                                <th>Price</th>
-                                <th>Quantity</th>
-                                <th>Subtotal</th>
-                                <th class="text-center">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($cart->items as $item)
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            @if($item->product->image)
-                                                <img src="{{ asset('storage/' . $item->product->image) }}" alt="{{ $item->product->name }}" class="img-thumbnail me-3" style="max-width: 80px;">
-                                            @else
-                                                <img src="{{ asset('images/no-image.jpg') }}" alt="No Image" class="img-thumbnail me-3" style="max-width: 80px;">
-                                            @endif
-                                            <div>
-                                                <h5>{{ $item->product->name }}</h5>
-                                                <p class="text-muted">{{ Str::limit($item->product->description, 50) }}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>${{ number_format($item->price, 2) }}</td>
-                                    <td>
-                                        <form action="{{ route('cart.update', $item->id) }}" method="POST" class="d-flex align-items-center">
-                                            @csrf
-                                            @method('PUT')
-                                            <input type="number" name="quantity" value="{{ $item->quantity }}" min="1" class="form-control" style="width: 70px;">
-                                            <button type="submit" class="btn btn-secondary ms-2" style="min-width: 80px;">
-                                                Update
-                                            </button>
-                                        </form>
-                                    </td>
-                                    <td>${{ number_format($item->price * $item->quantity, 2) }}</td>
-                                    <td class="text-center">
-                                        <form action="{{ route('cart.remove', $item->id) }}" method="POST">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger" style="min-width: 90px;">
-                                                Remove
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+
+            <div class="cart-summary">
+                <h2 class="summary-title">Order Summary</h2>
+                <div class="summary-row">
+                    <span>Subtotal ({{ $cart->items->sum('quantity') }} items)</span>
+                    <span>₱{{ number_format($cart->total, 2) }}</span>
                 </div>
-            </div>
-            
-            <div class="card-footer">
-                <div class="row">
-                    <div class="col-md-6 d-flex justify-content-center justify-content-md-start mb-3 mb-md-0">
-                        <a href="{{ route('posts') }}" class="btn btn-secondary px-4" style="min-width: 180px;">
-                            <i class="fas fa-arrow-left"></i> Continue Shopping
-                        </a>
-                    </div>
-                    <div class="col-md-6 d-flex flex-column align-items-center align-items-md-end">
-                        <h5>Total: <span class="text-primary">${{ number_format($cart->total, 2) }}</span></h5>
-                        <a href="{{ route('checkout') }}" class="btn btn-success px-4 mt-2" style="min-width: 200px;">
-                            Proceed to Checkout <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
+                <div class="summary-row">
+                    <span>Service Fee</span>
+                    <span>₱5.00</span>
                 </div>
+                <div class="summary-total">
+                    <span>Total</span>
+                    <span>₱{{ number_format($cart->total + 5, 2) }}</span>
+                </div>
+                <button class="checkout-btn" onclick="window.location.href='{{ route('checkout') }}'">
+                    Proceed to Checkout
+                </button>
             </div>
         </div>
     @else
@@ -122,4 +270,59 @@
         </div>
     @endif
 </div>
+
+<script>
+    function updateCartItem(itemId, action) {
+        const input = document.getElementById(`qty-input-${itemId}`);
+        let value = parseInt(input.value);
+        
+        if (action === '+') {
+            value += 1;
+        } else if (action === '-' && value > 1) {
+            value -= 1;
+        } else {
+            return; // Don't proceed if trying to go below 1
+        }
+        
+        // Show loading state
+        input.disabled = true;
+        
+        // Use a simple form submission instead of fetch API
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/cart/update/${itemId}`;
+        form.style.display = 'none';
+        
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = '_token';
+        csrfToken.value = '{{ csrf_token() }}';
+        
+        const methodField = document.createElement('input');
+        methodField.type = 'hidden';
+        methodField.name = '_method';
+        methodField.value = 'PUT';
+        
+        const quantityField = document.createElement('input');
+        quantityField.type = 'hidden';
+        quantityField.name = 'quantity';
+        quantityField.value = value;
+        
+        form.appendChild(csrfToken);
+        form.appendChild(methodField);
+        form.appendChild(quantityField);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    // Remove item animation
+    document.querySelectorAll('.remove-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const item = this.closest('.cart-item');
+            item.style.opacity = '0';
+            setTimeout(() => item.remove(), 300);
+        });
+    });
+</script>
 @endsection
