@@ -413,11 +413,6 @@
         </div>
 
         <div class="main-content">
-            @if (session('success'))
-                <div class="alert alert-success">
-                    {{ session('success') }}
-                </div>
-            @endif
             
             <div class="orders-card">
                 <div class="orders-heading">
