@@ -358,6 +358,31 @@
             background-color: #cccccc;
             cursor: not-allowed;
         }
+
+        /* SweetAlert2 custom styles for larger modals */
+        .swal2-popup.swal2-modal.bigger-modal {
+            width: 32em !important;
+            max-width: 90% !important;
+            font-size: 1.2rem !important;
+            padding: 2em !important;
+        }
+        
+        .swal2-popup.swal2-modal.bigger-modal .swal2-title {
+            font-size: 1.8em !important;
+            margin-bottom: 0.5em !important;
+        }
+        
+        .swal2-popup.swal2-modal.bigger-modal .swal2-content,
+        .swal2-popup.swal2-modal.bigger-modal .swal2-html-container {
+            font-size: 1.1em !important;
+            line-height: 1.5 !important;
+        }
+        
+        .swal2-popup.swal2-modal.bigger-modal .swal2-confirm,
+        .swal2-popup.swal2-modal.bigger-modal .swal2-cancel {
+            font-size: 1.1em !important;
+            padding: 0.6em 1.5em !important;
+        }
     </style>
 </head>
 <body>
@@ -882,7 +907,10 @@
             confirmButtonColor: '#517A5B',
             cancelButtonColor: '#6c757d',
             confirmButtonText: 'Yes, logout',
-            cancelButtonText: 'No, stay'
+            cancelButtonText: 'No, stay',
+            customClass: {
+                popup: 'bigger-modal'
+            }
         }).then((result) => {
             if (result.isConfirmed) {
                 document.getElementById('logout-form').submit();
@@ -899,7 +927,10 @@
                 text: "{{ session('success') }}",
                 icon: 'success',
                 confirmButtonColor: '#517A5B',
-                confirmButtonText: 'OK'
+                confirmButtonText: 'OK',
+                customClass: {
+                    popup: 'bigger-modal'
+                }
             });
         @endif
 
@@ -910,7 +941,10 @@
                 text: "{{ session('delete') }}",
                 icon: 'warning',
                 confirmButtonColor: '#517A5B',
-                confirmButtonText: 'OK'
+                confirmButtonText: 'OK',
+                customClass: {
+                    popup: 'bigger-modal'
+                }
             });
         @endif
 
@@ -1000,7 +1034,10 @@
                     confirmButtonColor: '#dc3545',
                     cancelButtonColor: '#6c757d',
                     confirmButtonText: 'Yes, delete it!',
-                    cancelButtonText: 'No, keep it'
+                    cancelButtonText: 'No, keep it',
+                    customClass: {
+                        popup: 'bigger-modal'
+                    }
                 }).then((result) => {
                     if (result.isConfirmed) {
                         // Create form and submit for DELETE request
@@ -1266,7 +1303,14 @@
                     })
                     .catch(error => {
                         console.error('Error fetching order details:', error);
-                        Swal.fire('Error', 'Failed to load order details. Please try again.', 'error');
+                        Swal.fire({
+                            title: 'Error', 
+                            text: 'Failed to load order details. Please try again.', 
+                            icon: 'error',
+                            customClass: {
+                                popup: 'bigger-modal'
+                            }
+                        });
                     });
                 });
             });
@@ -1281,7 +1325,10 @@
                 showCancelButton: true,
                 confirmButtonColor: '#517A5B',
                 cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, update it'
+                confirmButtonText: 'Yes, update it',
+                customClass: {
+                    popup: 'bigger-modal'
+                }
             }).then((result) => {
                 if (result.isConfirmed) {
                     // AJAX call to update the order status
@@ -1297,23 +1344,40 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            Swal.fire(
-                                'Updated!',
-                                'Order status has been updated.',
-                                'success'
-                            ).then(() => {
+                            Swal.fire({
+                                title: 'Updated!',
+                                text: 'Order status has been updated.',
+                                icon: 'success',
+                                customClass: {
+                                    popup: 'bigger-modal'
+                                }
+                            }).then(() => {
                                 // Close the modal after status update
                                 document.getElementById('orderDetailsModal').style.display = 'none';
                                 // Reload orders to reflect changes
                                 loadOrders(currentPage);
                             });
                         } else {
-                            Swal.fire('Error', data.message || 'Failed to update order status', 'error');
+                            Swal.fire({
+                                title: 'Error', 
+                                text: data.message || 'Failed to update order status', 
+                                icon: 'error',
+                                customClass: {
+                                    popup: 'bigger-modal'
+                                }
+                            });
                         }
                     })
                     .catch(error => {
                         console.error('Error updating status:', error);
-                        Swal.fire('Error', 'Something went wrong. Please try again.', 'error');
+                        Swal.fire({
+                            title: 'Error', 
+                            text: 'Something went wrong. Please try again.', 
+                            icon: 'error',
+                            customClass: {
+                                popup: 'bigger-modal'
+                            }
+                        });
                     });
                 }
             });
@@ -1507,7 +1571,10 @@
                         confirmButtonColor: '#dc3545',
                         cancelButtonColor: '#6c757d',
                         confirmButtonText: 'Yes, delete it!',
-                        cancelButtonText: 'No, keep it'
+                        cancelButtonText: 'No, keep it',
+                        customClass: {
+                            popup: 'bigger-modal'
+                        }
                     }).then((result) => {
                         if (result.isConfirmed) {
                             // Create form and submit for DELETE request
@@ -1620,7 +1687,10 @@
                         title: 'Success!',
                         text: data.message || 'Shop settings updated successfully!',
                         icon: 'success',
-                        confirmButtonColor: '#517A5B'
+                        confirmButtonColor: '#517A5B',
+                        customClass: {
+                            popup: 'bigger-modal'
+                        }
                     }).then(() => {
                         // Reload the page to reflect changes
                         window.location.reload();
@@ -1635,7 +1705,10 @@
                     title: 'Error!',
                     text: error.message || 'Something went wrong. Please try again.',
                     icon: 'error',
-                    confirmButtonColor: '#517A5B'
+                    confirmButtonColor: '#517A5B',
+                    customClass: {
+                        popup: 'bigger-modal'
+                    }
                 });
             });
         });

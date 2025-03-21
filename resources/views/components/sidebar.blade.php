@@ -117,6 +117,31 @@
         margin-right: 10px;
         font-size: 18px;
     }
+
+    /* SweetAlert2 custom styles for larger modals */
+    .swal2-popup.swal2-modal.bigger-modal {
+        width: 32em !important;
+        max-width: 90% !important;
+        font-size: 1.2rem !important;
+        padding: 2em !important;
+    }
+    
+    .swal2-popup.swal2-modal.bigger-modal .swal2-title {
+        font-size: 1.8em !important;
+        margin-bottom: 0.5em !important;
+    }
+    
+    .swal2-popup.swal2-modal.bigger-modal .swal2-content,
+    .swal2-popup.swal2-modal.bigger-modal .swal2-html-container {
+        font-size: 1.1em !important;
+        line-height: 1.5 !important;
+    }
+    
+    .swal2-popup.swal2-modal.bigger-modal .swal2-confirm,
+    .swal2-popup.swal2-modal.bigger-modal .swal2-cancel {
+        font-size: 1.1em !important;
+        padding: 0.6em 1.5em !important;
+    }
 </style>
 
 <script>
@@ -130,7 +155,10 @@
             confirmButtonColor: '#517A5B',
             cancelButtonColor: '#6c757d',
             confirmButtonText: 'Yes, logout',
-            cancelButtonText: 'No, stay'
+            cancelButtonText: 'No, stay',
+            customClass: {
+                popup: 'bigger-modal'
+            }
         }).then((result) => {
             if (result.isConfirmed) {
                 document.getElementById('logout-form').submit();

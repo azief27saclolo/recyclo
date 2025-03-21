@@ -467,6 +467,31 @@
             color: #495057;
             margin-right: 5px;
         }
+
+        /* SweetAlert2 custom styles for larger modals */
+        .swal2-popup.swal2-modal.bigger-modal {
+            width: 32em !important;
+            max-width: 90% !important;
+            font-size: 1.2rem !important;
+            padding: 2em !important;
+        }
+        
+        .swal2-popup.swal2-modal.bigger-modal .swal2-title {
+            font-size: 1.8em !important;
+            margin-bottom: 0.5em !important;
+        }
+        
+        .swal2-popup.swal2-modal.bigger-modal .swal2-content,
+        .swal2-popup.swal2-modal.bigger-modal .swal2-html-container {
+            font-size: 1.1em !important;
+            line-height: 1.5 !important;
+        }
+        
+        .swal2-popup.swal2-modal.bigger-modal .swal2-confirm,
+        .swal2-popup.swal2-modal.bigger-modal .swal2-cancel {
+            font-size: 1.1em !important;
+            padding: 0.6em 1.5em !important;
+        }
     </style>
 </head>
 <body>
@@ -736,7 +761,10 @@
             confirmButtonColor: '#517A5B',
             cancelButtonColor: '#6c757d',
             confirmButtonText: 'Yes, logout',
-            cancelButtonText: 'No, stay'
+            cancelButtonText: 'No, stay',
+            customClass: {
+                popup: 'bigger-modal'
+            }
         }).then((result) => {
             if (result.isConfirmed) {
                 document.getElementById('logout-form').submit();
@@ -836,7 +864,10 @@
                             title: 'Success!',
                             text: data.message,
                             icon: 'success',
-                            confirmButtonColor: '#517A5B'
+                            confirmButtonColor: '#517A5B',
+                            customClass: {
+                                popup: 'bigger-modal'
+                            }
                         });
                         
                         // Reset the form
@@ -855,7 +886,10 @@
                         title: 'Error!',
                         text: 'Something went wrong. Please try again.',
                         icon: 'error',
-                        confirmButtonColor: '#517A5B'
+                        confirmButtonColor: '#517A5B',
+                        customClass: {
+                            popup: 'bigger-modal'
+                        }
                     });
                 });
             });
@@ -888,7 +922,10 @@
                             title: 'Success!',
                             text: 'Buy request updated successfully!',
                             icon: 'success',
-                            confirmButtonColor: '#517A5B'
+                            confirmButtonColor: '#517A5B',
+                            customClass: {
+                                popup: 'bigger-modal'
+                            }
                         });
                         
                         // Reload the page after a short delay to show updated data
@@ -905,7 +942,10 @@
                         title: 'Error!',
                         text: 'Something went wrong. Please try again.',
                         icon: 'error',
-                        confirmButtonColor: '#517A5B'
+                        confirmButtonColor: '#517A5B',
+                        customClass: {
+                            popup: 'bigger-modal'
+                        }
                     });
                 });
             });
@@ -945,7 +985,10 @@
             showCancelButton: true,
             confirmButtonColor: '#fa5252',
             cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Yes, delete it!'
+            confirmButtonText: 'Yes, delete it!',
+            customClass: {
+                popup: 'bigger-modal'
+            }
         }).then((result) => {
             if (result.isConfirmed) {
                 // Use AJAX to delete the request
@@ -965,7 +1008,10 @@
                             title: 'Deleted!',
                             text: data.message,
                             icon: 'success',
-                            confirmButtonColor: '#517A5B'
+                            confirmButtonColor: '#517A5B',
+                            customClass: {
+                                popup: 'bigger-modal'
+                            }
                         });
                         
                         // Reload the page after a short delay
@@ -982,7 +1028,10 @@
                         title: 'Error!',
                         text: error.message || 'Failed to delete the buy request.',
                         icon: 'error',
-                        confirmButtonColor: '#517A5B'
+                        confirmButtonColor: '#517A5B',
+                        customClass: {
+                            popup: 'bigger-modal'
+                        }
                     });
                 });
             }
@@ -1026,7 +1075,10 @@
                     text: 'Response marked as read',
                     icon: 'success',
                     confirmButtonColor: '#517A5B',
-                    timer: 1500
+                    timer: 1500,
+                    customClass: {
+                        popup: 'bigger-modal'
+                    }
                 });
             }
         })
@@ -1036,7 +1088,10 @@
                 title: 'Error!',
                 text: 'Failed to update response status',
                 icon: 'error',
-                confirmButtonColor: '#517A5B'
+                confirmButtonColor: '#517A5B',
+                customClass: {
+                    popup: 'bigger-modal'
+                }
             });
         });
     }
