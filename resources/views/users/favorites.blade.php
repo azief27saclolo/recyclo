@@ -201,26 +201,6 @@
     }
 </style>
 
-@if(session('success'))
-    <div id="flash-message" class="popup-message {{ session('type') }}">
-        {{ session('success') }}
-    </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            setTimeout(function () {
-                var flashMessage = document.getElementById('flash-message');
-                if (flashMessage) {
-                    flashMessage.style.opacity = '0';
-                    flashMessage.style.transition = 'opacity 0.5s ease';
-                    setTimeout(function() {
-                        flashMessage.remove();
-                    }, 500);
-                }
-            }, 2000);
-        });
-    </script>
-@endif
-
 <div class="favorites-container">
     <div class="favorites-header">
         <h1 class="favorites-title">My Favorites</h1>
@@ -256,7 +236,7 @@
                 <h3 class="product-name">{{ $post->title }}</h3>
                 <div class="product-price">₱{{ $post->price }}.00</div>
                 <div class="product-actions">
-                    <form action="{{ route('favorites.remove', $post) }}" method="POST">
+                    <form action="{{ route('favorites.remove', $post) }}" method="POST" class="remove-favorite-form">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="action-btn remove-btn">
@@ -274,21 +254,129 @@
     @endif
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    // Fade effect for remove button
+    // Enhanced removal with AJAX and feedback
     document.addEventListener('DOMContentLoaded', function() {
-        const forms = document.querySelectorAll('.product-actions form');
+        const forms = document.querySelectorAll('.remove-favorite-form');
         forms.forEach(form => {
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 const card = this.closest('.favorite-card');
-                card.style.opacity = '0';
-                card.style.transition = 'opacity 0.3s ease';
-                setTimeout(() => {
-                    this.submit();
-                }, 300);
+                const productName = card.querySelector('.product-name').innerText;
+                const formAction = this.getAttribute('action');
+                const formData = new FormData(this);
+                const method = 'POST';
+                
+                // Show confirmation modal
+                Swal.fire({
+                    title: 'Remove from favorites?',
+                    text: `Do you want to remove "${productName}" from your favorites?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, remove it!',
+                    cancelButtonText: 'Cancel',
+                    width: '32em',
+                    customClass: {
+                        title: 'fs-4 fw-bold',
+                        popup: 'swal-large',
+                        confirmButton: 'btn-lg',
+                        cancelButton: 'btn-lg'
+                    },
+                    backdrop: `rgba(0,0,0,0.4)`,
+                    padding: '2em'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Begin the visual fade out
+                        card.style.opacity = '0';
+                        card.style.transition = 'opacity 0.3s ease';
+                        
+                        // Send AJAX request
+                        fetch(formAction, {
+                            method: method,
+                            body: formData,
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                setTimeout(() => {
+                                    // Remove the card from the DOM
+                                    card.remove();
+                                    
+                                    // Check if there are any cards left
+                                    const remainingCards = document.querySelectorAll('.favorite-card');
+                                    if (remainingCards.length === 0) {
+                                        // Reload the page to show the empty state
+                                        window.location.reload();
+                                    }
+                                    
+                                    // Show success message
+                                    Swal.fire({
+                                        title: 'Removed!',
+                                        text: `"${productName}" has been removed from your favorites.`,
+                                        icon: 'success',
+                                        confirmButtonColor: '#28a745',
+                                        customClass: {
+                                            popup: 'swal-large',
+                                            title: 'fs-4 fw-bold',
+                                            confirmButton: 'btn-lg'
+                                        },
+                                        timer: 2000,
+                                        timerProgressBar: true
+                                    });
+                                }, 300);
+                            } else {
+                                throw new Error('Something went wrong');
+                            }
+                        })
+                        .catch(error => {
+                            // Restore opacity if there was an error
+                            card.style.opacity = '1';
+                            
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'Could not remove the item. Please try again.',
+                                icon: 'error',
+                                confirmButtonColor: '#dc3545',
+                                customClass: {
+                                    popup: 'swal-large'
+                                }
+                            });
+                        });
+                    }
+                });
             });
         });
     });
 </script>
+
+<style>
+    /* Custom styles for SweetAlert2 */
+    .swal-large {
+        font-size: 18px !important;
+    }
+    
+    .swal2-title {
+        font-size: 24px !important;
+    }
+    
+    .swal2-html-container {
+        font-size: 18px !important;
+    }
+    
+    .swal2-confirm, .swal2-cancel {
+        padding: 12px 24px !important;
+        font-size: 16px !important;
+    }
+    
+    /* Additional styling for success message */
+    .swal2-popup.swal2-toast {
+        padding: 0.75em 1.5em;
+        font-size: 1.1em;
+    }
+</style>
 @endsection
