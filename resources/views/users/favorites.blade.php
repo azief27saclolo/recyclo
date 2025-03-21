@@ -15,13 +15,13 @@
 
     .favorites-title {
         color: var(--hoockers-green);
-        font-size: 2rem;
+        font-size: 32px;
         margin-bottom: 10px;
     }
 
     .favorites-subtitle {
         color: #666;
-        font-size: 1.1rem;
+        font-size: 18px;
     }
 
     .favorites-grid {
@@ -60,7 +60,7 @@
         right: 15px;
         padding: 6px 12px;
         border-radius: 20px;
-        font-size: 0.85rem;
+        font-size: 14px;
         font-weight: 500;
         color: white;
         background: rgba(81, 122, 91, 0.9);
@@ -73,7 +73,7 @@
 
     .shop-name {
         color: var(--hoockers-green);
-        font-size: 0.9rem;
+        font-size: 16px;
         margin-bottom: 8px;
         display: flex;
         align-items: center;
@@ -81,14 +81,14 @@
     }
 
     .product-name {
-        font-size: 1.2rem;
+        font-size: 20px;
         margin-bottom: 10px;
         color: #333;
     }
 
     .product-price {
         color: var(--hoockers-green);
-        font-size: 1.3rem;
+        font-size: 22px;
         font-weight: 600;
         margin-bottom: 15px;
     }
@@ -110,7 +110,7 @@
         display: flex;
         align-items: center;
         gap: 5px;
-        font-size: 0.9rem;
+        font-size: 16px;
     }
 
     .remove-btn {
@@ -141,7 +141,7 @@
     }
 
     .empty-favorites i {
-        font-size: 4rem;
+        font-size: 64px;
         color: #ddd;
         margin-bottom: 20px;
     }
@@ -149,10 +149,12 @@
     .empty-favorites h3 {
         color: #333;
         margin-bottom: 10px;
+        font-size: 24px;
     }
 
     .empty-favorites p {
         margin-bottom: 20px;
+        font-size: 18px;
     }
 
     .browse-btn {
@@ -165,6 +167,7 @@
         border-radius: 8px;
         text-decoration: none;
         transition: all 0.3s ease;
+        font-size: 16px;
     }
 
     .browse-btn:hover {
@@ -180,6 +183,7 @@
         padding: 10px;
         border-radius: 5px;
         z-index: 1000;
+        font-size: 16px;
     }
     
     .popup-message.success {
