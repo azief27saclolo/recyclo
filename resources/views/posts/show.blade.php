@@ -18,7 +18,6 @@
               <h1>Price: </h1>
               <h1 style="color: black;">{{ $post->price }}.00</h1>
               
-              <!-- Replace container with simple heading format -->
               <h1>Available Stock: </h1>
               <h1 style="color: {{ $post->quantity < 10 ? '#dc3545' : 'black' }};">
                 {{ $post->quantity }} {{ $post->unit }}
@@ -41,66 +40,42 @@
             </div>
           </div>
 
-        <section class="section shop" id="shop" aria-label="shop">
+        <!-- Similar Products section with shops-style slider -->
+        <section class="section similar-products" id="similar-products" aria-label="similar products">
             <div class="container">
-                <ul class="has-scrollbar">
-                    @foreach ($posts as $post)       
-                        <li class="scrollbar-item">
-                            <x-postCard :post="$post"/>
-                        </li>
+                <div class="shop-title-wrapper">
+                    <h2 class="h2 shop-name">More {{ ucfirst($post->category) }} Products</h2>
+                    <a href="{{ route('posts', ['category' => $post->category]) }}" class="btn-link">
+                        <span class="span">View All {{ ucfirst($post->category) }}</span>
+                        <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
+                    </a>
+                </div>
+                <ul class="has-scrollbar shop-slider">
+                    @foreach ($posts as $similarPost)
+                        @if($similarPost->id != $post->id)
+                            <li class="scrollbar-item">
+                                <x-postCard :post="$similarPost"/>
+                            </li>
+                        @endif
                     @endforeach
+                    
+                    @if($posts->where('id', '!=', $post->id)->count() == 0)
+                        <li class="scrollbar-item">
+                            <div class="empty-shop-card">
+                                <p>No similar {{ $post->category }} products available.</p>
+                            </div>
+                        </li>
+                    @endif
+                    
+                    {{-- Add placeholder items for sliders with few products to ensure slider works --}}
+                    @if($posts->where('id', '!=', $post->id)->count() > 0 && $posts->where('id', '!=', $post->id)->count() < 5)
+                        @for($i = 0; $i < (5 - $posts->where('id', '!=', $post->id)->count()); $i++)
+                            <li class="scrollbar-item placeholder-item"></li>
+                        @endfor
+                    @endif
                 </ul>
             </div>
         </section>
-
-          <section class="section new-arrivals" id="new-arrivals" aria-label="new arrivals">
-            <div class="container">
-              <div class="title-wrapper">
-                <h2 class="h2 section-title">New Arrivals</h2>
-                <a href="#" class="btn-link">
-                  <span class="span">View More New Arrivals</span>
-                  <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
-                </a>
-              </div>
-              <ul class="has-scrollbar">
-                <li class="scrollbar-item">
-                  <div class="shop-card">
-                    <div class="card-banner img-holder" style="--width: 150; --height: 100; border-radius: 5px;">
-                      <img src="{{ asset('images/wood.jpg') }}" width="100" height="100" loading="lazy" alt="New Product 1" class="img-cover">
-                    </div>
-                  </div>
-                </li>
-                <li class="scrollbar-item">
-                  <div class="shop-card">
-                    <div class="card-banner img-holder" style="--width: 150; --height: 100; border-radius: 5px;">
-                      <img src="{{ asset('images/woods3.jpg') }}" width="100" height="100" loading="lazy" alt="New Product 2" class="img-cover">
-                    </div>
-                  </div>
-                </li>
-                <li class="scrollbar-item">
-                  <div class="shop-card">
-                    <div class="card-banner img-holder" style="--width: 150; --height: 100; border-radius: 5px;">
-                      <img src="{{ asset('images/mets.jpg') }}" width="100" height="100" loading="lazy" alt="New Product 3" class="img-cover">
-                    </div>
-                  </div>
-                </li>
-                <li class="scrollbar-item">
-                  <div class="shop-card">
-                    <div class="card-banner img-holder" style="--width: 150; --height: 100; border-radius: 5px;">
-                      <img src="{{ asset('images/br.jpg') }}" width="100" height="100" loading="lazy" alt="New Product 4" class="img-cover">
-                    </div>
-                  </div>
-                </li>
-                <li class="scrollbar-item">
-                    <div class="shop-card">
-                      <div class="card-banner img-holder" style="--width: 150; --height: 100; border-radius: 5px;">
-                        <img src="{{ asset('images/glass.jpg') }}" width="100" height="100" loading="lazy" alt="New Product 4" class="img-cover">
-                      </div>
-                    </div>
-                  </li>
-              </ul>
-            </div>
-          </section>
         </div>
       </section>
 
@@ -297,6 +272,177 @@
       background-color: #f0f8f1;
       color: #517a5b;
       border: 1px solid #c3e6cb;
+    }
+
+    /* Similar Products section styling */
+    .similar-products {
+      margin: 40px 0;
+    }
+    
+    .similar-products .has-scrollbar {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      scrollbar-width: thin;
+      padding: 10px 0;
+    }
+    
+    .similar-products .has-scrollbar::-webkit-scrollbar {
+      height: 8px;
+    }
+    
+    .similar-products .has-scrollbar::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+    
+    .similar-products .has-scrollbar::-webkit-scrollbar-thumb {
+      background: var(--hoockers-green);
+      border-radius: 10px;
+    }
+    
+    .similar-products .shop-card {
+      min-width: 220px;
+      transition: transform 0.3s ease;
+    }
+    
+    .similar-products .shop-card:hover {
+      transform: translateY(-5px);
+    }
+    
+    .similar-products .card-banner {
+      position: relative;
+      overflow: hidden;
+      border-radius: 8px;
+    }
+    
+    .similar-products .card-actions {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      display: flex;
+      gap: 5px;
+    }
+    
+    .similar-products .action-btn {
+      background-color: white;
+      color: var(--hoockers-green);
+      width: 35px;
+      height: 35px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+    }
+    
+    .similar-products .action-btn:hover {
+      background-color: var(--hoockers-green);
+      color: white;
+    }
+
+    /* Shop-style slider styling for similar products */
+    .shop-slider {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+        margin-top: 5px;
+    }
+
+    /* Custom shop title styling */
+    .shop-title-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        border-bottom: 2px solid #e7e7e7;
+        padding-bottom: 6px;
+    }
+
+    .shop-name {
+        font-size: 2.2rem !important;
+        font-weight: 700;
+        color: #1e6f31;
+        margin-bottom: 0;
+        text-transform: capitalize;
+    }
+
+    /* Shop slider item styling */
+    .shop-slider .scrollbar-item {
+        flex: 0 0 auto;
+        width: 220px;
+        margin-right: 12px;
+        scroll-snap-align: start;
+    }
+
+    .shop-slider .placeholder-item {
+        visibility: hidden;
+        min-width: 200px;
+    }
+
+    .empty-shop-card {
+        width: 200px;
+        height: 280px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px dashed #ccc;
+        border-radius: 8px;
+        text-align: center;
+        padding: 20px;
+        background-color: #f9f9f9;
+    }
+
+    /* Make sure scrollbar is always visible when needed */
+    .has-scrollbar::-webkit-scrollbar {
+        height: 6px;
+        width: 6px;
+    }
+
+    /* Scrollbar styles */
+    .has-scrollbar::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 25px;
+    }
+
+    .has-scrollbar::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 25px;
+    }
+
+    .has-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+    
+    /* Adjust spacing for similar products section */
+    .section.similar-products {
+        padding-top: 30px;
+        padding-bottom: 30px;
+        background-color: #f9f9f9;
+        border-radius: 15px;
+        margin-top: 40px;
+        margin-bottom: 40px;
+    }
+    
+    /* Remove old similar products styling that conflicts with new design */
+    .similar-products .shop-card,
+    .similar-products .card-banner,
+    .similar-products .card-actions,
+    .similar-products .action-btn {
+        /* Reset conflicting styles */
+        min-width: unset;
+        position: unset;
+        border-radius: unset;
+        width: unset;
+        height: unset;
+    }
+    
+    /* Keep hover effect but apply to new structure */
+    .shop-slider .scrollbar-item:hover {
+        transform: translateY(-5px);
+        transition: transform 0.3s ease;
     }
   </style>
       
