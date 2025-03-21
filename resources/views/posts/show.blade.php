@@ -17,14 +17,23 @@
 
               <h1>Price: </h1>
               <h1 style="color: black;">{{ $post->price }}.00</h1>
+              
+              <!-- Replace container with simple heading format -->
+              <h1>Available Stock: </h1>
+              <h1 style="color: {{ $post->quantity < 10 ? '#dc3545' : 'black' }};">
+                {{ $post->quantity }} {{ $post->unit }}
+                @if($post->quantity < 10)
+                  <span style="font-size: 18px; color: #dc3545; margin-left: 5px;">(Low Stock)</span>
+                @endif
+              </h1>
 
               <h1>Description: </h1>
               <p style="color: black;">{{ $post->description }}</p>
 
               <div style="display: flex; align-items: center;">
-                <h1 style="color: black;">  Quantity (kg): </h1>
+                <h1 style="color: black;">  Quantity ({{ $post->unit }}): </h1>
                 <button onclick="decreaseQuantity()" style="margin-left: 10px;padding: 7px 10px; font-size: 1rem; border-radius: 25px;">-</button>
-                <input type="number" id="quantity" value="1" min="1" style="width: 50px; text-align: center; margin: 0 10px; border: 1px solid black; border-radius: 10px; ">
+                <input type="number" id="quantity" value="1" min="1" max="{{ $post->quantity }}" style="width: 50px; text-align: center; margin: 0 10px; border: 1px solid black; border-radius: 10px; ">
                 <button onclick="increaseQuantity()" style="margin-right: 10px; padding: 7px 10px; font-size: 1rem; border-radius: 25px; ">+</button>
                 <a href="#" class="btn btn-primary" style="width: 400px; height: 45px; border-radius: 30px; margin-right: 10px;">Add to Cart</a>
                 <a href="#" onclick="redirectToCheckout()" class="btn btn-primary" style="width: 400px; height: 45px; border-radius: 30px;">Check Out</a>
@@ -214,7 +223,12 @@
   <script>
     function increaseQuantity() {
       var quantity = document.getElementById('quantity');
-      quantity.value = parseInt(quantity.value) + 1;
+      var maxQuantity = {{ $post->quantity }};
+      if (parseInt(quantity.value) < maxQuantity) {
+        quantity.value = parseInt(quantity.value) + 1;
+      } else {
+        alert('Maximum available quantity is ' + maxQuantity + ' {{ $post->unit }}');
+      }
     }
 
     function decreaseQuantity() {
@@ -223,6 +237,15 @@
         quantity.value = parseInt(quantity.value) - 1;
       }
     }
+
+    // Validate quantity doesn't exceed available stock
+    document.getElementById('quantity').addEventListener('change', function() {
+      var maxQuantity = {{ $post->quantity }};
+      if (parseInt(this.value) > maxQuantity) {
+        this.value = maxQuantity;
+        alert('Maximum available quantity is ' + maxQuantity + ' {{ $post->unit }}');
+      }
+    });
 
     function redirectToCheckout() {
         var quantity = document.getElementById('quantity').value;
@@ -256,6 +279,24 @@
     button:hover {
       background-color: var(--hoockers-green);
       color: var(--white);
+    }
+    
+    /* Add styling for stock display */
+    .stock-indicator {
+      display: inline-block;
+      padding: 5px 15px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+    .stock-indicator.low {
+      background-color: #fff8f8;
+      color: #dc3545;
+      border: 1px solid #f5c6cb;
+    }
+    .stock-indicator.good {
+      background-color: #f0f8f1;
+      color: #517a5b;
+      border: 1px solid #c3e6cb;
     }
   </style>
       
