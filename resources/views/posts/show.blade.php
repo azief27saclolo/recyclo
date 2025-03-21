@@ -456,6 +456,75 @@
         transform: translateY(-5px);
         transition: transform 0.3s ease;
     }
+
+    /* Fix for category blinking issue */
+    .shop-title-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        border-bottom: 2px solid #e7e7e7;
+        padding-bottom: 6px;
+        transition: none; /* Prevent unwanted transitions */
+    }
+
+    .shop-name {
+        font-size: 2.2rem !important;
+        font-weight: 700;
+        color: #1e6f31;
+        margin-bottom: 0;
+        text-transform: capitalize;
+        transition: none; /* Prevent unwanted transitions */
+    }
+
+    .btn-link {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        text-decoration: none;
+        color: #1e6f31;
+        font-weight: 600;
+        transition: color 0.2s ease-in-out;
+    }
+
+    .btn-link:hover {
+        color: #124a1e;
+        text-decoration: none;
+        transform: none; /* Prevent unwanted transformations */
+    }
+
+    .btn-link .span {
+        transition: none; /* Prevent unwanted transitions */
+    }
+
+    /* Fix for similar products section */
+    .similar-products {
+        margin: 40px 0;
+        position: relative;
+    }
+
+    /* Ensure no unwanted hover effects on shop items */
+    .shop-slider .scrollbar-item {
+        flex: 0 0 auto;
+        width: 220px;
+        margin-right: 12px;
+        scroll-snap-align: start;
+        transition: transform 0.3s ease;
+    }
+
+    /* Apply hover effect only to card inside scrollbar-item */
+    .shop-slider .scrollbar-item > * {
+        transition: transform 0.3s ease;
+    }
+    
+    .shop-slider .scrollbar-item:hover > * {
+        transform: translateY(-5px);
+    }
+
+    /* Remove the transform on the scrollbar-item itself */
+    .shop-slider .scrollbar-item:hover {
+        transform: none;
+    }
   </style>
       
       <script>
