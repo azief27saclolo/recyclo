@@ -213,12 +213,13 @@
                             </div>
                             <div class="item-price">₱{{ number_format($item->price, 2) }} per kg</div>
                         </div>
-                        <form action="{{ route('cart.remove', $item->id) }}" method="POST">
+                        <button type="button" class="remove-btn" onclick="confirmRemoveItem({{ $item->id }}, '{{ $item->product->name }}')">
+                            <i class="bi bi-trash"></i> Remove
+                        </button>
+                        <!-- Hidden form for item removal -->
+                        <form id="remove-form-{{ $item->id }}" action="{{ route('cart.remove', $item->id) }}" method="POST" style="display: none;">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="remove-btn">
-                                <i class="bi bi-trash"></i> Remove
-                            </button>
                         </form>
                     </div>
                 @endforeach
@@ -261,6 +262,34 @@
 
 <!-- Add SweetAlert2 CDN -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    /* Enhanced SweetAlert2 styling */
+    .swal2-popup.bigger-modal {
+        width: 42em !important; /* Increased from 36em */
+        max-width: 95% !important;
+        font-size: 1.3rem !important; /* Increased from 1.2rem */
+        padding: 2.5em !important; /* Increased from 2em */
+        border-radius: 15px !important;
+    }
+    
+    .swal2-title {
+        font-size: 28px !important; /* Increased from 24px */
+        margin-bottom: 20px !important; /* Increased from 15px */
+    }
+    
+    .swal2-html-container {
+        font-size: 1.2rem !important;
+    }
+    
+    .swal2-confirm, .swal2-cancel {
+        border-radius: 30px !important;
+        font-size: 18px !important; /* Increased from 16px */
+        padding: 14px 28px !important; /* Increased from 12px 24px */
+        font-weight: 600 !important;
+        letter-spacing: 0.5px !important;
+    }
+</style>
 
 <script>
     // Show success message if session has 'success' notification
@@ -335,7 +364,31 @@
         form.submit();
     }
 
-    // Remove item animation
+    // Confirmation function for removing cart items
+    function confirmRemoveItem(itemId, productName) {
+        Swal.fire({
+            title: 'Remove Item?',
+            html: `Are you sure you want to remove <strong>${productName}</strong> from your cart?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, remove it',
+            cancelButtonText: 'No, keep it',
+            customClass: {
+                popup: 'bigger-modal'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Submit the hidden form to remove the item
+                document.getElementById(`remove-form-${itemId}`).submit();
+            }
+        });
+    }
+
+    // Remove the event listeners that interfere with form submission
+    // This code was conflicting with the form submission from the modal
+    /*
     document.querySelectorAll('.remove-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const item = this.closest('.cart-item');
@@ -343,5 +396,6 @@
             setTimeout(() => item.remove(), 300);
         });
     });
+    */
 </script>
 @endsection
