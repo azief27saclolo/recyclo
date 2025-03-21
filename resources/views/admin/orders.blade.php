@@ -6,6 +6,8 @@
     <title>Orders Management - Recyclo Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Add SweetAlert2 library -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
             --hoockers-green: #517A5B;
@@ -582,6 +584,79 @@
     <script>
         // Simple tab functionality for filtering orders
         document.addEventListener('DOMContentLoaded', function() {
+            // Show SweetAlert for session messages
+            @if (session('success'))
+                Swal.fire({
+                    title: 'Success!',
+                    text: '{{ session('success') }}',
+                    icon: 'success',
+                    confirmButtonColor: '#517A5B',
+                    confirmButtonText: 'OK'
+                });
+            @endif
+
+            @if (session('error'))
+                Swal.fire({
+                    title: 'Error!',
+                    text: '{{ session('error') }}',
+                    icon: 'error',
+                    confirmButtonColor: '#dc3545',
+                    confirmButtonText: 'OK'
+                });
+            @endif
+
+            // Handle form submissions with SweetAlert confirmations
+            document.querySelectorAll('.action-buttons form').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const isApprove = form.action.includes('approve');
+                    const actionText = isApprove ? 'approve' : 'reject';
+                    const iconType = isApprove ? 'question' : 'warning';
+                    const confirmBtnColor = isApprove ? '#28a745' : '#dc3545';
+                    
+                    Swal.fire({
+                        title: `${isApprove ? 'Approve' : 'Reject'} Order?`,
+                        text: `Are you sure you want to ${actionText} this order?`,
+                        icon: iconType,
+                        showCancelButton: true,
+                        confirmButtonColor: confirmBtnColor,
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: `Yes, ${actionText} it!`,
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
+            });
+
+            // Handle status update dropdown actions with confirmation
+            document.querySelectorAll('.dropdown-content form').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const newStatus = form.querySelector('input[name="status"]').value;
+                    
+                    Swal.fire({
+                        title: 'Update Status?',
+                        text: `Are you sure you want to update the status to ${newStatus}?`,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#517A5B',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, update it!',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
+            });
+
+            // Existing tab functionality
             const tabButtons = document.querySelectorAll('.tab-btn');
             const orderRows = document.querySelectorAll('.order-row');
             
