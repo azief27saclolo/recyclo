@@ -296,26 +296,42 @@
     }
   }
   
-  /* SweetAlert2 custom styling */
+  /* SweetAlert2 custom styling - Enhanced sizes */
   .swal2-popup.bigger-modal {
-    width: 36em !important;
+    width: 42em !important; /* Increased from 36em */
     max-width: 95% !important;
-    font-size: 1.2rem !important;
-    padding: 2em !important;
+    font-size: 1.3rem !important; /* Increased from 1.2rem */
+    padding: 2.5em !important; /* Increased from 2em */
     border-radius: 15px !important;
   }
   
   .swal-title {
-    font-size: 24px !important;
-    margin-bottom: 15px !important;
+    font-size: 28px !important; /* Increased from 24px */
+    margin-bottom: 20px !important; /* Increased from 15px */
   }
   
   .swal-button {
     border-radius: 30px !important;
-    font-size: 16px !important;
-    padding: 12px 24px !important;
+    font-size: 18px !important; /* Increased from 16px */
+    padding: 14px 28px !important; /* Increased from 12px 24px */
     font-weight: 600 !important;
     letter-spacing: 0.5px !important;
+  }
+  
+  /* Make product image in alert larger */
+  .swal2-html-container img {
+    width: 100px !important; /* Increased from 80px */
+    height: 100px !important; /* Increased from 80px */
+    object-fit: cover !important;
+  }
+  
+  /* Make product details text larger */
+  .swal2-html-container .product-details {
+    font-size: 1.2rem !important;
+  }
+  
+  .swal2-html-container .product-name {
+    font-size: 22px !important;
   }
 </style>
 
@@ -387,15 +403,15 @@
             Swal.fire({
               title: '<span style="color: #517A5B"><i class="bi bi-check-circle-fill"></i> Added to Cart!</span>',
               html: `
-                <div style="display: flex; align-items: center; margin-bottom: 20px; margin-top: 15px;">
-                  <img src="${productImage}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 6px;">
-                  <div style="margin-left: 15px; text-align: left;">
-                    <div style="font-weight: bold; font-size: 18px;">${productName}</div>
-                    <div>Quantity: ${quantity}</div>
-                    <div>₱${productPrice}</div>
+                <div style="display: flex; align-items: center; margin-bottom: 25px; margin-top: 20px;">
+                  <img src="${productImage}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 10px;">
+                  <div style="margin-left: 20px; text-align: left;" class="product-details">
+                    <div style="font-weight: 700; font-size: 22px;" class="product-name">${productName}</div>
+                    <div style="font-size: 18px; margin-top: 8px;">Quantity: ${quantity}</div>
+                    <div style="font-size: 18px; font-weight: 600; color: #517A5B; margin-top: 5px;">₱${productPrice}</div>
                   </div>
                 </div>
-                <p>${data.message}</p>
+                <p style="font-size: 18px;">${data.message}</p>
               `,
               icon: 'success',
               confirmButtonColor: '#517A5B',
