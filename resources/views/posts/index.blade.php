@@ -295,7 +295,32 @@
       margin-left: auto;
     }
   }
+  
+  /* SweetAlert2 custom styling */
+  .swal2-popup.bigger-modal {
+    width: 36em !important;
+    max-width: 95% !important;
+    font-size: 1.2rem !important;
+    padding: 2em !important;
+    border-radius: 15px !important;
+  }
+  
+  .swal-title {
+    font-size: 24px !important;
+    margin-bottom: 15px !important;
+  }
+  
+  .swal-button {
+    border-radius: 30px !important;
+    font-size: 16px !important;
+    padding: 12px 24px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.5px !important;
+  }
 </style>
+
+<!-- Make sure SweetAlert2 is loaded -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
   // Auto-submit form when changing select values (for better UX)
@@ -304,12 +329,119 @@
     const priceSelect = document.getElementById('price-sort');
     
     // Make sure both selects trigger form submit on change
-    categorySelect.addEventListener('change', function() {
-      this.form.submit();
-    });
+    if (categorySelect) {
+      categorySelect.addEventListener('change', function() {
+        this.form.submit();
+      });
+    }
     
-    priceSelect.addEventListener('change', function() {
-      this.form.submit();
+    if (priceSelect) {
+      priceSelect.addEventListener('change', function() {
+        this.form.submit();
+      });
+    }
+
+    // Add to cart functionality with SweetAlert2
+    document.querySelectorAll('[aria-label="add to cart"]').forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        const productId = this.getAttribute('data-product-id');
+        const productName = this.getAttribute('data-product-name');
+        const productImage = this.getAttribute('data-product-image');
+        const productPrice = this.getAttribute('data-product-price');
+        const quantity = 1; // Default quantity
+        
+        // Show loading indicator
+        Swal.fire({
+          title: 'Adding to Cart...',
+          text: 'Please wait',
+          allowOutsideClick: false,
+          showConfirmButton: false,
+          willOpen: () => {
+            Swal.showLoading();
+          },
+          heightAuto: false,
+          customClass: {
+            popup: 'bigger-modal'
+          }
+        });
+        
+        // Send AJAX request to add to cart
+        fetch('{{ route("cart.add") }}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            product_id: productId,
+            quantity: quantity
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Show success message with product details
+            Swal.fire({
+              title: '<span style="color: #517A5B"><i class="bi bi-check-circle-fill"></i> Added to Cart!</span>',
+              html: `
+                <div style="display: flex; align-items: center; margin-bottom: 20px; margin-top: 15px;">
+                  <img src="${productImage}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 6px;">
+                  <div style="margin-left: 15px; text-align: left;">
+                    <div style="font-weight: bold; font-size: 18px;">${productName}</div>
+                    <div>Quantity: ${quantity}</div>
+                    <div>₱${productPrice}</div>
+                  </div>
+                </div>
+                <p>${data.message}</p>
+              `,
+              icon: 'success',
+              confirmButtonColor: '#517A5B',
+              confirmButtonText: 'Continue Shopping',
+              showCancelButton: true,
+              cancelButtonText: 'Go to Cart',
+              cancelButtonColor: '#6c757d',
+              customClass: {
+                popup: 'bigger-modal',
+                title: 'swal-title',
+                confirmButton: 'swal-button',
+                cancelButton: 'swal-button'
+              }
+            }).then((result) => {
+              if (!result.isConfirmed) {
+                // If user clicked "Go to Cart"
+                window.location.href = "{{ route('cart.index') }}";
+              }
+            });
+            
+            // Update cart badge count
+            const cartBadge = document.querySelector('.btn-badge');
+            if (cartBadge) {
+              const currentCount = parseInt(cartBadge.textContent || '0');
+              cartBadge.textContent = currentCount + 1;
+            }
+          } else {
+            // Show error message
+            Swal.fire({
+              title: 'Error',
+              text: data.message || 'Failed to add item to cart',
+              icon: 'error',
+              confirmButtonColor: '#517A5B'
+            });
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          Swal.fire({
+            title: 'Error',
+            text: 'Something went wrong. Please try again.',
+            icon: 'error',
+            confirmButtonColor: '#517A5B'
+          });
+        });
+      });
     });
   });
 </script>

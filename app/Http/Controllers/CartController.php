@@ -65,7 +65,13 @@ class CartController extends Controller
         
         $this->updateCartTotal($cart);
         
-        return redirect()->route('cart.index')->with('success', $message);
+        // Check if the request wants JSON response (for AJAX)
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['success' => true, 'message' => $message]);
+        }
+        
+        // Otherwise, redirect back with a flash message
+        return back()->with('success', $message);
     }
 
     /**

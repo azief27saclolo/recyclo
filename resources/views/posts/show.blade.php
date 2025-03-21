@@ -270,36 +270,6 @@
         
         var quantity = document.getElementById('quantity').value;
         
-        // Create form for submission
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '{{ route("cart.add") }}';
-        form.style.display = 'none';
-        
-        // Add CSRF token
-        const csrfToken = document.createElement('input');
-        csrfToken.type = 'hidden';
-        csrfToken.name = '_token';
-        csrfToken.value = '{{ csrf_token() }}';
-        
-        // Add product ID
-        const productId = document.createElement('input');
-        productId.type = 'hidden';
-        productId.name = 'product_id';
-        productId.value = '{{ $product_id }}';
-        
-        // Add quantity
-        const quantityField = document.createElement('input');
-        quantityField.type = 'hidden';
-        quantityField.name = 'quantity';
-        quantityField.value = quantity;
-        
-        // Assemble and submit form
-        form.appendChild(csrfToken);
-        form.appendChild(productId);
-        form.appendChild(quantityField);
-        document.body.appendChild(form);
-        
         // Show loading indicator via SweetAlert2
         Swal.fire({
             title: 'Adding to Cart...',
@@ -311,7 +281,66 @@
             }
         });
         
-        form.submit();
+        // Send AJAX request to add to cart
+        fetch('{{ route("cart.add") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                product_id: '{{ $product_id }}',
+                quantity: quantity
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                Swal.fire({
+                    title: 'Added to Cart!',
+                    text: data.message,
+                    icon: 'success',
+                    confirmButtonColor: '#517A5B',
+                    confirmButtonText: 'Continue Shopping',
+                    showCancelButton: true,
+                    cancelButtonText: 'Go to Cart',
+                    cancelButtonColor: '#6c757d',
+                    customClass: {
+                        popup: 'bigger-modal'
+                    }
+                }).then((result) => {
+                    if (!result.isConfirmed) {
+                        // If user clicked "Go to Cart"
+                        window.location.href = "{{ route('cart.index') }}";
+                    }
+                });
+            } else {
+                // Show error message
+                Swal.fire({
+                    title: 'Error',
+                    text: data.message || 'Failed to add item to cart',
+                    icon: 'error',
+                    confirmButtonColor: '#517A5B',
+                    customClass: {
+                        popup: 'bigger-modal'
+                    }
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                title: 'Error',
+                text: 'Something went wrong. Please try again.',
+                icon: 'error',
+                confirmButtonColor: '#517A5B',
+                customClass: {
+                    popup: 'bigger-modal'
+                }
+            });
+        });
     }
   </script>
   
