@@ -758,7 +758,7 @@
                         <option value="all">All Orders</option>
                         <option value="processing">Processing</option>
                         <option value="delivering">Delivering</option>
-                        <option value="delivered">Delivered</option>
+                        <option value="for_pickup">For Pick Up</option>
                         <option value="cancelled">Cancelled</option>
                     </select>
                     
@@ -1196,7 +1196,7 @@
                         'pending': '#ffc107',
                         'processing': '#17a2b8',
                         'delivering': '#007bff',
-                        'delivered': '#28a745',
+                        'for_pickup': '#28a745',
                         'cancelled': '#dc3545'
                     };
                     
@@ -1279,7 +1279,7 @@
                                     <select id="update-status" class="form-control" style="width: 100%; padding: 8px; margin-bottom: 10px;">
                                         <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>Processing</option>
                                         <option value="delivering" ${order.status === 'delivering' ? 'selected' : ''}>Delivering</option>
-                                        <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Delivered</option>
+                                        <option value="for_pickup" ${order.status === 'for_pickup' ? 'selected' : ''}>For Pick Up</option>
                                         <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
                                     </select>
                                     <button id="update-status-btn" data-order-id="${order.id}" class="submit-btn" style="width: 100%;">Update Status</button>
