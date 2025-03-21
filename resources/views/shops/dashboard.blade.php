@@ -757,7 +757,7 @@
                     <select id="order-status-filter" class="form-control" style="display: inline-block; width: auto; padding: 8px;">
                         <option value="all">All Orders</option>
                         <option value="processing">Processing</option>
-                        <option value="shipped">Shipped</option>
+                        <option value="delivering">Delivering</option>
                         <option value="delivered">Delivered</option>
                         <option value="cancelled">Cancelled</option>
                     </select>
@@ -1195,7 +1195,7 @@
                     const statusColor = {
                         'pending': '#ffc107',
                         'processing': '#17a2b8',
-                        'shipped': '#007bff',
+                        'delivering': '#007bff',
                         'delivered': '#28a745',
                         'cancelled': '#dc3545'
                     };
@@ -1278,7 +1278,7 @@
                                     <h4 style="font-weight: 600; margin-bottom: 10px;">Update Order Status</h4>
                                     <select id="update-status" class="form-control" style="width: 100%; padding: 8px; margin-bottom: 10px;">
                                         <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>Processing</option>
-                                        <option value="shipped" ${order.status === 'shipped' ? 'selected' : ''}>Shipped</option>
+                                        <option value="delivering" ${order.status === 'delivering' ? 'selected' : ''}>Delivering</option>
                                         <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Delivered</option>
                                         <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
                                     </select>

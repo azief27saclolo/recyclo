@@ -55,8 +55,8 @@
                         <span class="badge" style="background: #517a5b; color: white; border-radius: 50%; width: 20px; height: 20px; display: inline-flex; justify-content: center; align-items: center; margin-left: 5px; font-size: 12px;">{{ $orders->where('status', 'processing')->count() }}</span>
                     </button>
                     <button class="tab-btn" data-tab="to-receive" style="background: #f1f1f1; color: #333; border: none; padding: 10px 20px; border-radius: 8px; display: flex; align-items: center; white-space: nowrap; cursor: pointer;">
-                        <ion-icon name="cube-outline" style="margin-right: 5px;"></ion-icon>
-                        To Receive
+                        <ion-icon name="checkbox-outline" style="margin-right: 5px;"></ion-icon>
+                        Delivered
                         <span class="badge" style="background: #517a5b; color: white; border-radius: 50%; width: 20px; height: 20px; display: inline-flex; justify-content: center; align-items: center; margin-left: 5px; font-size: 12px;">{{ $orders->where('status', 'to_receive')->count() }}</span>
                     </button>
                     <button class="tab-btn" data-tab="completed" style="background: #f1f1f1; color: #333; border: none; padding: 10px 20px; border-radius: 8px; display: flex; align-items: center; white-space: nowrap; cursor: pointer;">
@@ -171,7 +171,7 @@
                     @endif
                 </div>
 
-                <!-- To Receive Orders Tab Content -->
+                <!-- To Receive Orders Tab Content (renamed to Delivered) -->
                 <div class="order-cards" id="to-receive-orders" style="display: none; flex-direction: column; gap: 20px;">
                     @if($orders->where('status', 'to_receive')->count() > 0)
                         @foreach($orders->where('status', 'to_receive') as $order)
@@ -186,7 +186,7 @@
                                         <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
                                     </div>
                                     <div class="order-status" style="margin-top: 10px;">
-                                        <span class="status-badge to-deliver" style="background: #fd7e14; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">To Receive</span>
+                                        <span class="status-badge to-deliver" style="background: #fd7e14; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Delivered</span>
                                     </div>
                                 </div>
                                 <div class="order-footer" style="background: #f8f9fa; padding: 15px; display: flex; gap: 10px;">
@@ -196,8 +196,8 @@
                         @endforeach
                     @else
                         <div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
-                            <ion-icon name="cube-outline" style="font-size: 60px; color: #ccc;"></ion-icon>
-                            <p style="font-size: 18px; color: #666; margin-top: 10px;">No orders to receive</p>
+                            <ion-icon name="checkbox-outline" style="font-size: 60px; color: #ccc;"></ion-icon>
+                            <p style="font-size: 18px; color: #666; margin-top: 10px;">No delivered orders</p>
                         </div>
                     @endif
                 </div>

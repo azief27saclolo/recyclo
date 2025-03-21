@@ -93,7 +93,7 @@ class OrderController extends Controller
 
         // Validate the status
         $validStatus = $request->validate([
-            'status' => 'required|in:processing,shipped,delivered,cancelled'
+            'status' => 'required|in:processing,delivering,delivered,cancelled'
         ]);
 
         // Update order status
