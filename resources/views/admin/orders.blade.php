@@ -502,14 +502,14 @@
                                     <td>
                                         @if($order->status == 'pending')
                                             <div class="action-buttons">
-                                                <!-- Use URL helper instead of route helper to avoid parameter issues -->
-                                                <form action="/admin/orders/{{ $order->id }}/approve" method="POST">
+                                                <!-- Fix the approve order form action path -->
+                                                <form action="{{ route('admin.orders.approve', ['orderId' => $order->id]) }}" method="POST">
                                                     @csrf
                                                     <button type="submit" class="btn btn-approve" title="Approve Order">
                                                         <i class="bi bi-check-circle"></i> Approve
                                                     </button>
                                                 </form>
-                                                <form action="/admin/orders/{{ $order->id }}/reject" method="POST">
+                                                <form action="{{ route('admin.orders.reject', ['orderId' => $order->id]) }}" method="POST">
                                                     @csrf
                                                     <button type="submit" class="btn btn-reject" title="Reject Order">
                                                         <i class="bi bi-x-circle"></i> Reject
@@ -520,7 +520,7 @@
                                             <div class="dropdown">
                                                 <button class="btn btn-primary">Update Status</button>
                                                 <div class="dropdown-content">
-                                                    <form action="/admin/orders/{{ $order->id }}/status" method="POST">
+                                                    <form action="{{ url('/admin/orders/' . $order->id . '/status') }}" method="POST">
                                                         @csrf
                                                         @method('PUT')
                                                         <input type="hidden" name="status" value="pending">

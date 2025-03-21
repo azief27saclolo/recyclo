@@ -52,20 +52,20 @@ Route::get('/search-buy-requests', [BuyController::class, 'search'])->name('sear
 Route::post('/admin/login', [AdminLoginController::class, 'login'])->name('admin.login');
 
 // Admin Routes using full class path
-Route::group(['middleware' => [AdminMiddleware::class]], function() {
-    Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-    Route::get('/admin/orders', [AdminController::class, 'orders'])->name('admin.orders');
-    Route::put('/admin/orders/{order}/status', [AdminController::class, 'updateOrderStatus'])->name('admin.orders.update-status');
+Route::group(['prefix' => 'admin', 'middleware' => [AdminMiddleware::class]], function() {
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    Route::get('/orders', [AdminController::class, 'orders'])->name('admin.orders');
     
-    // Fix the approve/reject route definitions with explicit parameter names
-    Route::post('/admin/orders/{orderId}/approve', [AdminController::class, 'approveOrder'])->name('admin.orders.approve');
-    Route::post('/admin/orders/{orderId}/reject', [AdminController::class, 'rejectOrder'])->name('admin.orders.reject');
+    // Fix approve/reject routes to use consistent naming
+    Route::post('/orders/{orderId}/approve', [AdminController::class, 'approveOrder'])->name('admin.orders.approve');
+    Route::post('/orders/{orderId}/reject', [AdminController::class, 'rejectOrder'])->name('admin.orders.reject');
+    Route::put('/orders/{order}/status', [AdminController::class, 'updateOrderStatus'])->name('admin.orders.status');
     
-    Route::get('/admin/users', [AdminController::class, 'users'])->name('admin.users');
-    Route::put('/admin/users/{user}/status', [AdminController::class, 'updateUserStatus'])->name('admin.users.update-status');
-    Route::get('/admin/shops', [AdminController::class, 'shops'])->name('admin.shops');
-    Route::put('/admin/shops/{shop}/status', [AdminController::class, 'updateShopStatus'])->name('admin.shops.update-status');
-    Route::get('/admin/logout', [AdminController::class, 'logout'])->name('admin.logout');
+    Route::get('/users', [AdminController::class, 'users'])->name('admin.users');
+    Route::put('/users/{user}/status', [AdminController::class, 'updateUserStatus'])->name('admin.users.update-status');
+    Route::get('/shops', [AdminController::class, 'shops'])->name('admin.shops');
+    Route::put('/shops/{shop}/status', [AdminController::class, 'updateShopStatus'])->name('admin.shops.update-status');
+    Route::get('/logout', [AdminController::class, 'logout'])->name('admin.logout');
 });
 
 // Product Routes

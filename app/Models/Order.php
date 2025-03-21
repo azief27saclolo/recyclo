@@ -35,19 +35,19 @@ class Order extends Model
      */
     public function getStatusAttribute($value)
     {
-        // Standardize status to one of our defined values - remove pending from this list
-        $validStatuses = ['processing', 'shipped', 'delivered', 'cancelled'];
-        
-        // If status is pending or not valid, return processing as default (after admin approval)
-        if ($value === 'pending' || !in_array($value, $validStatuses)) {
-            return 'processing';
-        }
-        
+        // Return the actual status without modifying it
+        // This allows the admin to set any valid status including 'pending', 'approved', etc.
         return $value;
     }
 
     // Relationship with the buyer (User who placed the order)
     public function user()
+    {
+        return $this->belongsTo(User::class, 'buyer_id');
+    }
+    
+    // Add explicit buyer relationship
+    public function buyer()
     {
         return $this->belongsTo(User::class, 'buyer_id');
     }

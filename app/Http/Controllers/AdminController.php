@@ -52,23 +52,56 @@ class AdminController extends Controller
         return redirect()->back()->with('success', 'Order status updated successfully');
     }
 
-    // Change method signature back to use $orderId
+    /**
+     * Approve an order
+     *
+     * @param int $orderId
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function approveOrder($orderId)
     {
-        $order = Order::findOrFail($orderId);
-        $order->status = 'approved';
-        $order->save();
-        
-        return redirect()->back()->with('success', 'Order approved successfully');
+        try {
+            // Add logging
+            \Log::info('Approving order', ['order_id' => $orderId]);
+            
+            $order = Order::findOrFail($orderId);
+            
+            // Force update of status attribute directly in database
+            DB::table('orders')
+                ->where('id', $orderId)
+                ->update(['status' => 'approved']);
+            
+            \Log::info('Order approved successfully', ['order_id' => $orderId]);
+            
+            return redirect()->back()->with('success', 'Order #' . $orderId . ' has been approved successfully.');
+        } catch (\Exception $e) {
+            \Log::error('Failed to approve order', [
+                'order_id' => $orderId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return redirect()->back()->with('error', 'Failed to approve order: ' . $e->getMessage());
+        }
     }
 
+    /**
+     * Reject an order
+     *
+     * @param int $orderId
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function rejectOrder($orderId)
     {
-        $order = Order::findOrFail($orderId);
-        $order->status = 'cancelled';
-        $order->save();
-        
-        return redirect()->back()->with('success', 'Order rejected successfully');
+        try {
+            $order = Order::findOrFail($orderId);
+            $order->status = 'cancelled';
+            $order->save();
+            
+            return redirect()->back()->with('success', 'Order #' . $orderId . ' has been rejected successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to reject order: ' . $e->getMessage());
+        }
     }
 
     public function users()
