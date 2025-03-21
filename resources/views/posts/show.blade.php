@@ -278,6 +278,10 @@
             showConfirmButton: false,
             willOpen: () => {
                 Swal.showLoading();
+            },
+            heightAuto: false,
+            customClass: {
+                popup: 'bigger-modal'
             }
         });
         
@@ -297,10 +301,20 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Show success message
+                // Show success message with product details
                 Swal.fire({
-                    title: 'Added to Cart!',
-                    text: data.message,
+                    title: '<span style="color: #517A5B"><i class="bi bi-check-circle-fill"></i> Added to Cart!</span>',
+                    html: `
+                        <div style="display: flex; align-items: center; margin-bottom: 25px; margin-top: 20px;">
+                            <img src="{{ asset('storage/' . $post->image) }}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 10px;">
+                            <div style="margin-left: 20px; text-align: left;" class="product-details">
+                                <div style="font-weight: 700; font-size: 24px;" class="product-name">{{ $post->title }}</div>
+                                <div style="font-size: 20px; margin-top: 8px;">Quantity: ${quantity}</div>
+                                <div style="font-size: 20px; font-weight: 600; color: #517A5B; margin-top: 5px;">₱{{ $post->price }}</div>
+                            </div>
+                        </div>
+                        <p style="font-size: 20px;">${data.message}</p>
+                    `,
                     icon: 'success',
                     confirmButtonColor: '#517A5B',
                     confirmButtonText: 'Continue Shopping',
@@ -308,7 +322,10 @@
                     cancelButtonText: 'Go to Cart',
                     cancelButtonColor: '#6c757d',
                     customClass: {
-                        popup: 'bigger-modal'
+                        popup: 'extra-large-modal',
+                        title: 'swal-title-large',
+                        confirmButton: 'swal-button-large',
+                        cancelButton: 'swal-button-large'
                     }
                 }).then((result) => {
                     if (!result.isConfirmed) {
@@ -316,6 +333,13 @@
                         window.location.href = "{{ route('cart.index') }}";
                     }
                 });
+                
+                // Update cart badge count if it exists
+                const cartBadge = document.querySelector('.btn-badge');
+                if (cartBadge) {
+                    const currentCount = parseInt(cartBadge.textContent || '0');
+                    cartBadge.textContent = currentCount + 1;
+                }
             } else {
                 // Show error message
                 Swal.fire({
@@ -324,7 +348,7 @@
                     icon: 'error',
                     confirmButtonColor: '#517A5B',
                     customClass: {
-                        popup: 'bigger-modal'
+                        popup: 'extra-large-modal'
                     }
                 });
             }
@@ -337,7 +361,7 @@
                 icon: 'error',
                 confirmButtonColor: '#517A5B',
                 customClass: {
-                    popup: 'bigger-modal'
+                    popup: 'extra-large-modal'
                 }
             });
         });
@@ -637,6 +661,53 @@
     /* Remove the transform on the scrollbar-item itself */
     .shop-slider .scrollbar-item:hover {
         transform: none;
+    }
+
+    /* Enhanced SweetAlert2 modal styling */
+    .swal2-popup.extra-large-modal {
+        width: 48em !important; /* Increased from 42em */
+        max-width: 95% !important;
+        font-size: 1.4rem !important; /* Increased from 1.3rem */
+        padding: 3em !important; /* Increased from 2.5em */
+        border-radius: 18px !important; /* More rounded corners */
+    }
+    
+    .swal-title-large {
+        font-size: 32px !important; /* Increased from 28px */
+        margin-bottom: 25px !important; /* Increased from 20px */
+    }
+    
+    .swal-button-large {
+        border-radius: 30px !important;
+        font-size: 20px !important; /* Increased from 18px */
+        padding: 16px 32px !important; /* Increased from 14px 28px */
+        font-weight: 600 !important;
+        letter-spacing: 0.5px !important;
+        min-width: 180px !important; /* Ensure buttons have good width */
+    }
+    
+    /* Success alert styling adjustments */
+    .swal2-success-ring {
+        width: 90px !important;
+        height: 90px !important;
+    }
+    
+    .swal2-icon.swal2-success [class^=swal2-success-line] {
+        height: 6px !important; /* Thicker checkmark */
+    }
+    
+    .swal2-icon.swal2-success .swal2-success-line-tip {
+        width: 30px !important;
+    }
+    
+    .swal2-icon.swal2-success .swal2-success-line-long {
+        width: 60px !important;
+    }
+    
+    .swal2-icon {
+        width: 90px !important; /* Bigger icon */
+        height: 90px !important;
+        margin: 0.5em auto 1.5em !important; /* More space above and below */
     }
   </style>
       
