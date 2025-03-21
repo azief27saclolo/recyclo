@@ -92,7 +92,11 @@
                                     </div>
                                 </div>
                                 <div class="order-footer" style="background: #f8f9fa; padding: 15px; display: flex; gap: 10px;">
-                                    <button class="btn btn-primary" style="background: #517a5b; color: white; border: none; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer;">Track Order</button>
+                                    <button class="btn btn-primary track-location-btn" 
+                                            data-location="{{ $order->seller->location ?? 'Zamboanga City' }}" 
+                                            style="background: #517a5b; color: white; border: none; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                                        <ion-icon name="location-outline"></ion-icon> Track Location
+                                    </button>
                                     <button class="btn btn-secondary" style="background: white; border: 1px solid #517a5b; color: #517a5b; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer;">Cancel Order</button>
                                 </div>
                             </div>
@@ -127,7 +131,11 @@
                                     </div>
                                 </div>
                                 <div class="order-footer" style="background: #f8f9fa; padding: 15px; display: flex; gap: 10px;">
-                                    <button class="btn btn-primary" style="background: #517a5b; color: white; border: none; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer;">Track Order</button>
+                                    <button class="btn btn-primary track-location-btn" 
+                                            data-location="{{ $order->seller->location ?? 'Zamboanga City' }}" 
+                                            style="background: #517a5b; color: white; border: none; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                                        <ion-icon name="location-outline"></ion-icon> Track Location
+                                    </button>
                                 </div>
                             </div>
                         @endforeach
@@ -159,7 +167,11 @@
                                     </div>
                                 </div>
                                 <div class="order-footer" style="background: #f8f9fa; padding: 15px; display: flex; gap: 10px;">
-                                    <button class="btn btn-primary" style="background: #517a5b; color: white; border: none; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer;">Track Order</button>
+                                    <button class="btn btn-primary track-location-btn" 
+                                            data-location="{{ $order->seller->location ?? 'Zamboanga City' }}" 
+                                            style="background: #517a5b; color: white; border: none; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                                        <ion-icon name="location-outline"></ion-icon> Track Location
+                                    </button>
                                 </div>
                             </div>
                         @endforeach
@@ -190,7 +202,11 @@
                                     </div>
                                 </div>
                                 <div class="order-footer" style="background: #f8f9fa; padding: 15px; display: flex; gap: 10px;">
-                                    <button class="btn btn-primary" style="background: #517a5b; color: white; border: none; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer;">Track Order</button>
+                                    <button class="btn btn-primary track-location-btn" 
+                                            data-location="{{ $order->seller->location ?? 'Zamboanga City' }}" 
+                                            style="background: #517a5b; color: white; border: none; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                                        <ion-icon name="location-outline"></ion-icon> Track Location
+                                    </button>
                                 </div>
                             </div>
                         @endforeach
@@ -276,6 +292,20 @@
         </section>
     </article>
 
+    <!-- Add Location Map Modal -->
+    <div id="locationMapModal" style="display: none; position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);">
+        <div style="background-color: white; margin: 50px auto; padding: 20px; width: 90%; max-width: 800px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+                <h2 style="color: #517a5b; font-size: 24px; font-weight: 600; margin: 0;">Location Tracker</h2>
+                <span id="closeLocationMap" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <p id="locationDetails" style="font-size: 16px; margin-bottom: 15px;">Loading location details...</p>
+                <div id="locationMap" style="height: 400px; width: 100%; border-radius: 8px; border: 1px solid #ccc;"></div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Tab switching functionality
         document.addEventListener('DOMContentLoaded', function() {
@@ -303,6 +333,99 @@
                     document.getElementById(`${tabId}-orders`).style.display = 'flex';
                 });
             });
+
+            // Track Location button click handlers
+            const locationMapModal = document.getElementById('locationMapModal');
+            const closeLocationMap = document.getElementById('closeLocationMap');
+            const locationDetails = document.getElementById('locationDetails');
+            let map = null; 
+            
+            // Close modal when X is clicked
+            closeLocationMap.addEventListener('click', function() {
+                locationMapModal.style.display = 'none';
+            });
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', function(e) {
+                if (e.target === locationMapModal) {
+                    locationMapModal.style.display = 'none';
+                }
+            });
+            
+            // Track location button click handler
+            document.querySelectorAll('.track-location-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const locationAddress = this.getAttribute('data-location');
+                    locationDetails.textContent = `Location: ${locationAddress}`;
+                    locationMapModal.style.display = 'block';
+                    
+                    // Initialize map after modal is displayed
+                    setTimeout(function() {
+                        initializeMap(locationAddress);
+                    }, 100);
+                });
+            });
+            
+            // Initialize map with the given address
+            function initializeMap(address) {
+                // If map already exists, destroy it
+                if (map) {
+                    map.remove();
+                }
+                
+                // Create a new map
+                map = L.map('locationMap').setView([6.9214, 122.0790], 13); // Default to Zamboanga City
+                
+                // Add OpenStreetMap tile layer
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+                
+                // Geocode the address to get coordinates
+                geocodeAddress(address, map);
+            }
+            
+            // Geocode address to coordinates
+            function geocodeAddress(address, map) {
+                fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.length > 0) {
+                            const result = data[0];
+                            const lat = parseFloat(result.lat);
+                            const lon = parseFloat(result.lon);
+                            
+                            // Update map view
+                            map.setView([lat, lon], 16);
+                            
+                            // Add marker for the location
+                            const marker = L.marker([lat, lon]).addTo(map);
+                            marker.bindPopup(`<b>Location:</b><br>${address}`).openPopup();
+                            
+                            // Add a circle to represent approximate area
+                            L.circle([lat, lon], {
+                                color: '#517a5b',
+                                fillColor: '#517a5b',
+                                fillOpacity: 0.2,
+                                radius: 500 // 500 meters
+                            }).addTo(map);
+                            
+                            // Update location details
+                            locationDetails.innerHTML = `<strong>Location:</strong> ${address}<br>
+                                                       <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+                        } else {
+                            locationDetails.textContent = `Could not find coordinates for: ${address}`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error geocoding address:', error);
+                        locationDetails.textContent = `Error finding location: ${error.message}`;
+                    });
+            }
         });
     </script>
+
+    <!-- Include Leaflet CSS and JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 @endsection
