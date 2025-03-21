@@ -195,18 +195,6 @@
         <p class="cart-subtitle">Review your items before checkout</p>
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div class="alert alert-danger">
-            {{ session('error') }}
-        </div>
-    @endif
-
     @if($cart->items->count() > 0)
         <div class="cart-content">
             <div class="cart-items">
@@ -271,7 +259,38 @@
     @endif
 </div>
 
+<!-- Add SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
+    // Show success message if session has 'success' notification
+    @if(session('success'))
+        Swal.fire({
+            title: 'Success!',
+            text: "{{ session('success') }}",
+            icon: 'success',
+            confirmButtonColor: '#517A5B',
+            confirmButtonText: 'OK',
+            customClass: {
+                popup: 'bigger-modal'
+            }
+        });
+    @endif
+
+    // Show error message if session has 'error' notification
+    @if(session('error'))
+        Swal.fire({
+            title: 'Error!',
+            text: "{{ session('error') }}",
+            icon: 'error',
+            confirmButtonColor: '#517A5B',
+            confirmButtonText: 'OK',
+            customClass: {
+                popup: 'bigger-modal'
+            }
+        });
+    @endif
+
     function updateCartItem(itemId, action) {
         const input = document.getElementById(`qty-input-${itemId}`);
         let value = parseInt(input.value);

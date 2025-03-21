@@ -2,6 +2,8 @@
 
 @section('content')
 <div class="container">
+    <!-- Add SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <section class="section shop" id="shop" aria-label="shop">
         <div class="container">
@@ -34,7 +36,7 @@
                 <button onclick="decreaseQuantity()" style="margin-left: 10px;padding: 7px 10px; font-size: 1rem; border-radius: 25px;">-</button>
                 <input type="number" id="quantity" value="1" min="1" max="{{ $post->quantity }}" style="width: 50px; text-align: center; margin: 0 10px; border: 1px solid black; border-radius: 10px; ">
                 <button onclick="increaseQuantity()" style="margin-right: 10px; padding: 7px 10px; font-size: 1rem; border-radius: 25px; ">+</button>
-                <a href="#" class="btn btn-primary" style="width: 400px; height: 45px; border-radius: 30px; margin-right: 10px;">Add to Cart</a>
+                <a href="#" class="btn btn-primary" onclick="addToCart(event)" style="width: 400px; height: 45px; border-radius: 30px; margin-right: 10px;">Add to Cart</a>
                 <a href="#" onclick="redirectToCheckout()" class="btn btn-primary" style="width: 400px; height: 45px; border-radius: 30px;">Check Out</a>
               </div>
             </div>
@@ -261,7 +263,89 @@
             }
         });
     }
+
+    // New function to add item to cart with SweetAlert2
+    function addToCart(event) {
+        event.preventDefault();
+        
+        var quantity = document.getElementById('quantity').value;
+        
+        // Create form for submission
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ route("cart.add") }}';
+        form.style.display = 'none';
+        
+        // Add CSRF token
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = '_token';
+        csrfToken.value = '{{ csrf_token() }}';
+        
+        // Add product ID
+        const productId = document.createElement('input');
+        productId.type = 'hidden';
+        productId.name = 'product_id';
+        productId.value = '{{ $product_id }}';
+        
+        // Add quantity
+        const quantityField = document.createElement('input');
+        quantityField.type = 'hidden';
+        quantityField.name = 'quantity';
+        quantityField.value = quantity;
+        
+        // Assemble and submit form
+        form.appendChild(csrfToken);
+        form.appendChild(productId);
+        form.appendChild(quantityField);
+        document.body.appendChild(form);
+        
+        // Show loading indicator via SweetAlert2
+        Swal.fire({
+            title: 'Adding to Cart...',
+            text: 'Please wait',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            willOpen: () => {
+                Swal.showLoading();
+            }
+        });
+        
+        form.submit();
+    }
   </script>
+  
+  <!-- Success/error messages handling -->
+  @if(session('success'))
+    <script>
+        Swal.fire({
+            title: 'Success!',
+            text: "{{ session('success') }}",
+            icon: 'success',
+            confirmButtonColor: '#517A5B',
+            confirmButtonText: 'OK',
+            customClass: {
+                popup: 'bigger-modal'
+            }
+        });
+    </script>
+  @endif
+  
+  @if(session('error'))
+    <script>
+        Swal.fire({
+            title: 'Error!',
+            text: "{{ session('error') }}",
+            icon: 'error',
+            confirmButtonColor: '#517A5B',
+            confirmButtonText: 'OK',
+            customClass: {
+                popup: 'bigger-modal'
+            }
+        });
+    </script>
+  @endif
+
   <style>
     button:hover {
       background-color: var(--hoockers-green);

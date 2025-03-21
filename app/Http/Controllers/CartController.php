@@ -51,6 +51,7 @@ class CartController extends Controller
             // Update quantity if product already exists
             $cartItem->quantity += $request->quantity;
             $cartItem->save();
+            $message = "{$product->name} quantity updated in your cart!";
         } else {
             // Add new item to cart
             CartItem::create([
@@ -59,11 +60,12 @@ class CartController extends Controller
                 'quantity' => $request->quantity,
                 'price' => $product->price
             ]);
+            $message = "{$product->name} added to your cart!";
         }
         
         $this->updateCartTotal($cart);
         
-        return redirect()->route('cart.index')->with('success', 'Product added to cart successfully!');
+        return redirect()->route('cart.index')->with('success', $message);
     }
 
     /**
