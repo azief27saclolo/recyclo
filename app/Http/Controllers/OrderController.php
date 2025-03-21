@@ -97,6 +97,7 @@ class OrderController extends Controller
         ]);
 
         $newStatus = $validStatus['status'];
+        $orderAmount = null;
         
         // If status is being changed to completed, update product quantity
         if ($newStatus === 'completed') {
@@ -122,11 +123,15 @@ class OrderController extends Controller
             $post->quantity -= $order->quantity;
             $post->save();
             
+            // Store the order amount for the earnings update
+            $orderAmount = $order->total_amount;
+            
             Log::info('Product quantity updated after order completion', [
                 'order_id' => $order->id,
                 'post_id' => $post->id,
                 'old_quantity' => $post->quantity + $order->quantity,
-                'new_quantity' => $post->quantity
+                'new_quantity' => $post->quantity,
+                'order_amount' => $orderAmount
             ]);
         }
 
@@ -137,7 +142,8 @@ class OrderController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Order status updated successfully',
-            'status' => $order->status
+            'status' => $order->status,
+            'orderAmount' => $orderAmount
         ]);
     }
 }

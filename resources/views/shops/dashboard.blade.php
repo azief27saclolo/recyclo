@@ -433,10 +433,10 @@
                             <div class="stat-number" style="color: white;">
                                 @php
                                     try {
-                                        // Only count earnings from delivered orders
+                                        // Only count earnings from completed orders
                                         // Apply 10% commission fee deduction (multiply by 0.9)
                                         $totalEarnings = \App\Models\Order::where('seller_id', Auth::id())
-                                                    ->where('status', 'delivered')
+                                                    ->where('status', 'completed')
                                                     ->sum('total_amount');
                                         $netEarnings = $totalEarnings * 0.9; // Deduct 10% commission fee
                                         echo '₱' . number_format($netEarnings ?? 0, 2);
@@ -1346,6 +1346,11 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
+                            // If the order status is set to completed, update the earnings display
+                            if (newStatus === 'completed' && data.orderAmount) {
+                                updateEarningsCard(data.orderAmount);
+                            }
+                            
                             Swal.fire({
                                 title: 'Updated!',
                                 text: 'Order status has been updated.',
@@ -1378,12 +1383,32 @@
                             icon: 'error',
                             customClass: {
                                 popup: 'bigger-modal'
-                            }
+                                }
+                            });
                         });
-                    });
-                }
-            });
-        }
+                    }
+                });
+            }
+            
+            // Function to update the earnings card in real-time when an order is completed
+            function updateEarningsCard(orderAmount) {
+                // Get the earnings stat card number element
+                const earningsElement = document.querySelector('.stat-card:nth-child(3) .stat-number');
+                if (!earningsElement) return;
+                
+                // Get the current earnings value (remove currency symbol and commas)
+                let currentValue = earningsElement.textContent.trim();
+                currentValue = parseFloat(currentValue.replace('₱', '').replace(/,/g, '')) || 0;
+                
+                // Calculate new earnings with 10% fee deducted
+                const newOrderAmount = parseFloat(orderAmount) * 0.9; // Apply 10% commission fee
+                const newTotalEarnings = currentValue + newOrderAmount;
+                
+                // Update the display with formatted number
+                earningsElement.textContent = '₱' + newTotalEarnings.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                
+                console.log(`Earnings updated: Added ₱${newOrderAmount.toFixed(2)} (after 10% fee from ₱${orderAmount})`);
+            }
 
         // View order button handlers
         // ...rest of the existing code...
