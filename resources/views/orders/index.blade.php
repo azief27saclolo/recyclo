@@ -17,21 +17,21 @@
                     <div class="stat-card" style="background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: flex; align-items: center;">
                         <ion-icon name="bag-handle-outline" style="font-size: 40px; color: #517a5b; margin-right: 15px;"></ion-icon>
                         <div class="stat-info">
-                            <h3 style="font-size: 24px; margin: 0;">{{ $orders->where('status', 'pending')->count() }}</h3>
+                            <h3 style="font-size: 24px; margin: 0;">{{ $orders->where('status', 'processing')->count() }}</h3>
                             <p style="margin: 0; color: #666;">Active Orders</p>
                         </div>
                     </div>
                     <div class="stat-card" style="background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: flex; align-items: center;">
                         <ion-icon name="time-outline" style="font-size: 40px; color: #517a5b; margin-right: 15px;"></ion-icon>
                         <div class="stat-info">
-                            <h3 style="font-size: 24px; margin: 0;">{{ $orders->where('status', 'processing')->count() }}</h3>
+                            <h3 style="font-size: 24px; margin: 0;">{{ $orders->where('status', 'delivering')->count() }}</h3>
                             <p style="margin: 0; color: #666;">In Transit</p>
                         </div>
                     </div>
                     <div class="stat-card" style="background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: flex; align-items: center;">
                         <ion-icon name="checkmark-circle-outline" style="font-size: 40px; color: #517a5b; margin-right: 15px;"></ion-icon>
                         <div class="stat-info">
-                            <h3 style="font-size: 24px; margin: 0;">{{ $orders->where('status', 'completed')->count() }}</h3>
+                            <h3 style="font-size: 24px; margin: 0;">{{ $orders->where('status', 'delivered')->count() }}</h3>
                             <p style="margin: 0; color: #666;">Completed</p>
                         </div>
                     </div>
@@ -140,7 +140,7 @@
                     @endif
                 </div>
 
-                <!-- To Ship Orders Tab Content (renamed to Delivering) -->
+                <!-- Delivering Tab Content -->
                 <div class="order-cards" id="to-ship-orders" style="display: none; flex-direction: column; gap: 20px;">
                     @if($orders->where('status', 'delivering')->count() > 0)
                         @foreach($orders->where('status', 'delivering') as $order)
@@ -171,10 +171,10 @@
                     @endif
                 </div>
 
-                <!-- To Receive Orders Tab Content (renamed to Delivered) -->
+                <!-- Delivered Orders Tab Content -->
                 <div class="order-cards" id="to-receive-orders" style="display: none; flex-direction: column; gap: 20px;">
-                    @if($orders->where('status', 'to_receive')->count() > 0)
-                        @foreach($orders->where('status', 'to_receive') as $order)
+                    @if($orders->where('status', 'delivered')->count() > 0)
+                        @foreach($orders->where('status', 'delivered') as $order)
                             <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
                                 <div class="order-header" style="padding: 15px;">
                                     <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
