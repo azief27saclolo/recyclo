@@ -755,67 +755,17 @@
                                 <th style="padding: 12px; text-align: center;">Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            @php
-                                // Use direct query to fetch APPROVED orders only with eager loading of relationships
-                                $soldOrders = \App\Models\Order::where('seller_id', Auth::id())
-                                                ->where('status', '!=', 'pending') // Exclude pending orders
-                                                ->with(['user', 'post'])
-                                                ->latest()
-                                                ->take(20)
-                                                ->get();
-                            @endphp
-                            
-                            @if(count($soldOrders) > 0)
-                                @foreach($soldOrders as $order)
-                                    <tr style="border-bottom: 1px solid #eee;">
-                                        <td style="padding: 12px;">#ORD-{{ $order->id }}</td>
-                                        <td style="padding: 12px;">
-                                            @if($order->user)
-                                                {{ $order->user->username ?: ($order->user->firstname . ' ' . $order->user->lastname) }}
-                                            @else
-                                                Customer
-                                            @endif
-                                        </td>
-                                        <td style="padding: 12px;">{{ $order->created_at->format('M d, Y') }}</td>
-                                        <td style="padding: 12px;">{{ $order->post->title ?? 'Product' }} ({{ $order->quantity }} {{ $order->post->unit ?? 'units' }})</td>
-                                        <td style="padding: 12px; text-align: right;">₱{{ number_format($order->total_amount ?? ($order->quantity * $order->post->price), 2) }}</td>
-                                        <td style="padding: 12px; text-align: center;">
-                                            @php
-                                                $statusColor = [
-                                                    'pending' => '#ffc107',
-                                                    'processing' => '#17a2b8',
-                                                    'shipped' => '#007bff',
-                                                    'delivered' => '#28a745',
-                                                    'cancelled' => '#dc3545'
-                                                ];
-                                                $status = $order->status ?? 'pending';
-                                                $color = $statusColor[$status] ?? '#ffc107';
-                                            @endphp
-                                            <span class="status-badge" style="background-color: {{ $color }}; color: {{ in_array($status, ['pending']) ? '#212529' : 'white' }}; padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: 600;">
-                                                {{ ucfirst($status) }}
-                                            </span>
-                                        </td>
-                                        <td style="padding: 12px; text-align: center;">
-                                            <button class="view-order-btn" style="background-color: var(--hoockers-green); color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer;" 
-                                                data-order-id="{{ $order->id }}"
-                                                data-customer-name="{{ $order->user ? ($order->user->username ?: ($order->user->firstname . ' ' . $order->user->lastname)) : 'Customer' }}">
-                                                View
-                                            </button>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            @else
-                                <tr>
-                                    <td colspan="7" style="padding: 20px; text-align: center;">No orders found</td>
-                                </tr>
-                            @endif
+                        <tbody id="orders-table-body">
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 20px;">Loading orders...</td>
+                            </tr>
                         </tbody>
                     </table>
                     
-                    <div style="margin-top: 20px; text-align: center; display: flex; justify-content: center; gap: 10px;">
-                        <button class="pagination-btn" style="background-color: var(--hoockers-green); color: white; border: none; border-radius: 4px; padding: 8px 15px; cursor: pointer;">Previous</button>
-                        <button class="pagination-btn" style="background-color: var(--hoockers-green); color: white; border: none; border-radius: 4px; padding: 8px 15px; cursor: pointer;">Next</button>
+                    <div class="pagination-container" style="margin-top: 20px; text-align: center; display: flex; justify-content: center; gap: 10px;">
+                        <button id="prev-page-btn" class="pagination-btn" style="background-color: var(--hoockers-green); color: white; border: none; border-radius: 4px; padding: 8px 15px; cursor: pointer;" disabled>Previous</button>
+                        <span id="pagination-info" style="align-self: center; padding: 0 10px;">Page 1</span>
+                        <button id="next-page-btn" class="pagination-btn" style="background-color: var(--hoockers-green); color: white; border: none; border-radius: 4px; padding: 8px 15px; cursor: pointer;">Next</button>
                     </div>
                 </div>
             </div>
@@ -1084,15 +1034,24 @@
         const ordersStatCard = document.getElementById('ordersStatCard');
         const manageOrdersBtn = document.getElementById('manageOrdersBtn');
         const ordersCloseBtn = ordersModal.querySelector('.close');
-
+        
+        // Pagination variables
+        let currentPage = 1;
+        const itemsPerPage = 5;
+        let totalPages = 1;
+        let statusFilter = 'all';
+        let searchQuery = '';
+        
         // Open orders modal when Orders stat card is clicked
         ordersStatCard.addEventListener('click', function() {
             ordersModal.style.display = 'block';
+            loadOrders(1);
         });
 
         // Open orders modal when Manage Orders button is clicked
         manageOrdersBtn.addEventListener('click', function() {
             ordersModal.style.display = 'block';
+            loadOrders(1);
         });
 
         // Close orders modal when X is clicked
@@ -1108,168 +1067,260 @@
         });
 
         // Filter functionality for orders
-        const statusFilter = document.getElementById('order-status-filter');
+        const statusFilterSelect = document.getElementById('order-status-filter');
         const searchInput = document.getElementById('order-search');
-        const orderRows = document.querySelectorAll('.orders-table tbody tr');
+        
+        // Pagination buttons
+        const prevPageBtn = document.getElementById('prev-page-btn');
+        const nextPageBtn = document.getElementById('next-page-btn');
+        const paginationInfo = document.getElementById('pagination-info');
 
-        function filterOrders() {
-            const statusValue = statusFilter.value.toLowerCase();
-            const searchValue = searchInput.value.toLowerCase();
+        statusFilterSelect.addEventListener('change', function() {
+            statusFilter = this.value;
+            currentPage = 1; // Reset to first page when filter changes
+            loadOrders(currentPage);
+        });
+        
+        searchInput.addEventListener('input', function() {
+            searchQuery = this.value;
+            currentPage = 1; // Reset to first page when search changes
+            loadOrders(currentPage);
+        });
+        
+        // Handle pagination button clicks
+        prevPageBtn.addEventListener('click', function() {
+            if (currentPage > 1) {
+                currentPage--;
+                loadOrders(currentPage);
+            }
+        });
+        
+        nextPageBtn.addEventListener('click', function() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                loadOrders(currentPage);
+            }
+        });
+        
+        // Function to load orders with pagination
+        function loadOrders(page) {
+            const ordersTableBody = document.getElementById('orders-table-body');
             
-            orderRows.forEach(row => {
-                if (row.cells.length < 6) return; // Skip rows without enough cells (like "No orders found")
+            // Show loading state
+            ordersTableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 20px;">
+                        <i class="bi bi-arrow-repeat" style="font-size: 24px; animation: spin 1s linear infinite; display: inline-block; margin-right: 10px;"></i>
+                        Loading orders...
+                    </td>
+                </tr>
+            `;
+            
+            // Fetch orders from server
+            fetch(`/shop/orders?page=${page}&status=${statusFilter}&search=${searchQuery}`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Network response was not ok (Status: ${response.status})`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Update pagination state
+                currentPage = data.current_page;
+                totalPages = data.last_page;
                 
-                const statusText = row.querySelector('.status-badge')?.textContent.toLowerCase() || '';
-                const rowText = row.textContent.toLowerCase();
+                // Update pagination UI
+                prevPageBtn.disabled = currentPage <= 1;
+                nextPageBtn.disabled = currentPage >= totalPages;
+                paginationInfo.textContent = `Page ${currentPage} of ${totalPages}`;
                 
-                const statusMatch = statusValue === 'all' || statusText === statusValue;
-                const searchMatch = rowText.includes(searchValue);
+                // Clear table
+                ordersTableBody.innerHTML = '';
                 
-                if (statusMatch && searchMatch) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
+                if (data.data.length === 0) {
+                    ordersTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 20px;">No orders found</td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                // Append orders to table
+                data.data.forEach(order => {
+                    const statusColor = {
+                        'pending': '#ffc107',
+                        'processing': '#17a2b8',
+                        'shipped': '#007bff',
+                        'delivered': '#28a745',
+                        'cancelled': '#dc3545'
+                    };
+                    
+                    const status = order.status || 'pending';
+                    const color = statusColor[status] || '#ffc107';
+                    const textColor = status === 'pending' ? '#212529' : 'white';
+                    
+                    ordersTableBody.innerHTML += `
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 12px;">#ORD-${order.id}</td>
+                            <td style="padding: 12px;">${order.customer_name || 'Customer'}</td>
+                            <td style="padding: 12px;">${new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                            <td style="padding: 12px;">${order.product_title || 'Product'} (${order.quantity} ${order.unit || 'units'})</td>
+                            <td style="padding: 12px; text-align: right;">₱${parseFloat(order.total_amount).toFixed(2)}</td>
+                            <td style="padding: 12px; text-align: center;">
+                                <span class="status-badge" style="background-color: ${color}; color: ${textColor}; padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: 600;">
+                                    ${status.charAt(0).toUpperCase() + status.slice(1)}
+                                </span>
+                            </td>
+                            <td style="padding: 12px; text-align: center;">
+                                <button class="view-order-btn" style="background-color: var(--hoockers-green); color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer;" 
+                                    data-order-id="${order.id}"
+                                    data-customer-name="${order.customer_name || 'Customer'}">
+                                    View
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                // Add event listeners to view order buttons
+                addViewOrderEventListeners();
+            })
+            .catch(error => {
+                console.error('Error loading orders:', error);
+                ordersTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 20px; color: #dc3545;">
+                            Error loading orders. Please try again.
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+        
+        // Function to add event listeners to view order buttons
+        function addViewOrderEventListeners() {
+            document.querySelectorAll('.view-order-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const orderId = this.getAttribute('data-order-id');
+                    const customerName = this.getAttribute('data-customer-name');
+                    
+                    // Fetch order details
+                    fetch(`/shop/orders/${orderId}`, {
+                        method: 'GET',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(order => {
+                        // Create order details HTML
+                        const orderDetailsHTML = `
+                            <div style="text-align: left;">
+                                <p><strong>Order ID:</strong> #ORD-${order.id}</p>
+                                <p><strong>Customer:</strong> ${order.customer_name || 'Customer'}</p>
+                                <p><strong>Date:</strong> ${new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                                <p><strong>Items:</strong> ${order.product_title || 'Product'} (${order.quantity} ${order.unit || 'units'})</p>
+                                <p><strong>Total Amount:</strong> ₱${parseFloat(order.total_amount).toFixed(2)}</p>
+                                <p><strong>Status:</strong> ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</p>
+                                <hr>
+                                <p><strong>Shipping Address:</strong> ${order.address || 'Not available'}</p>
+                                <p><strong>Contact Number:</strong> ${order.contact || 'Not available'}</p>
+                                <p><strong>Payment Method:</strong> Cash on Delivery</p>
+                                
+                                <div style="margin-top: 20px;">
+                                    <h4 style="font-weight: 600; margin-bottom: 10px;">Update Order Status</h4>
+                                    <select id="update-status" class="form-control" style="width: 100%; padding: 8px; margin-bottom: 10px;">
+                                        <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>Processing</option>
+                                        <option value="shipped" ${order.status === 'shipped' ? 'selected' : ''}>Shipped</option>
+                                        <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Delivered</option>
+                                        <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                                    </select>
+                                    <button id="update-status-btn" data-order-id="${order.id}" class="submit-btn" style="width: 100%;">Update Status</button>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Inject HTML into the modal
+                        document.getElementById('orderDetailsContent').innerHTML = orderDetailsHTML;
+                        
+                        // Show the modal
+                        document.getElementById('orderDetailsModal').style.display = 'block';
+                        
+                        // Update Status button click
+                        document.getElementById('update-status-btn').addEventListener('click', function() {
+                            const newStatus = document.getElementById('update-status').value;
+                            const orderId = this.getAttribute('data-order-id');
+                            
+                            updateOrderStatus(orderId, newStatus);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching order details:', error);
+                        Swal.fire('Error', 'Failed to load order details. Please try again.', 'error');
+                    });
+                });
+            });
+        }
+        
+        // Function to update order status
+        function updateOrderStatus(orderId, newStatus) {
+            Swal.fire({
+                title: 'Update Order Status',
+                text: `Are you sure you want to change the status to ${newStatus}?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#517A5B',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, update it'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // AJAX call to update the order status
+                    fetch(`/orders/${orderId}/update-status`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ status: newStatus })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire(
+                                'Updated!',
+                                'Order status has been updated.',
+                                'success'
+                            ).then(() => {
+                                // Close the modal after status update
+                                document.getElementById('orderDetailsModal').style.display = 'none';
+                                // Reload orders to reflect changes
+                                loadOrders(currentPage);
+                            });
+                        } else {
+                            Swal.fire('Error', data.message || 'Failed to update order status', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error updating status:', error);
+                        Swal.fire('Error', 'Something went wrong. Please try again.', 'error');
+                    });
                 }
             });
         }
 
-        statusFilter.addEventListener('change', filterOrders);
-        searchInput.addEventListener('input', filterOrders);
-
         // View order button handlers
-        document.querySelectorAll('.view-order-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const orderId = this.getAttribute('data-order-id');
-                const customerName = this.getAttribute('data-customer-name');
-                const orderRow = this.closest('tr');
-                
-                // Get data from the row
-                const orderNumber = orderRow.cells[0].textContent;
-                const date = orderRow.cells[2].textContent;
-                const items = orderRow.cells[3].textContent;
-                const total = orderRow.cells[4].textContent;
-                const status = orderRow.cells[5].textContent.trim().toLowerCase();
-                
-                // Create order details HTML
-                const orderDetailsHTML = `
-                    <div style="text-align: left;">
-                        <p><strong>Order ID:</strong> ${orderNumber}</p>
-                        <p><strong>Customer:</strong> ${customerName}</p>
-                        <p><strong>Date:</strong> ${date}</p>
-                        <p><strong>Items:</strong> ${items}</p>
-                        <p><strong>Total Amount:</strong> ${total}</p>
-                        <p><strong>Status:</strong> ${status}</p>
-                        <hr>
-                        <p><strong>Shipping Address:</strong> ${customerName}'s Default Address</p>
-                        <p><strong>Contact Number:</strong> Not available</p>
-                        <p><strong>Payment Method:</strong> Cash on Delivery</p>
-                        
-                        <div style="margin-top: 20px;">
-                            <h4 style="font-weight: 600; margin-bottom: 10px;">Update Order Status</h4>
-                            <select id="update-status" class="form-control" style="width: 100%; padding: 8px; margin-bottom: 10px;">
-                                <option value="processing" ${status.includes('processing') ? 'selected' : ''}>Processing</option>
-                                <option value="shipped" ${status.includes('shipped') ? 'selected' : ''}>Shipped</option>
-                                <option value="delivered" ${status.includes('delivered') ? 'selected' : ''}>Delivered</option>
-                                <option value="cancelled" ${status.includes('cancelled') ? 'selected' : ''}>Cancelled</option>
-                            </select>
-                            <button id="update-status-btn" class="submit-btn" style="width: 100%;">Update Status</button>
-                        </div>
-                    </div>
-                `;
-                
-                // Inject HTML into the modal
-                document.getElementById('orderDetailsContent').innerHTML = orderDetailsHTML;
-                
-                // Show the modal
-                document.getElementById('orderDetailsModal').style.display = 'block';
-                
-                // Close order details modal
-                const orderDetailsCloseBtn = document.getElementById('orderDetailsModal').querySelector('.close');
-                orderDetailsCloseBtn.addEventListener('click', function() {
-                    document.getElementById('orderDetailsModal').style.display = 'none';
-                });
-                
-                // Close order details modal when clicking outside
-                window.addEventListener('click', function(e) {
-                    if (e.target === document.getElementById('orderDetailsModal')) {
-                        document.getElementById('orderDetailsModal').style.display = 'none';
-                    }
-                });
-                
-                // Update Status button click
-                document.getElementById('update-status-btn').addEventListener('click', function() {
-                    const newStatus = document.getElementById('update-status').value;
-                    
-                    Swal.fire({
-                        title: 'Update Order Status',
-                        text: `Are you sure you want to change the status to ${newStatus}?`,
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonColor: '#517A5B',
-                        cancelButtonColor: '#6c757d',
-                        confirmButtonText: 'Yes, update it'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            // Extract order ID from the orderNumber
-                            const orderIdMatch = orderNumber.match(/#ORD-(\d+)/);
-                            const extractedOrderId = orderIdMatch ? orderIdMatch[1] : null;
-                            
-                            if (!extractedOrderId) {
-                                Swal.fire('Error', 'Could not determine order ID', 'error');
-                                return;
-                            }
-                            
-                            // AJAX call to update the order status
-                            fetch(`/orders/${extractedOrderId}/update-status`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                    'Accept': 'application/json'
-                                },
-                                body: JSON.stringify({ status: newStatus })
-                            })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    // Update status badge in the table
-                                    const statusBadge = orderRow.querySelector('.status-badge');
-                                    if (statusBadge) {
-                                        // Update status text
-                                        statusBadge.textContent = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
-                                        
-                                        // Update badge color
-                                        const statusColor = {
-                                            'processing': '#17a2b8',
-                                            'shipped': '#007bff',
-                                            'delivered': '#28a745',
-                                            'cancelled': '#dc3545'
-                                        };
-                                        statusBadge.style.backgroundColor = statusColor[newStatus] || '#ffc107';
-                                        statusBadge.style.color = newStatus === 'pending' ? '#212529' : 'white';
-                                    }
-                                    
-                                    Swal.fire(
-                                        'Updated!',
-                                        'Order status has been updated.',
-                                        'success'
-                                    ).then(() => {
-                                        // Close the modal after status update
-                                        document.getElementById('orderDetailsModal').style.display = 'none';
-                                    });
-                                } else {
-                                    Swal.fire('Error', data.message || 'Failed to update order status', 'error');
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error updating status:', error);
-                                Swal.fire('Error', 'Something went wrong. Please try again.', 'error');
-                            });
-                        }
-                    });
-                });
-            });
-        });
+        // ...rest of the existing code...
 
         // All Products Modal Functionality
         const allProductsModal = document.getElementById('allProductsModal');

@@ -105,6 +105,10 @@ Route::middleware('auth')->group(function() {
     Route::get('/shop/dashboard', [ShopController::class, 'dashboard'])->name('shop.dashboard');
     Route::put('/shop/update', [ShopController::class, 'update'])->name('shop.update');
 
+    // Add new routes for shop orders
+    Route::get('/shop/orders', [ShopController::class, 'getOrders'])->name('shop.orders');
+    Route::get('/shop/orders/{order}', [ShopController::class, 'getOrderDetails'])->name('shop.orders.details');
+
     // Cart Routes
     Route::middleware(['auth'])->group(function () {
     Route::get('/cart', [App\Http\Controllers\CartController::class, 'index'])->name('cart.index');
