@@ -17,7 +17,7 @@ class ShopsController extends Controller
         $shops = User::has('posts')
             ->with(['posts' => function($query) {
                 $query->latest();
-            }])
+            }, 'shop']) // Added shop relationship to eager load
             ->get();
 
         return view('shops.index', compact('shops'));

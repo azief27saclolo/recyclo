@@ -118,34 +118,46 @@
             <div class="container">
                 <div class="title-wrapper">
                     <h2 class="h2 section-title">Shops For You</h2>
-                    <a href="#" class="btn-link">
+                    <a href="{{ route('shops') }}" class="btn-link">
                         <span class="span">View More Shops</span>
                         <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
                     </a>
                 </div>
                 <ul class="has-scrollbar">
+                    @forelse ($shops as $shop)
                     <li class="scrollbar-item">
                         <div class="shop-card">
                             <div class="card-banner img-holder" style="--width: 540; --height: 720;">
-                                <img src="images/f1.jpg" width="540" height="720" loading="lazy" alt="Facial cleanser" class="img-cover">
+                                @if($shop->image)
+                                <img src="{{ asset('storage/' . $shop->image) }}" width="540" height="720" loading="lazy" alt="{{ $shop->shop_name }}" class="img-cover">
+                                @elseif($shop->user && $shop->user->profile_picture)
+                                <img src="{{ asset('storage/' . $shop->user->profile_picture) }}" width="540" height="720" loading="lazy" alt="{{ $shop->shop_name }}" class="img-cover">
+                                @else
+                                <img src="{{ asset('images/f' . ($loop->iteration % 6 + 1) . '.jpg') }}" width="540" height="720" loading="lazy" alt="{{ $shop->shop_name }}" class="img-cover">
+                                @endif
                                 <div class="card-actions">
-                                    <button class="action-btn" aria-label="add to cart">
+                                    <a href="{{ route('shops.show', $shop->user_id) }}" class="action-btn" aria-label="view shop">
                                         <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
-                                    </button>
-                                    <button class="action-btn" aria-label="add to whishlist">
+                                    </a>
+                                    <button class="action-btn" aria-label="favorite shop">
                                         <ion-icon name="heart-outline" aria-hidden="true"></ion-icon>
                                     </button>
-                                    <button class="action-btn" aria-label="compare">
-                                        <ion-icon name="repeat-outline" aria-hidden="true"></ion-icon>
+                                    <button class="action-btn" aria-label="contact shop">
+                                        <ion-icon name="chatbubble-outline" aria-hidden="true"></ion-icon>
                                     </button>
                                 </div>
                             </div>
                             <div class="card-content">
                                 <div class="price">
-                                    <span class="span">Ronald Organic</span>
+                                    <span class="span">{{ $shop->shop_name }}</span>
                                 </div>
                                 <h3>
-                                    <a href="#" class="card-title">Ronald's Shop</a>
+                                    <a href="{{ route('shops.show', $shop->user_id) }}" class="card-title">
+                                        @if($shop->user && $shop->user->profile_picture)
+                                        <img src="{{ asset('storage/' . $shop->user->profile_picture) }}" alt="Profile" class="shop-profile-pic" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 8px; vertical-align: middle;">
+                                        @endif
+                                        {{ $shop->user->username ?? 'Shop' }}'s Shop
+                                    </a>
                                 </h3>
                                 <div class="card-rating">
                                     <div class="rating-wrapper" aria-label="5 start rating">
@@ -155,191 +167,51 @@
                                         <ion-icon name="star" aria-hidden="true"></ion-icon>
                                         <ion-icon name="star" aria-hidden="true"></ion-icon>
                                     </div>
-                                    <p class="rating-text">5170 reviews</p>
+                                    <p class="rating-text">{{ random_int(10, 500) }} reviews</p>
                                 </div>
                             </div>
                         </div>
                     </li>
-                    <li class="scrollbar-item">
-                        <div class="shop-card">
-                            <div class="card-banner img-holder" style="--width: 540; --height: 720;">
-                                <img src="images/f2.jpg" width="540" height="720" loading="lazy" alt="Bio-shroom Rejuvenating Serum" class="img-cover">
-                                <div class="card-actions">
-                                    <button class="action-btn" aria-label="add to cart">
-                                        <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
-                                    </button>
-                                    <button class="action-btn" aria-label="add to whishlist">
-                                        <ion-icon name="heart-outline" aria-hidden="true"></ion-icon>
-                                    </button>
-                                    <button class="action-btn" aria-label="compare">
-                                        <ion-icon name="repeat-outline" aria-hidden="true"></ion-icon>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="card-content">
-                                <div class="price">
-                                    <span class="span">John Organic</span>
-                                </div>
-                                <h3>
-                                    <a href="#" class="card-title">John's Shop</a>
-                                </h3>
-                                <div class="card-rating">
-                                    <div class="rating-wrapper" aria-label="5 start rating">
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
+                    @empty
+                        @for ($i = 1; $i <= 6; $i++)
+                        <li class="scrollbar-item">
+                            <div class="shop-card">
+                                <div class="card-banner img-holder" style="--width: 540; --height: 720;">
+                                    <img src="images/f{{ $i }}.jpg" width="540" height="720" loading="lazy" alt="Shop Image" class="img-cover">
+                                    <div class="card-actions">
+                                        <button class="action-btn" aria-label="add to cart">
+                                            <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
+                                        </button>
+                                        <button class="action-btn" aria-label="add to whishlist">
+                                            <ion-icon name="heart-outline" aria-hidden="true"></ion-icon>
+                                        </button>
+                                        <button class="action-btn" aria-label="compare">
+                                            <ion-icon name="repeat-outline" aria-hidden="true"></ion-icon>
+                                        </button>
                                     </div>
-                                    <p class="rating-text">5170 reviews</p>
                                 </div>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="scrollbar-item">
-                        <div class="shop-card">
-                            <div class="card-banner img-holder" style="--width: 540; --height: 720;">
-                                <img src="images/f3.jpg" width="540" height="720" loading="lazy" alt="Coffee Bean Caffeine Eye Cream" class="img-cover">
-                                <div class="card-actions">
-                                    <button class="action-btn" aria-label="add to cart">
-                                        <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
-                                    </button>
-                                    <button class="action-btn" aria-label="add to whishlist">
-                                        <ion-icon name="heart-outline" aria-hidden="true"></ion-icon>
-                                    </button>
-                                    <button class="action-btn" aria-label="compare">
-                                        <ion-icon name="repeat-outline" aria-hidden="true"></ion-icon>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="card-content">
-                                <div class="price">
-                                    <span class="span">Teppey Recycle</span>
-                                </div>
-                                <h3>
-                                    <a href="#" class="card-title">Teppey's Shop</a>
-                                </h3>
-                                <div class="card-rating">
-                                    <div class="rating-wrapper" aria-label="5 start rating">
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
+                                <div class="card-content">
+                                    <div class="price">
+                                        <span class="span">Sample Shop {{ $i }}</span>
                                     </div>
-                                    <p class="rating-text">5170 reviews</p>
-                                </div>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="scrollbar-item">
-                        <div class="shop-card">
-                            <div class="card-banner img-holder" style="--width: 540; --height: 720;">
-                                <img src="images/f4.jpg" width="540" height="720" loading="lazy" alt="Facial cleanser" class="img-cover">
-                                <div class="card-actions">
-                                    <button class="action-btn" aria-label="add to cart">
-                                        <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
-                                    </button>
-                                    <button class="action-btn" aria-label="add to whishlist">
-                                        <ion-icon name="star-outline" aria-hidden="true"></ion-icon>
-                                    </button>
-                                    <button class="action-btn" aria-label="compare">
-                                        <ion-icon name="repeat-outline" aria-hidden="true"></ion-icon>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="card-content">
-                                <div class="price">
-                                    <span class="span">Fred Economy</span>
-                                </div>
-                                <h3>
-                                    <a href="#" class="card-title">Fred's Shop</a>
-                                </h3>
-                                <div class="card-rating">
-                                    <div class="rating-wrapper" aria-label="5 start rating">
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
+                                    <h3>
+                                        <a href="#" class="card-title">Sample Shop {{ $i }}</a>
+                                    </h3>
+                                    <div class="card-rating">
+                                        <div class="rating-wrapper" aria-label="5 start rating">
+                                            <ion-icon name="star" aria-hidden="true"></ion-icon>
+                                            <ion-icon name="star" aria-hidden="true"></ion-icon>
+                                            <ion-icon name="star" aria-hidden="true"></ion-icon>
+                                            <ion-icon name="star" aria-hidden="true"></ion-icon>
+                                            <ion-icon name="star" aria-hidden="true"></ion-icon>
+                                        </div>
+                                        <p class="rating-text">{{ random_int(10, 500) }} reviews</p>
                                     </div>
-                                    <p class="rating-text">5170 reviews</p>
                                 </div>
                             </div>
-                        </div>
-                    </li>
-                    <li class="scrollbar-item">
-                        <div class="shop-card">
-                            <div class="card-banner img-holder" style="--width: 540; --height: 720;">
-                                <img src="images/f5.jpg" width="540" height="720" loading="lazy" alt="Coffee Bean Caffeine Eye Cream" class="img-cover">
-                                <div class="card-actions">
-                                    <button class="action-btn" aria-label="add to cart">
-                                        <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
-                                    </button>
-                                    <button class="action-btn" aria-label="add to whishlist">
-                                        <ion-icon name="star-outline" aria-hidden="true"></ion-icon>
-                                    </button>
-                                    <button class="action-btn" aria-label="compare">
-                                        <ion-icon name="repeat-outline" aria-hidden="true"></ion-icon>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="card-content">
-                                <div class="price">
-                                    <span class="span">Ragnar Junk Shop</span>
-                                </div>
-                                <h3>
-                                    <a href="#" class="card-title">Ragnar's Shop</a>
-                                </h3>
-                                <div class="card-rating">
-                                    <div class="rating-wrapper" aria-label="5 start rating">
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                    </div>
-                                    <p class="rating-text">5170 reviews</p>
-                                </div>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="scrollbar-item">
-                        <div class="shop-card">
-                            <div class="card-banner img-holder" style="--width: 540; --height: 720;">
-                                <img src="images/f6.jpg" width="540" height="720" loading="lazy" alt="Facial cleanser" class="img-cover">
-                                <div class="card-actions">
-                                    <button class="action-btn" aria-label="add to cart">
-                                        <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
-                                    </button>
-                                    <button class="action-btn" aria-label="add to whishlist">
-                                        <ion-icon name="star-outline" aria-hidden="true"></ion-icon>
-                                    </button>
-                                    <button class="action-btn" aria-label="compare">
-                                        <ion-icon name="repeat-outline" aria-hidden="true"></ion-icon>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="card-content">
-                                <div class="price">
-                                    <span class="span">Aaron Brown</span>
-                                </div>
-                                <h3>
-                                    <a href="#" class="card-title">Aaron's Shop</a>
-                                </h3>
-                                <div class="card-rating">
-                                    <div class="rating-wrapper" aria-label="5 start rating">
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                    </div>
-                                    <p class="rating-text">5170 reviews</p>
-                                </div>
-                            </div>
-                        </div>
-                    </li>
+                        </li>
+                        @endfor
+                    @endforelse
                 </ul>
             </div>
         </section>

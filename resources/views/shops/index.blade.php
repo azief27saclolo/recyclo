@@ -11,39 +11,41 @@
   </section>
 
   @foreach($shops as $shop)
-  <section class="section shop" id="shop-{{ $shop->id }}" aria-label="shop">
-    <div class="container">
-      <div class="shop-title-wrapper">
-        <h2 class="h2 shop-name">{{ $shop->username }}'s Shop</h2>
-        <a href="{{ route('shops.show', $shop) }}" class="btn-link">
-          <span class="span">View Shop</span>
-          <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
-        </a>
+    @if(!$shop->shop || $shop->shop->status !== 'rejected')
+    <section class="section shop" id="shop-{{ $shop->id }}" aria-label="shop">
+      <div class="container">
+        <div class="shop-title-wrapper">
+          <h2 class="h2 shop-name">{{ $shop->username }}'s Shop</h2>
+          <a href="{{ route('shops.show', $shop) }}" class="btn-link">
+            <span class="span">View Shop</span>
+            <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
+          </a>
+        </div>
+        <ul class="has-scrollbar shop-slider">
+          @foreach ($shop->posts as $post)       
+            <li class="scrollbar-item">
+              <x-postCard :post="$post"/>
+            </li>
+          @endforeach
+          
+          @if($shop->posts->isEmpty())
+            <li class="scrollbar-item">
+              <div class="empty-shop-card">
+                <p>No products available in this shop yet.</p>
+              </div>
+            </li>
+          @endif
+          
+          {{-- Add placeholder items for shops with few products to ensure slider works --}}
+          @if($shop->posts->count() > 0 && $shop->posts->count() < 5)
+            @for($i = 0; $i < (5 - $shop->posts->count()); $i++)
+              <li class="scrollbar-item placeholder-item"></li>
+            @endfor
+          @endif
+        </ul>
       </div>
-      <ul class="has-scrollbar shop-slider">
-        @foreach ($shop->posts as $post)       
-          <li class="scrollbar-item">
-            <x-postCard :post="$post"/>
-          </li>
-        @endforeach
-        
-        @if($shop->posts->isEmpty())
-          <li class="scrollbar-item">
-            <div class="empty-shop-card">
-              <p>No products available in this shop yet.</p>
-            </div>
-          </li>
-        @endif
-        
-        {{-- Add placeholder items for shops with few products to ensure slider works --}}
-        @if($shop->posts->count() > 0 && $shop->posts->count() < 5)
-          @for($i = 0; $i < (5 - $shop->posts->count()); $i++)
-            <li class="scrollbar-item placeholder-item"></li>
-          @endfor
-        @endif
-      </ul>
-    </div>
-  </section>
+    </section>
+    @endif
   @endforeach
 
   @if($shops->isEmpty())

@@ -90,6 +90,9 @@ class User extends Authenticatable
         return $this->belongsToMany(Post::class, 'favorites');
     }
 
+    /**
+     * Get the shop associated with the user.
+     */
     public function shop()
     {
         return $this->hasOne(Shop::class);
