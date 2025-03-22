@@ -8,8 +8,10 @@
     <section class="section shop" id="shop" aria-label="shop">
         <div class="container">
 
-          <div class="title-wrapper" style="display: flex; align-items: center;">
-            <img src="{{ asset('storage/' . $post->image) }}" alt="Shop Image" style="width: 400px; height: 250px; border-radius: 10px; margin-right: 20px;">
+          <div class="title-wrapper" style="display: flex; align-items: flex-start;">
+            <div class="image-container" style="width: 500px; height: 350px; margin-right: 25px; overflow: hidden; border-radius: 12px; display: flex; align-items: center; justify-content: center; background-color: #f9f9f9;">
+              <img src="{{ asset('storage/' . $post->image) }}" alt="Shop Image" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+            </div>
             <div>
               <h2 class="h2 section-title">{{ $post->title }}</h2>
               <h1 style="font-weight: 200; margin-bottom: 10px;">
@@ -21,11 +23,8 @@
               <h1 style="color: black;">{{ $post->price }}.00</h1>
               
               <h1>Available Stock: </h1>
-              <h1 style="color: {{ $post->quantity < 10 ? '#dc3545' : 'black' }};">
+              <h1 style="color: black;">
                 {{ $post->quantity }} {{ $post->unit }}
-                @if($post->quantity < 10)
-                  <span style="font-size: 18px; color: #dc3545; margin-left: 5px;">(Low Stock)</span>
-                @endif
               </h1>
 
               <h1>Description: </h1>
@@ -405,24 +404,8 @@
       color: var(--white);
     }
     
-    /* Add styling for stock display */
-    .stock-indicator {
-      display: inline-block;
-      padding: 5px 15px;
-      border-radius: 8px;
-      transition: all 0.3s ease;
-    }
-    .stock-indicator.low {
-      background-color: #fff8f8;
-      color: #dc3545;
-      border: 1px solid #f5c6cb;
-    }
-    .stock-indicator.good {
-      background-color: #f0f8f1;
-      color: #517a5b;
-      border: 1px solid #c3e6cb;
-    }
-
+    /* Remove stock indicator styling that's no longer needed */
+    
     /* Similar Products section styling */
     .similar-products {
       margin: 40px 0;
@@ -708,6 +691,63 @@
         width: 90px !important; /* Bigger icon */
         height: 90px !important;
         margin: 0.5em auto 1.5em !important; /* More space above and below */
+    }
+
+    /* Add responsive image container styles */
+    .image-container {
+      transition: all 0.3s ease;
+    }
+    
+    .image-container:hover {
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Ensure SweetAlert2 product image is also not stretched */
+    .swal2-popup .product-details img {
+      object-fit: contain !important;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+    }
+    
+    /* Make sure the similar products images are displayed correctly */
+    .shop-slider .scrollbar-item img {
+      object-fit: cover;
+      width: 100%;
+      height: 100%;
+      aspect-ratio: 1/1;
+    }
+
+    /* Updated image container styles */
+    .image-container {
+      transition: all 0.3s ease;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    }
+    
+    .image-container:hover {
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Make SweetAlert2 product image match main image display style */
+    .swal2-popup .product-details img {
+      object-fit: contain !important;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      width: 140px !important;
+      height: 140px !important;
+    }
+    
+    /* Responsive adjustments for larger image */
+    @media (max-width: 992px) {
+      .title-wrapper {
+        flex-direction: column;
+      }
+      
+      .image-container {
+        width: 100% !important;
+        height: 320px !important;
+        margin-right: 0 !important;
+        margin-bottom: 25px;
+      }
     }
   </style>
       
