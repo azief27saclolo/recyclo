@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Exception;
 
 class OrderController extends Controller
@@ -21,6 +22,7 @@ class OrderController extends Controller
             $validated = $request->validate([
                 'post_id' => ['required', 'exists:posts,id'],
                 'quantity' => ['required', 'integer', 'min:1'],
+                'receipt_image' => ['required', 'image', 'max:5120'], // Max 5MB
             ]);
             
             // Find the post and make sure it exists
@@ -37,6 +39,13 @@ class OrderController extends Controller
             
             // Calculate total amount including delivery fee
             $totalAmount = ($post->price * $request->quantity) + 35;
+            
+            // Store receipt image
+            $receiptPath = null;
+            if ($request->hasFile('receipt_image')) {
+                $receiptPath = $request->file('receipt_image')->store('receipts', 'public');
+                Log::info('Receipt image saved', ['path' => $receiptPath]);
+            }
 
             $order = Order::create([
                 'seller_id' => $post->user_id,
@@ -44,7 +53,8 @@ class OrderController extends Controller
                 'post_id' => $request->post_id,
                 'quantity' => $request->quantity,
                 'status' => 'pending', 
-                'total_amount' => $totalAmount, 
+                'total_amount' => $totalAmount,
+                'receipt_image' => $receiptPath,
             ]);
 
             Log::info('Order created successfully', ['order_id' => $order->id]);

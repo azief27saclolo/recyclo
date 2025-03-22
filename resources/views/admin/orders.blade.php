@@ -497,6 +497,13 @@
                                         </span>
                                     </td>
                                     <td>
+                                        <!-- Add View Receipt Button -->
+                                        @if($order->receipt_image)
+                                            <button type="button" class="btn view-receipt-btn" style="background-color: #6c757d; color: white; margin-bottom: 5px; width: 100%;" data-receipt="{{ asset('storage/' . $order->receipt_image) }}">
+                                                <i class="bi bi-receipt"></i> View Receipt
+                                            </button>
+                                        @endif
+                                        
                                         @if($order->status == 'pending')
                                             <div class="action-buttons">
                                                 <!-- Fix the approve order form action path -->
@@ -559,6 +566,22 @@
         </div>
     </div>
 
+    <!-- Receipt View Modal -->
+    <div id="receiptModal" class="modal">
+        <div class="modal-content" style="width: 80%; max-width: 800px;">
+            <div class="modal-header">
+                <h4>Payment Receipt</h4>
+                <span class="modal-close" id="closeReceiptModal">&times;</span>
+            </div>
+            <div class="modal-body" style="text-align: center;">
+                <img id="receiptImage" src="" alt="Payment Receipt" style="max-width: 100%; max-height: 80vh;">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="closeReceiptBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Simple tab functionality for filtering orders
         document.addEventListener('DOMContentLoaded', function() {
@@ -582,6 +605,36 @@
                     confirmButtonText: 'OK'
                 });
             @endif
+
+            // Handle view receipt functionality
+            const receiptModal = document.getElementById('receiptModal');
+            const receiptImage = document.getElementById('receiptImage');
+            const closeReceiptModal = document.getElementById('closeReceiptModal');
+            const closeReceiptBtn = document.getElementById('closeReceiptBtn');
+            const viewReceiptBtns = document.querySelectorAll('.view-receipt-btn');
+            
+            viewReceiptBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const receiptSrc = this.getAttribute('data-receipt');
+                    receiptImage.src = receiptSrc;
+                    receiptModal.style.display = 'block';
+                });
+            });
+            
+            closeReceiptModal.addEventListener('click', function() {
+                receiptModal.style.display = 'none';
+            });
+            
+            closeReceiptBtn.addEventListener('click', function() {
+                receiptModal.style.display = 'none';
+            });
+            
+            // Close receipt modal when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target == receiptModal) {
+                    receiptModal.style.display = 'none';
+                }
+            });
 
             // Handle form submissions with SweetAlert confirmations
             document.querySelectorAll('.action-buttons form').forEach(form => {

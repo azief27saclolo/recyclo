@@ -16,6 +16,7 @@ class Order extends Model
         'quantity',
         'total_amount',
         'status',
+        'receipt_image', // Add receipt_image field
     ];
 
     /**
