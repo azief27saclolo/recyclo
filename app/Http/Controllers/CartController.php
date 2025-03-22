@@ -23,6 +23,9 @@ class CartController extends Controller
         // Load cart items with product details
         $cart->load('items.product');
         
+        // Check for and handle missing products
+        $this->handleMissingProducts($cart);
+        
         return view('cart.index', compact('cart'));
     }
 
@@ -198,5 +201,78 @@ class CartController extends Controller
         
         $cart->total = $total;
         $cart->save();
+    }
+
+    /**
+     * Handle missing products in the cart
+     * 
+     * @param \App\Models\Cart $cart
+     * @return void
+     */
+    private function handleMissingProducts(Cart $cart)
+    {
+        $hasInvalidItems = false;
+        
+        // First pass - just identify if there are invalid items
+        foreach ($cart->items as $item) {
+            if (!$item->product) {
+                $hasInvalidItems = true;
+                break;
+            }
+        }
+        
+        // If invalid items were found, show a notification
+        if ($hasInvalidItems) {
+            session()->flash('warning', 'Some products in your cart are no longer available.');
+        }
+    }
+
+    /**
+     * Process cart checkout.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function checkout()
+    {
+        // Get the current user's active cart
+        $cart = $this->getOrCreateCart();
+        
+        // Load cart items with product details
+        $cart->load('items.product');
+        
+        // Check if cart has items
+        if ($cart->items->count() === 0) {
+            return redirect()->route('cart.index')->with('error', 'Your cart is empty. Add some products before checkout.');
+        }
+        
+        // Check for missing products
+        $hasMissingProducts = $cart->items->contains(function($item) {
+            return $item->product === null;
+        });
+        
+        if ($hasMissingProducts) {
+            return redirect()->route('cart.index')
+                ->with('error', 'Your cart contains products that are no longer available. Please remove them before checkout.');
+        }
+        
+        // For now, we'll use the first cart item for checkout demonstration
+        // In a real implementation, you might want to process multiple items
+        $firstItem = $cart->items->first();
+        $post = $firstItem->product->post ?? null;
+        
+        if (!$post) {
+            return redirect()->route('cart.index')
+                ->with('error', 'Could not find the associated post for checkout.');
+        }
+        
+        // Calculate total price including delivery fee
+        $totalPrice = $cart->total + 5; // Adding the service fee
+        
+        // Return the checkout view with post, quantity, and total price
+        return view('orders.checkout', [
+            'post' => $post,
+            'quantity' => $firstItem->quantity,
+            'totalPrice' => $totalPrice
+        ]);
     }
 }

@@ -117,6 +117,7 @@ Route::middleware('auth')->group(function() {
         Route::put('/cart/update/{id}', [App\Http\Controllers\CartController::class, 'updateQuantity']);
         Route::delete('/cart/remove/{id}', [App\Http\Controllers\CartController::class, 'removeItem'])->name('cart.remove');
         Route::delete('/cart/empty', [App\Http\Controllers\CartController::class, 'emptyCart'])->name('cart.empty');
+        Route::get('/cart/checkout', [App\Http\Controllers\CartController::class, 'checkout'])->name('checkout'); // Update the checkout route
     });
 
     // Add new route for updating order status

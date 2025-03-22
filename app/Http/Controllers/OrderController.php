@@ -23,7 +23,17 @@ class OrderController extends Controller
                 'quantity' => ['required', 'integer', 'min:1'],
             ]);
             
+            // Find the post and make sure it exists
             $post = Post::findOrFail($request->post_id);
+            
+            // Additional check to make sure the post is valid and has a price
+            if (!$post || !isset($post->price) || $post->price === null) {
+                Log::error('Post exists but price is null', ['post_id' => $request->post_id]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'The selected product is not available for purchase.'
+                ], 422);
+            }
             
             // Calculate total amount including delivery fee
             $totalAmount = ($post->price * $request->quantity) + 35;
@@ -66,13 +76,19 @@ class OrderController extends Controller
     public function index()
     {
         $orders = Auth::user()->boughtOrders()->with('post')->get();
-
         return view('orders.index', ['orders' => $orders]);
     }
 
     public function checkout(Request $request)
     {
+        // Find post and validate it exists
         $post = Post::find($request->post_id);
+        
+        // If post doesn't exist or has no price, redirect to posts with error
+        if (!$post || !isset($post->price) || $post->price === null) {
+            return redirect()->route('posts')->with('error', 'The selected product is no longer available.');
+        }
+        
         $quantity = $request->quantity;
         $totalPrice = ($post->price * $quantity) + 35; // Add delivery fee
         return view('orders.checkout', ['post' => $post, 'quantity' => $quantity, 'totalPrice' => $totalPrice]);

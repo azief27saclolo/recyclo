@@ -200,20 +200,31 @@
             <div class="cart-items">
                 @foreach($cart->items as $item)
                     <div class="cart-item">
-                        <img src="{{ asset('storage/' . $item->product->image) }}" alt="{{ $item->product->name }}" class="item-image">
-                        <div class="item-details">
-                            <div class="shop-name">
-                                <i class="bi bi-shop"></i> {{ $item->product->user->shop->name ?? 'Unknown Shop' }}
+                        @if($item->product)
+                            <img src="{{ asset('storage/' . $item->product->image) }}" alt="{{ $item->product->name }}" class="item-image">
+                            <div class="item-details">
+                                <div class="shop-name">
+                                    <i class="bi bi-shop"></i> {{ $item->product->user->shop->name ?? 'Unknown Shop' }}
+                                </div>
+                                <h3 class="item-name">{{ $item->product->name }}</h3>
+                                <div class="quantity-controls">
+                                    <button class="qty-btn" type="button" onclick="updateCartItem({{ $item->id }}, '-')">-</button>
+                                    <input type="number" id="qty-input-{{ $item->id }}" class="qty-input" value="{{ $item->quantity }}" min="1" readonly>
+                                    <button class="qty-btn" type="button" onclick="updateCartItem({{ $item->id }}, '+')">+</button>
+                                </div>
+                                <div class="item-price">₱{{ number_format($item->price, 2) }} per kg</div>
                             </div>
-                            <h3 class="item-name">{{ $item->product->name }}</h3>
-                            <div class="quantity-controls">
-                                <button class="qty-btn" type="button" onclick="updateCartItem({{ $item->id }}, '-')">-</button>
-                                <input type="number" id="qty-input-{{ $item->id }}" class="qty-input" value="{{ $item->quantity }}" min="1" readonly>
-                                <button class="qty-btn" type="button" onclick="updateCartItem({{ $item->id }}, '+')">+</button>
+                        @else
+                            <div class="item-image text-center">
+                                <i class="bi bi-exclamation-triangle" style="font-size: 2rem; color: #dc3545;"></i>
                             </div>
-                            <div class="item-price">₱{{ number_format($item->price, 2) }} per kg</div>
-                        </div>
-                        <button type="button" class="remove-btn" onclick="confirmRemoveItem({{ $item->id }}, '{{ $item->product->name }}')">
+                            <div class="item-details">
+                                <h3 class="item-name" style="color: #dc3545;">Product no longer available</h3>
+                                <p>This product has been removed or is no longer available</p>
+                                <div class="item-price">₱{{ number_format($item->price, 2) }}</div>
+                            </div>
+                        @endif
+                        <button type="button" class="remove-btn" onclick="confirmRemoveItem({{ $item->id }}, '{{ $item->product ? $item->product->name : 'Unavailable Product' }}')">
                             <i class="bi bi-trash"></i> Remove
                         </button>
                         <!-- Hidden form for item removal -->
@@ -239,7 +250,7 @@
                     <span>Total</span>
                     <span>₱{{ number_format($cart->total + 5, 2) }}</span>
                 </div>
-                <button class="checkout-btn" onclick="window.location.href='{{ route('checkout') }}'">
+                <button class="checkout-btn" onclick="beforeCheckout()">
                     Proceed to Checkout
                 </button>
             </div>
@@ -397,5 +408,23 @@
         });
     });
     */
+
+    // Check for unavailable products before proceeding to checkout
+    function beforeCheckout() {
+        @if($cart->items->contains(function($item) { return $item->product === null; }))
+            Swal.fire({
+                title: 'Unavailable Products',
+                text: 'Your cart contains products that are no longer available. Please remove them before checkout.',
+                icon: 'warning',
+                confirmButtonColor: '#517A5B',
+                confirmButtonText: 'OK',
+                customClass: {
+                    popup: 'bigger-modal'
+                }
+            });
+        @else
+            window.location.href = '{{ route("checkout") }}';
+        @endif
+    }
 </script>
 @endsection
