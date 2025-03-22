@@ -178,8 +178,10 @@
     }
 
     .checkout-btn:hover {
-        background: var(--hoockers-green_80);
+        background: #3c5a44; /* Darker green color on hover */
         transform: translateY(-2px);
+        color: white; /* Ensure text remains white on hover */
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Add shadow for better visual feedback */
     }
 
     @media (max-width: 768px) {
