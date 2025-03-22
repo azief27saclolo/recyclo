@@ -66,6 +66,30 @@
                             </div>
                         </div>
                         
+                        <!-- Receipt Upload Section -->
+                        <div style="margin: 25px 0; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                            <h4 style="color: #517a5b; margin-bottom: 15px; font-size: 20px;">Upload Payment Receipt</h4>
+                            <p style="margin-bottom: 15px; color: #666; font-size: 16px;">Please upload a screenshot of your payment receipt for verification.</p>
+                            
+                            <div style="display: flex; flex-direction: column; gap: 15px;">
+                                <div style="position: relative; border: 2px dashed #517a5b; border-radius: 10px; padding: 20px; text-align: center; background: white;">
+                                    <input type="file" id="receiptImage" accept="image/*" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; opacity: 0; cursor: pointer;">
+                                    <div id="uploadPlaceholder">
+                                        <i class="bi bi-cloud-arrow-up" style="font-size: 40px; color: #517a5b;"></i>
+                                        <p style="margin-top: 10px; color: #517a5b;">Click to upload or drag and drop</p>
+                                        <p style="font-size: 14px; color: #666;">PNG, JPG or JPEG (max. 5MB)</p>
+                                    </div>
+                                    <div id="imagePreviewContainer" style="display: none;">
+                                        <img id="imagePreview" src="" alt="Receipt Preview" style="max-width: 100%; max-height: 300px; border-radius: 8px;">
+                                        <button type="button" id="removeImage" style="position: absolute; top: 10px; right: 10px; background: #ff6b6b; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                                            <i class="bi bi-x"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="uploadError" style="color: #dc3545; font-size: 14px; display: none;"></div>
+                            </div>
+                        </div>
+                        
                         <div style="margin: 25px 0; padding: 20px; background: #f8f9fa; border-radius: 10px;">
                             <h4 style="color: #517a5b; margin-bottom: 15px; font-size: 20px;">Pickup Information</h4>
                             <p style="margin-bottom: 10px; color: #333; font-size: 18px;">{{ $post->user->username }}'s Shop<br>{{ $post->location }}</p>
@@ -104,6 +128,57 @@
 </div>
 
 <script>
+    // Image preview functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const receiptInput = document.getElementById('receiptImage');
+        const imagePreview = document.getElementById('imagePreview');
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+        const removeButton = document.getElementById('removeImage');
+        const errorDisplay = document.getElementById('uploadError');
+        
+        receiptInput.addEventListener('change', function() {
+            errorDisplay.style.display = 'none';
+            
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                
+                // Check file size (max 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    errorDisplay.textContent = 'File is too large. Maximum size is 5MB.';
+                    errorDisplay.style.display = 'block';
+                    this.value = '';
+                    return;
+                }
+                
+                // Check file type
+                const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                if (!validTypes.includes(file.type)) {
+                    errorDisplay.textContent = 'Invalid file type. Only JPG, JPEG, and PNG are allowed.';
+                    errorDisplay.style.display = 'block';
+                    this.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    uploadPlaceholder.style.display = 'none';
+                    previewContainer.style.display = 'block';
+                }
+                
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        removeButton.addEventListener('click', function() {
+            receiptInput.value = '';
+            previewContainer.style.display = 'none';
+            uploadPlaceholder.style.display = 'block';
+        });
+    });
+
     function placeOrder() {
         // Show loading state on button
         const submitButton = document.querySelector('button[onclick="placeOrder()"]');
@@ -111,21 +186,35 @@
         submitButton.innerText = 'Processing...';
         submitButton.disabled = true;
         
+        const errorDisplay = document.getElementById('uploadError');
+        const receiptInput = document.getElementById('receiptImage');
+        
+        // Check if receipt image is uploaded
+        if (!receiptInput.files || !receiptInput.files[0]) {
+            errorDisplay.textContent = 'Please upload a payment receipt screenshot.';
+            errorDisplay.style.display = 'block';
+            submitButton.innerText = originalText;
+            submitButton.disabled = false;
+            return;
+        }
+        
         var quantity = "{{ $quantity }}";
         var post_id = "{{ $post->id }}";
         
-        // Use a simple fetch request with proper headers and body
+        // Create FormData to handle file upload
+        const formData = new FormData();
+        formData.append('post_id', post_id);
+        formData.append('quantity', quantity);
+        formData.append('receipt_image', receiptInput.files[0]);
+        formData.append('_token', "{{ csrf_token() }}");
+        
+        // Use fetch with FormData to send the file
         fetch("{{ route('orders.store') }}", {
             method: "POST",
             headers: {
-                "Content-Type": "application/json",
                 "X-CSRF-TOKEN": "{{ csrf_token() }}"
             },
-            body: JSON.stringify({ 
-                post_id: post_id, 
-                quantity: quantity,
-                _token: "{{ csrf_token() }}"
-            })
+            body: formData
         })
         .then(response => {
             if (!response.ok) {
