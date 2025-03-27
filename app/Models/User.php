@@ -23,8 +23,20 @@ class User extends Authenticatable
         'lastname',
         'username',
         'email',
+<<<<<<< Updated upstream
         'number',
         'password',
+=======
+        'birthday',
+        'password',
+        'profile_picture',
+        'bio',
+        'phone_number',
+        'address',
+        'status',
+        'location',
+        'number'
+>>>>>>> Stashed changes
     ];
 
     /**
