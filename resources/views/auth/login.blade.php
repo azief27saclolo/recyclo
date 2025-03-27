@@ -1,11 +1,44 @@
-<x-layout>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Login - Recyclo</title>
     
-    <div class="flex justify-center items-center h-screen px-4">
+    <!-- Required imports as specified -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/ionicons@4.5.10-0/dist/ionicons.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <link rel="preload" as="image" href="images/logo.png">
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+    @vite(['resources/css/app.css', 'resources/css/style.css', 'resources/css/login.css', 'resources/js/app.js'])
+    <style>
+        .back-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background-color: var(--hoockers-green, #517A5B);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
         
-<<<<<<< Updated upstream
-        <form action="{{ route('login') }}" method="post">
-            @csrf
-=======
         .back-button:hover {
             transform: translateY(-3px);
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
@@ -15,72 +48,57 @@
         .back-button i {
             font-size: 24px;
         }
-            </style>
+    </style>
 </head>
 <body>
->>>>>>> Stashed changes
 
-            <div class="w-full max-w-sm p-6 shadow-lg bg-gray-100 rounded-md"> <!-- Changed to max-w-md for better responsiveness -->
+<!-- Back Button -->
+<a href="{{ route('landingpage') }}" class="back-button" title="Back to Home">
+    <i class="bi bi-arrow-left"></i>
+</a>
 
-    
-                <div class="flex justify-center items-center mb-4">
-                    <img src="images/recyclo-logo.png" alt="Logo" class="max-w-full h-auto"> <!-- Added responsive image styles -->
-                </div>
-    
-                <hr class="mt-3">
-
-                {{-- Email --}}
-                <div class="mt-3">
-                    <label for="email">Email:</label>
-                    <input type="text" name="email" value="{{ old('email') }}" class="border w-full text-base px-2 py-2 focus:outline-none 
-                    focus:ring-0 focus:border-gray-600 rounded-2xl @error('title') ring-red-500 @enderror" placeholder="Enter Username..."/>
+<div class="login-body">
+    <div class="login-container" id="container">
+        <div class="forms-container">
+            <div class="signin-signup">
+                <!-- Login Form -->
+                <form action="{{ route('login') }}" method="post" class="sign-in-form">
+                    @csrf
+                    <img src="{{ asset('images/recyclo-logo.png') }}" alt="Recyclo Logo" class="login-logo">
+                    <h2 class="title">Sign in to Recyclo</h2>
+                    
+                    @if (session('status'))
+                        <div class="mb-4 text-sm font-medium text-green-600">
+                            {{ session('status') }}
+                        </div>
+                    @endif
+                    
+                    <div class="input-field">
+                        <i class="bi bi-envelope-fill"></i>
+                        <input type="email" name="email" value="{{ old('email') }}" placeholder="Email" required />
+                    </div>
                     @error('email')
-                        <p class="error">{{ $message }}</p>
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
-                </div>
-                
-                {{-- Password --}}
-                <div class="mt-5"> 
-                    <label for="password">Password:</label>
-                    <input type="password" name="password" class="border w-full text-base px-2 py-2 focus:outline-none focus:ring-0 
-                    focus:border-gray-600 rounded-2xl @error('title') ring-red-500 @enderror" placeholder="Enter Password..."/>
+                    
+                    <div class="input-field">
+                        <i class="bi bi-lock-fill"></i>
+                        <input type="password" name="password" placeholder="Password" required />
+                    </div>
                     @error('password')
-                        <p class="error">{{ $message }}</p>
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
-                </div>
-                
-                {{-- Remember Me --}}
-                <div class="mb-4 mt-4">
-                    <input type="checkbox" name="remember" id="remember">
-                    <span for="remember">Remember Me</span>
-                </div>
-
-                @error('failed')
-                    <p class="error">{{ $message }}</p>
-                @enderror
-    
-                {{-- Login Button --}}
-                <div class="mt-5">
-                    <button type="submit" class="border-2 border-yellow-400 bg-yellow-400 py-2 w-full rounded-md">Log In</button> <!-- Increased padding for better touch targets -->
-                </div>
-    
-                {{-- Log In With --}}
-                <div class="flex justify-center items-center mt-3">
-                    <label class="text-sm">or log in with</label>
-                </div>
-        
-                <div class="flex justify-center items-center mt-2 space-x-4">
-                    <a href="#link1" class="block">
-                        <img src="images/apple-logo.png" alt="Apple Logo" class="h-8 w-8">
+                    
+                    <div class="terms-checkbox">
+                        <input type="checkbox" name="remember" id="remember">
+                        <label for="remember">Remember me</label>
+                    </div>
+                    
+                    <input type="submit" value="Login" class="btn solid" />
+                    
+                    <a href="{{ route('password.request') }}" class="mt-3 text-sm text-secondary-green hover:underline">
+                        Forgot your password?
                     </a>
-                    <a href="#link2" class="block">
-                        <img src="images/google-logo.png" alt="Google Logo" class="h-8 w-8">
-                    </a>
-                    <a href="#link3" class="block">
-                        <img src="images/facebook-logo.png" alt="Facebook Logo" class="h-8 w-8">
-                    </a>
-<<<<<<< Updated upstream
-=======
                     
                     <p class="social-text">Or Sign in with</p>
                     <div class="social-media">
@@ -140,11 +158,8 @@
                     <!-- Birthday -->
                     <div class="input-field">
                         <i class="bi bi-calendar-fill"></i>
-                        <input type="date" name="birthday" id="birthday" value="{{ old('birthday') }}" max="{{ date('Y-m-d', strtotime('-16 years')) }}" placeholder="Birthday" required />
+                        <input type="date" name="birthday" value="{{ old('birthday') }}" placeholder="Birthday" required />
                     </div>
-                    <small style="color: #6c757d; text-align: left; display: block; margin-top: -5px; margin-bottom: 10px;">
-                        <i class="bi bi-info-circle"></i> You must be at least 16 years old to register
-                    </small>
                     @error('birthday')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
@@ -185,16 +200,67 @@
                     <div class="text-center w-full mt-4">
                         <button type="button" class="btn transparent" id="sign-up-btn">Sign up</button>
                     </div>
->>>>>>> Stashed changes
                 </div>
-    
-<<<<<<< Updated upstream
+                <img src="{{ asset('images/reduce.svg') }}" class="image" alt="" />
             </div>
-        </form>
+            <div class="panel right-panel">
+                <div class="content">
+                    <h3>Already a member?</h3>
+                    <p>Sign in to continue your journey in making the world a better place, one recycled item at a time.</p>
+                    <button type="button" class="btn transparent" id="sign-in-btn">Sign in</button>
+                </div>
+                <img src="{{ asset('images/recycle.svg') }}" class="image" alt="" />
+            </div>
+        </div>
     </div>
+</div>
 
-</x-layout>
-=======
+<script>
+    const signUpButton = document.getElementById('sign-up-btn');
+    const signInButton = document.getElementById('sign-in-btn');
+    const container = document.getElementById('container');
+
+    // Function to set focus on the first input of the active form
+    function setFormFocus() {
+        // Determine which form is active
+        const activeForm = container.classList.contains('sign-up-mode') ? 
+            document.querySelector('.sign-up-form .input-field input') : 
+            document.querySelector('.sign-in-form .input-field input');
+        
+        // Set focus on the first input field
+        if (activeForm) {
+            activeForm.focus();
+        }
+    }
+
+    // Check URL parameters to determine which form to show
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const form = urlParams.get('form');
+        
+        // Check for 'register' parameter, case-insensitive
+        if (form && form.toLowerCase() === 'register') {
+            container.classList.add('sign-up-mode');
+            console.log('Registration form activated via URL parameter');
+        } else {
+            // Ensure we're in login mode and focus on login field
+            container.classList.remove('sign-up-mode');
+        }
+        
+        // Focus on the appropriate form's input - use a shorter delay for better UX
+        setTimeout(setFormFocus, 50);
+    });
+
+    signUpButton.addEventListener('click', () => {
+        container.classList.add('sign-up-mode');
+        setTimeout(setFormFocus, 300); // Add delay to wait for animation
+    });
+
+    signInButton.addEventListener('click', () => {
+        container.classList.remove('sign-up-mode');
+        setTimeout(setFormFocus, 300); // Add delay to wait for animation
+    });
+    
     // Add glow effect to input fields when focused
     document.querySelectorAll('.input-field input').forEach(input => {
         input.addEventListener('focus', () => {
@@ -204,22 +270,6 @@
             input.previousElementSibling.classList.remove('glow');
         });
     });
-    
-    // Remove birthday validation code
-    document.addEventListener('DOMContentLoaded', function() {
-        const birthdayInput = document.getElementById('birthday');
-        
-        // Add standard event listener for all inputs including birthday
-        document.querySelectorAll('.input-field input').forEach(input => {
-            input.addEventListener('focus', () => {
-                input.previousElementSibling.classList.add('glow');
-            });
-            input.addEventListener('blur', () => {
-                input.previousElementSibling.classList.remove('glow');
-            });
-        });
-    });
 </script>
 </body>
 </html>
->>>>>>> Stashed changes

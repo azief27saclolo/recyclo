@@ -2,33 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Models\Admin;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 class AuthController extends Controller
 {
     // Register User
-<<<<<<< Updated upstream
-    public function register(Request $request) {
-        
-        // Validate
-        $fields = $request->validate([
-            'firstname' => ['required', 'max:255'],
-            'lastname' => ['required', 'max:255'],
-            'username' => ['required', 'max:255'],
-            'email' => ['required', 'max:255', 'email', 'unique:users'],
-            'number' => ['required', 'numeric', 'unique:users'],
-            'password' => ['required', 'min:8', 'confirmed'],
-        ]);
-
-        // Register
-        $user = User::create($fields);
-        
-        // Login
-        Auth::login($user);
-=======
     public function register(Request $request) 
     {
         // Validate user inputs
@@ -72,24 +57,38 @@ class AuthController extends Controller
         // Redirect directly to posts page
         return redirect('/posts')->with('message', 'Account created successfully! Welcome to Recyclo.');
     }
->>>>>>> Stashed changes
 
-        //Redirect
-        return redirect()->route('posts');
+    // Verify Email Notice Handler - Modified to redirect to dashboard
+    public function verifyEmailNotice()
+    {
+        // Bypass verification by redirecting to dashboard
+        return redirect('/dashboard');
+    }
+
+    // Email Verification Handler - kept for future use if needed
+    public function verifyEmailHandler(EmailVerificationRequest $request)
+    {
+        $request->fulfill();
+
+        return redirect()->route('dashboard');
+    }
+
+    // Resending the Verification Email Handler - kept for future use if needed
+    public function verifyEmailResend(Request $request)
+    {
+        $request->user()->sendEmailVerificationNotification();
+
+        return back()->with('message', 'Verification link sent!');
     }
 
     // Login User
-    public function login(Request $request) {
-        // Validate
-        $fields = $request->validate([
-            'email' => ['required', 'max:255', 'email'],
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
             'password' => ['required']
         ]);
 
-<<<<<<< Updated upstream
-        // Try To Log In The User
-        if(Auth::attempt($fields, $request->remember)) {
-=======
         // Check if the user is an admin
         $admin = Admin::where('email', $credentials['email'])->first();
         if ($admin && Hash::check($credentials['password'], $admin->password)) {
@@ -116,13 +115,12 @@ class AuthController extends Controller
                 session()->forget('profile_incomplete');
             }
 
->>>>>>> Stashed changes
             return redirect()->intended('posts');
-        } else {
-            return back()->withErrors([
-                'failed' => 'The provided credentials do not match our records.'
-            ]);
         }
+
+        return back()->withErrors([
+            'email' => 'The provided credentials do not match our records.',
+        ]);
     }
 
     // Logout User

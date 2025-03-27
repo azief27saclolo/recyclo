@@ -8,26 +8,29 @@ use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Post;
 use App\Models\User;
+use App\Models\Order;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class DashboardController extends Controller
 {
     public function index() {
-        $posts = Auth::user()->posts()->latest()->paginate(5);
+        $posts = Auth::user()->posts()->latest()->paginate(10);
+        $orders = Auth::user()->boughtOrders()->with('post')->get();
 
-        return view('users.dashboard', ['posts' => $posts]);
+        return view('users.dashboard', compact('posts', 'orders'));
     }
 
     public function userPosts(User $user) {
         
-        $userPosts = $user->posts()->latest()->paginate(5);
+        $userPosts = $user->posts()->latest()->paginate(10);
 
         return view('users.posts', [
             'posts' => $userPosts,
             'user' => $user
         ]);
     }
-<<<<<<< Updated upstream
-=======
 
     public function profile()
     {
@@ -88,5 +91,4 @@ class DashboardController extends Controller
 
         return back()->with('success', 'Profile updated successfully!');
     }
->>>>>>> Stashed changes
 }

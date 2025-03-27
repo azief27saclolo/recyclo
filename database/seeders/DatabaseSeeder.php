@@ -2,6 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
+use App\Models\Post;
+// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -11,10 +14,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call([
-            // ...existing seeders...
-            CreateInventoryHistoriesTableSeeder::class,
-            CreateBuyResponsesTableSeeder::class,
-        ]);
+        // User::factory(10)->create();
+
+        Post::factory(2)->create();
     }
 }

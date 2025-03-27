@@ -11,25 +11,19 @@ class BuyResponse extends Model
 
     protected $fillable = [
         'buy_id',
-        'user_id',
+        'seller_id',
         'message',
-        'contact_info',
-        'read'
+        'contact_method',
+        'status' // pending, read, replied, etc.
     ];
 
-    /**
-     * Get the buy request that this response belongs to
-     */
     public function buy()
     {
         return $this->belongsTo(Buy::class);
     }
 
-    /**
-     * Get the user who sent this response
-     */
-    public function user()
+    public function seller()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'seller_id');
     }
 }
