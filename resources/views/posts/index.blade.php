@@ -48,7 +48,7 @@
       <div class="container">
         <div class="filter-container">
           <h3 class="filter-title">Filters</h3>
-          <form action="{{ route('posts') }}" method="GET" class="filter-form">
+          <form action="{{ route('posts') }}" method="GET" class="filter-form" id="filter-form">
             <select name="category" id="category-filter" class="category-select">
               <option value="all" {{ (!request('category') || request('category') == 'all') ? 'selected' : '' }}>All Categories</option>
               @foreach ($categories as $cat)
@@ -56,13 +56,21 @@
               @endforeach
             </select>
             
+            <div class="price-range-container">
+              <div class="price-inputs">
+                <input type="number" name="min_price" id="min-price" placeholder="Min Price" class="price-input" value="{{ request('min_price') }}" min="0">
+                <span class="price-separator">to</span>
+                <input type="number" name="max_price" id="max-price" placeholder="Max Price" class="price-input" value="{{ request('max_price') }}" min="0">
+              </div>
+            </div>
+            
             <select name="price_sort" id="price-sort" class="price-sort-select">
               <option value="" {{ !request('price_sort') ? 'selected' : '' }}>Price: Default</option>
               <option value="low_high" {{ request('price_sort') == 'low_high' ? 'selected' : '' }}>Price: Low to High</option>
               <option value="high_low" {{ request('price_sort') == 'high_low' ? 'selected' : '' }}>Price: High to Low</option>
             </select>
             
-            <button type="submit" class="filter-btn">
+            <button type="submit" class="filter-btn" id="apply-filters">
               <ion-icon name="funnel-outline"></ion-icon> Apply Filters
             </button>
           </form>
@@ -79,7 +87,7 @@
           </h2>
         </div>
         
-        <div class="products-grid">
+        <div class="products-grid" id="products-container">
           @if($posts->count() > 0)
             @foreach ($posts as $post)       
               <div class="grid-item">
@@ -94,7 +102,7 @@
         </div>
         
         {{-- Pagination Controls --}}
-        <div class="pagination-container">
+        <div class="pagination-container" id="pagination-container">
           {{ $posts->links() }}
         </div>
       </div>
@@ -137,7 +145,7 @@
     border: 1px solid #4CAF50;
     background-color: white;
     font-size: 16px;
-    width: calc(50% - 40px) !important; /* Explicitly set width */
+    width: calc(25% - 20px) !important; /* Adjusted width for new layout */
     color: #333;
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%234CAF50' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
@@ -146,6 +154,40 @@
     padding-right: 40px;
     max-width: none; /* Remove max-width constraint */
     flex: 1; /* Allow flex grow */
+  }
+
+  /* New price range container styles */
+  .price-range-container {
+    flex: 2;
+    display: flex;
+    align-items: center;
+  }
+
+  .price-inputs {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid #4CAF50;
+    background-color: white;
+    padding: 5px 10px;
+  }
+
+  .price-input {
+    flex: 1;
+    padding: 5px 10px;
+    font-size: 16px;
+    border: none;
+    color: #333;
+    outline: none;
+    width: calc(50% - 10px);
+    text-align: center;
+  }
+
+  .price-separator {
+    margin: 0 10px;
+    color: #4CAF50;
+    font-weight: bold;
   }
   
   .filter-btn {
@@ -158,10 +200,18 @@
     cursor: pointer;
     display: flex;
     align-items: center;
+    justify-content: center; /* Add center alignment */
     gap: 5px;
     transition: background-color 0.3s;
     white-space: nowrap;
     min-width: 140px; /* Set a minimum width */
+    text-align: center; /* Ensure text is centered */
+  }
+  
+  .filter-btn ion-icon {
+    font-size: 18px; /* Standardize icon size */
+    margin-right: 2px; /* Small margin to balance visual alignment */
+    flex-shrink: 0; /* Prevent icon from shrinking */
   }
   
   .filter-btn:hover {
@@ -273,6 +323,7 @@
     
     .category-select, 
     .price-sort-select, 
+    .price-range-container,
     .filter-btn {
       width: 100% !important;
       margin-bottom: 8px;
@@ -339,126 +390,253 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-  // Auto-submit form when changing select values (for better UX)
   document.addEventListener('DOMContentLoaded', function() {
     const categorySelect = document.getElementById('category-filter');
     const priceSelect = document.getElementById('price-sort');
+    const filterForm = document.getElementById('filter-form');
     
-    // Make sure both selects trigger form submit on change
-    if (categorySelect) {
-      categorySelect.addEventListener('change', function() {
-        this.form.submit();
-      });
-    }
+    // Remove auto-submit when changing select values
+    // We'll handle it through the Apply Filters button now
     
-    if (priceSelect) {
-      priceSelect.addEventListener('change', function() {
-        this.form.submit();
-      });
-    }
-
-    // Add to cart functionality with SweetAlert2
-    document.querySelectorAll('[aria-label="add to cart"]').forEach(button => {
-      button.addEventListener('click', function(e) {
-        e.preventDefault();
+    // Don't auto-submit for price range inputs
+    const minPriceInput = document.getElementById('min-price');
+    const maxPriceInput = document.getElementById('max-price');
+    
+    if (minPriceInput && maxPriceInput) {
+      // Validate that max price is greater than min price
+      maxPriceInput.addEventListener('change', function() {
+        const minPrice = parseInt(minPriceInput.value) || 0;
+        const maxPrice = parseInt(this.value) || 0;
         
-        const productId = this.getAttribute('data-product-id');
-        const productName = this.getAttribute('data-product-name');
-        const productImage = this.getAttribute('data-product-image');
-        const productPrice = this.getAttribute('data-product-price');
-        const quantity = 1; // Default quantity
+        if (maxPrice > 0 && maxPrice < minPrice) {
+          alert('Maximum price must be greater than minimum price');
+          this.value = '';
+        }
+      });
+    }
+    
+    // Handle filter form submission
+    if (filterForm) {
+      filterForm.addEventListener('submit', function(e) {
+        e.preventDefault(); // Prevent default form submission
         
         // Show loading indicator
-        Swal.fire({
-          title: 'Adding to Cart...',
-          text: 'Please wait',
-          allowOutsideClick: false,
-          showConfirmButton: false,
-          willOpen: () => {
-            Swal.showLoading();
-          },
-          heightAuto: false,
-          customClass: {
-            popup: 'bigger-modal'
-          }
-        });
+        const productsContainer = document.getElementById('products-container');
+        productsContainer.innerHTML = '<div class="loading-indicator"><p>Loading products...</p></div>';
         
-        // Send AJAX request to add to cart
-        fetch('{{ route("cart.add") }}', {
-          method: 'POST',
+        // Get form data
+        const formData = new FormData(filterForm);
+        const searchParams = new URLSearchParams(formData);
+        const url = `{{ route('posts') }}?${searchParams.toString()}`;
+        
+        // Update URL without refreshing
+        window.history.pushState({ path: url }, '', url);
+        
+        // Make AJAX request
+        fetch(url, {
           headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({
-            product_id: productId,
-            quantity: quantity
-          })
+            'X-Requested-With': 'XMLHttpRequest'
+          }
         })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            // Show success message with product details
-            Swal.fire({
-              title: '<span style="color: #517A5B"><i class="bi bi-check-circle-fill"></i> Added to Cart!</span>',
-              html: `
-                <div style="display: flex; align-items: center; margin-bottom: 25px; margin-top: 20px;">
-                  <img src="${productImage}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 10px;">
-                  <div style="margin-left: 20px; text-align: left;" class="product-details">
-                    <div style="font-weight: 700; font-size: 22px;" class="product-name">${productName}</div>
-                    <div style="font-size: 18px; margin-top: 8px;">Quantity: ${quantity}</div>
-                    <div style="font-size: 18px; font-weight: 600; color: #517A5B; margin-top: 5px;">₱${productPrice}</div>
-                  </div>
-                </div>
-                <p style="font-size: 18px;">${data.message}</p>
-              `,
-              icon: 'success',
-              confirmButtonColor: '#517A5B',
-              confirmButtonText: 'Continue Shopping',
-              showCancelButton: true,
-              cancelButtonText: 'Go to Cart',
-              cancelButtonColor: '#6c757d',
-              customClass: {
-                popup: 'bigger-modal',
-                title: 'swal-title',
-                confirmButton: 'swal-button',
-                cancelButton: 'swal-button'
-              }
-            }).then((result) => {
-              if (!result.isConfirmed) {
-                // If user clicked "Go to Cart"
-                window.location.href = "{{ route('cart.index') }}";
-              }
-            });
+        .then(response => response.text())
+        .then(html => {
+          // Create a temporary element to parse the HTML
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = html;
+          
+          // Extract the products grid from the response
+          const newProductsGrid = tempDiv.querySelector('#products-container');
+          const newPagination = tempDiv.querySelector('#pagination-container');
+          const newTitle = tempDiv.querySelector('.title-wrapper');
+          
+          if (newProductsGrid) {
+            productsContainer.innerHTML = newProductsGrid.innerHTML;
             
-            // Update cart badge count
-            const cartBadge = document.querySelector('.btn-badge');
-            if (cartBadge) {
-              const currentCount = parseInt(cartBadge.textContent || '0');
-              cartBadge.textContent = currentCount + 1;
+            // Update title and pagination as well
+            if (newTitle) {
+              document.querySelector('.title-wrapper').innerHTML = newTitle.innerHTML;
             }
+            
+            if (newPagination) {
+              document.getElementById('pagination-container').innerHTML = newPagination.innerHTML;
+              
+              // Reinitialize pagination links to use AJAX
+              setupPaginationLinks();
+            }
+            
+            // Re-initialize add to cart functionality for the new products
+            initAddToCartButtons();
           } else {
-            // Show error message
-            Swal.fire({
-              title: 'Error',
-              text: data.message || 'Failed to add item to cart',
-              icon: 'error',
-              confirmButtonColor: '#517A5B'
-            });
+            productsContainer.innerHTML = '<div class="no-posts-message"><p>Error loading products. Please try again.</p></div>';
           }
         })
         .catch(error => {
           console.error('Error:', error);
-          Swal.fire({
-            title: 'Error',
-            text: 'Something went wrong. Please try again.',
-            icon: 'error',
-            confirmButtonColor: '#517A5B'
+          productsContainer.innerHTML = '<div class="no-posts-message"><p>Error loading products. Please try again.</p></div>';
+        });
+      });
+    }
+    
+    // Set up pagination links to use AJAX
+    function setupPaginationLinks() {
+      const paginationLinks = document.querySelectorAll('.pagination-container a');
+      paginationLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          
+          const url = this.getAttribute('href');
+          
+          // Update URL without refreshing
+          window.history.pushState({ path: url }, '', url);
+          
+          // Show loading indicator
+          const productsContainer = document.getElementById('products-container');
+          productsContainer.innerHTML = '<div class="loading-indicator"><p>Loading products...</p></div>';
+          
+          // Make AJAX request to get the new page
+          fetch(url, {
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest'
+            }
+          })
+          .then(response => response.text())
+          .then(html => {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            
+            const newProductsGrid = tempDiv.querySelector('#products-container');
+            const newPagination = tempDiv.querySelector('#pagination-container');
+            
+            if (newProductsGrid) {
+              productsContainer.innerHTML = newProductsGrid.innerHTML;
+              
+              if (newPagination) {
+                document.getElementById('pagination-container').innerHTML = newPagination.innerHTML;
+                setupPaginationLinks();
+              }
+              
+              // Re-initialize add to cart functionality
+              initAddToCartButtons();
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            productsContainer.innerHTML = '<div class="no-posts-message"><p>Error loading products. Please try again.</p></div>';
           });
         });
       });
-    });
+    }
+    
+    // Initialize add to cart buttons
+    function initAddToCartButtons() {
+      document.querySelectorAll('[aria-label="add to cart"]').forEach(button => {
+        button.addEventListener('click', function(e) {
+          e.preventDefault();
+          
+          const productId = this.getAttribute('data-product-id');
+          const productName = this.getAttribute('data-product-name');
+          const productImage = this.getAttribute('data-product-image');
+          const productPrice = this.getAttribute('data-product-price');
+          const quantity = 1; // Default quantity
+          
+          // Show loading indicator
+          Swal.fire({
+            title: 'Adding to Cart...',
+            text: 'Please wait',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            willOpen: () => {
+              Swal.showLoading();
+            },
+            heightAuto: false,
+            customClass: {
+              popup: 'bigger-modal'
+            }
+          });
+          
+          // Send AJAX request to add to cart
+          fetch('{{ route("cart.add") }}', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': '{{ csrf_token() }}',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+              product_id: productId,
+              quantity: quantity
+            })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              // Show success message with product details
+              Swal.fire({
+                title: '<span style="color: #517A5B"><i class="bi bi-check-circle-fill"></i> Added to Cart!</span>',
+                html: `
+                  <div style="display: flex; align-items: center; margin-bottom: 25px; margin-top: 20px;">
+                    <img src="${productImage}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 10px;">
+                    <div style="margin-left: 20px; text-align: left;" class="product-details">
+                      <div style="font-weight: 700; font-size: 22px;" class="product-name">${productName}</div>
+                      <div style="font-size: 18px; margin-top: 8px;">Quantity: ${quantity}</div>
+                      <div style="font-size: 18px; font-weight: 600; color: #517A5B; margin-top: 5px;">₱${productPrice}</div>
+                    </div>
+                  </div>
+                  <p style="font-size: 18px;">${data.message}</p>
+                `,
+                icon: 'success',
+                confirmButtonColor: '#517A5B',
+                confirmButtonText: 'Continue Shopping',
+                showCancelButton: true,
+                cancelButtonText: 'Go to Cart',
+                cancelButtonColor: '#6c757d',
+                customClass: {
+                  popup: 'bigger-modal',
+                  title: 'swal-title',
+                  confirmButton: 'swal-button',
+                  cancelButton: 'swal-button'
+                }
+              }).then((result) => {
+                if (!result.isConfirmed) {
+                  // If user clicked "Go to Cart"
+                  window.location.href = "{{ route('cart.index') }}";
+                }
+              });
+              
+              // Update cart badge count
+              const cartBadge = document.querySelector('.btn-badge');
+              if (cartBadge) {
+                const currentCount = parseInt(cartBadge.textContent || '0');
+                cartBadge.textContent = currentCount + 1;
+              }
+            } else {
+              // Show error message
+              Swal.fire({
+                title: 'Error',
+                text: data.message || 'Failed to add item to cart',
+                icon: 'error',
+                confirmButtonColor: '#517A5B'
+              });
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+              title: 'Error',
+              text: 'Something went wrong. Please try again.',
+              icon: 'error',
+              confirmButtonColor: '#517A5B'
+            });
+          });
+        });
+      });
+    }
+    
+    // Set up pagination links on initial load
+    setupPaginationLinks();
+    
+    // Initialize add to cart buttons on initial load
+    initAddToCartButtons();
   });
 </script>
 @endsection
