@@ -18,6 +18,7 @@ class AuthController extends Controller
     {
         $formFields = $request->validate([
             'firstname' => ['required', 'string', 'min:2', 'max:255'],
+            'middlename' => ['nullable', 'string', 'max:255'],
             'lastname' => ['required', 'string', 'min:2', 'max:255'],
             'username' => ['required', 'string', 'min:3', 'max:255', 'unique:users,username'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],

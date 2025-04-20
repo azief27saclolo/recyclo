@@ -48,6 +48,40 @@
         .back-button i {
             font-size: 24px;
         }
+        
+        /* Make input fields in sign-up form more compact */
+        .sign-up-form .input-field {
+            margin: 8px 0;
+            height: 45px; /* Reduced from default height */
+        }
+        
+        .sign-up-form .input-field i {
+            line-height: 45px; /* Match the new height */
+        }
+        
+        .sign-up-form .input-field input {
+            padding: 0 10px 0 45px; /* Adjust padding */
+        }
+        
+        /* Add more vertical spacing efficiency */
+        .sign-up-form {
+            padding: 15px 30px;
+        }
+        
+        .sign-up-form .title {
+            margin-bottom: 10px;
+        }
+        
+        /* Reduce space between error messages and fields */
+        .sign-up-form .text-red-500 {
+            margin-top: 0 !important;
+            margin-bottom: 4px;
+        }
+        
+        /* Make the terms checkbox more compact */
+        .sign-up-form .terms-checkbox {
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
@@ -125,6 +159,15 @@
                         <input type="text" name="firstname" value="{{ old('firstname') }}" placeholder="First name" required />
                     </div>
                     @error('firstname')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                    
+                    <!-- Middle Name -->
+                    <div class="input-field">
+                        <i class="bi bi-person-fill"></i>
+                        <input type="text" name="middlename" value="{{ old('middlename') }}" placeholder="Middle name" />
+                    </div>
+                    @error('middlename')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                     
