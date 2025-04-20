@@ -17,7 +17,7 @@
                                     Solid recyclable materials available for you! So what are you waiting for?
                                 </p>
                                 <p class="price" style="color: black;">Starting at ₱ 15.00</p>
-                                <a href="{{ route('posts') }}" class="btn btn-primary">Shop Now</a>
+                                <a href="{{ route('posts') }}" class="btn btn-primary" style="display: flex; align-items: center; justify-content: center;">Shop Now</a>
                             </div>
                         </div>
                     </li>
@@ -32,7 +32,7 @@
                                     Recyclo has a lot to offer of different kinds of recyclable materials!
                                 </p>
                                 <p class="price">Starting at ₱ 15.00</p>
-                                <a href="{{ route('posts') }}" class="btn btn-primary">Shop Now</a>
+                                <a href="{{ route('posts') }}" class="btn btn-primary" style="display: flex; align-items: center; justify-content: center;">Shop Now</a>
                             </div>
                         </div>
                     </li>
@@ -47,7 +47,7 @@
                                     Made using clean, non-toxic ingredients, our products are designed for everyone.
                                 </p>
                                 <p class="price">Starting at ₱ 15.00</p>
-                                <a href="{{ route('posts') }}" class="btn btn-primary">Shop Now</a>
+                                <a href="{{ route('posts') }}" class="btn btn-primary" style="display: flex; align-items: center; justify-content: center;">Shop Now</a>
                             </div>
                         </div>
                     </li>
@@ -223,7 +223,7 @@
                         <div class="banner-card banner-card-1 has-before hover:shine">
                             <p class="card-subtitle" style="color: whitesmoke;">Make an Order in Recyclo</p>
                             <h2 class="h2 card-title" style="color: whitesmoke;">Budget-Friendly Prices!</h2>
-                            <a href="#" class="btn btn-secondary">Order Now</a>
+                            <a href="#" class="btn btn-secondary" style="display: flex; align-items: center; justify-content: center;">Order Now</a>
                             <div class="has-bg-image" style="background-image: url('images/rec.jpg')"></div>
                         </div>
                     </li>
@@ -233,7 +233,7 @@
                             <p class="card-text">
                                 In Recyclo, We practice proper and innovative ways to use recyclable materials.
                             </p>
-                            <a href="#" class="btn btn-secondary">Shop Sale</a>
+                            <a href="#" class="btn btn-secondary" style="display: flex; align-items: center; justify-content: center;">Shop Sale</a>
                             <div class="has-bg-image" style="background-image: url('images/bag.jpg')"></div>
                         </div>
                     </li>
@@ -298,7 +298,7 @@
                         <span class="time" aria-label="hours">Reuse</span>
                         <span class="time" aria-label="minutes">Recycle</span>
                     </div>
-                    <a href="#" class="btn btn-primary">Shop Now In Recyclo</a>
+                    <a href="#" class="btn btn-primary recyclo-shop-btn" style="display: flex; align-items: center; justify-content: center; padding: 12px 30px; text-align: center; width: 220px;">Shop Now In Recyclo</a>
                 </div>
             </div>
         </section>
