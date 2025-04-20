@@ -92,6 +92,7 @@ class PostController extends Controller implements HasMiddleware
             'title' => ['required', 'max:255'],
             'category' => ['required'],
             'location' => ['required', 'max:255'],
+            'address' => ['required', 'max:255'],  // Add address validation
             'price' => ['required', 'numeric'],
             'description' => ['required', 'string'],
             'image' => ['required', 'file', 'max:3000', 'mimes:webp,png,jpg'],
@@ -107,6 +108,7 @@ class PostController extends Controller implements HasMiddleware
             'title' => $request->title,
             'category' => $request->category,
             'location' => $request->location,
+            'address' => $request->address,  // Add address field
             'price' => $request->price,
             'description' => $request->description,
             'image' => $path,
@@ -191,6 +193,7 @@ class PostController extends Controller implements HasMiddleware
             'title' => ['required', 'max:255'],
             'category' => ['required'],
             'location' => ['required', 'max:255'],
+            'address' => ['required', 'max:255'], // Add address validation
             'price' => ['required', 'numeric'],
             'description' => ['required', 'string'],
             'unit' => ['required'],
@@ -209,6 +212,7 @@ class PostController extends Controller implements HasMiddleware
             'title' => $request->title,
             'category' => $request->category,
             'location' => $request->location,
+            'address' => $request->address, // Add address field
             'price' => $request->price,
             'description' => $request->description,
             'unit' => $request->unit,

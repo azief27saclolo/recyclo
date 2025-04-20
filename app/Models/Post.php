@@ -15,6 +15,7 @@ class Post extends Model
         'title',
         'category',
         'location',
+        'address', // Add address field
         'unit',
         'price',
         'description',

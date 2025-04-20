@@ -7,6 +7,15 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- OpenStreetMap Leaflet CSS and JavaScript -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <!-- Leaflet Control Geocoder for search functionality -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    
     @vite(['resources/css/app.css', 'resources/css/style.css', 'resources/js/app.js'])
     <style>
         :root {
@@ -127,6 +136,67 @@
             font-size: 1.1em !important;
             padding: 0.6em 1.5em !important;
         }
+
+        /* Map container styling */
+        #map-container {
+            height: 300px;
+            width: 100%;
+            margin-top: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+        
+        /* Search container styling */
+        .search-container {
+            margin-bottom: 10px;
+        }
+        
+        #location-search {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        .search-results {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            display: none;
+        }
+        
+        .search-result-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .search-result-item:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .selected-location {
+            padding: 10px;
+            background-color: #e8f4ea;
+            border-radius: 6px;
+            margin-top: 10px;
+            border-left: 4px solid var(--hoockers-green);
+        }
+        
+        /* Loading indicator */
+        .loader {
+            display: none;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--hoockers-green);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
@@ -168,9 +238,27 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="location">Location</label>
-                        <input type="text" name="location" id="location" class="form-control" placeholder="Enter location..." value="{{ old('location') }}" required>
+                        <label class="form-label" for="location">City/Area</label>
+                        <input type="text" name="location" id="location" class="form-control" placeholder="Enter city or area..." value="{{ old('location', 'Zamboanga City') }}" required>
                         @error('location')
+                            <p class="error-message">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="address">Full Address</label>
+                        <div class="search-container">
+                            <input type="text" id="address-search" placeholder="Search for your address..." 
+                                   class="form-control" value="{{ old('address', auth()->user()->location ?? '') }}">
+                            <div class="loader" id="search-loader"></div>
+                            <div class="search-results" id="search-results"></div>
+                        </div>
+                        <div id="map-container"></div>
+                        <div class="selected-location" id="selected-location">
+                            <strong>Selected address:</strong> <span id="address-display">{{ old('address', auth()->user()->location ?? 'No address selected') }}</span>
+                        </div>
+                        <input type="hidden" name="address" id="address-input" value="{{ old('address', auth()->user()->location ?? '') }}">
+                        @error('address')
                             <p class="error-message">{{ $message }}</p>
                         @enderror
                     </div>
@@ -267,6 +355,223 @@
                 }
             });
         @endif
+        
+        // Initialize map functionality
+        let map, marker, geocoder;
+        
+        // Initialize map
+        function initMap() {
+            if (map) {
+                map.invalidateSize();
+                return;
+            }
+            
+            // Default to Zamboanga City coordinates
+            let initialLat = 6.9214;
+            let initialLng = 122.0790;
+            let initialZoom = 13;
+            
+            // Try to geocode user's current location
+            const currentAddress = document.getElementById('address-input').value;
+            if (currentAddress && currentAddress !== '') {
+                // Only geocode if it doesn't already contain coordinates
+                geocodeLocation(currentAddress);
+            } else {
+                // If no location set, use Zamboanga City and set it as initial location
+                reverseGeocode(initialLat, initialLng, true);
+            }
+            
+            // Initialize the map
+            map = L.map('map-container').setView([initialLat, initialLng], initialZoom);
+            
+            // Add OpenStreetMap tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            
+            // Initialize marker at Zamboanga City position
+            marker = L.marker([initialLat, initialLng], {
+                draggable: true
+            }).addTo(map);
+            
+            // Add a label for Zamboanga City
+            L.marker([initialLat, initialLng], {
+                icon: L.divIcon({
+                    className: 'location-label',
+                    html: '<div style="background-color: rgba(255,255,255,0.8); padding: 5px; border-radius: 4px; font-weight: bold; border: 1px solid #517A5B;">Zamboanga City</div>',
+                    iconSize: [100, 20],
+                    iconAnchor: [50, 0]
+                })
+            }).addTo(map);
+            
+            // Update location when marker is dragged
+            marker.on('dragend', function(event) {
+                const position = marker.getLatLng();
+                reverseGeocode(position.lat, position.lng);
+            });
+            
+            // Add click event to map for positioning marker
+            map.on('click', function(e) {
+                marker.setLatLng(e.latlng);
+                reverseGeocode(e.latlng.lat, e.latlng.lng);
+            });
+            
+            // Initialize the geocoder control
+            geocoder = L.Control.geocoder({
+                defaultMarkGeocode: false
+            }).on('markgeocode', function(e) {
+                const latlng = e.geocode.center;
+                marker.setLatLng(latlng);
+                map.setView(latlng, 16);
+                reverseGeocode(latlng.lat, latlng.lng);
+            }).addTo(map);
+            
+            // Initialize search functionality
+            initSearch();
+        }
+        
+        // Initialize search functionality
+        function initSearch() {
+            const searchInput = document.getElementById('address-search');
+            const searchResults = document.getElementById('search-results');
+            const searchLoader = document.getElementById('search-loader');
+            let searchTimeout;
+            
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                const query = this.value.trim();
+                
+                if (query.length < 3) {
+                    searchResults.style.display = 'none';
+                    return;
+                }
+                
+                // Show loading indicator
+                searchLoader.style.display = 'inline-block';
+                
+                // Add small delay before searching
+                searchTimeout = setTimeout(() => {
+                    // Focus search on Zamboanga City area by adding it to the query
+                    searchLocation(query + " Zamboanga City");
+                }, 500);
+            });
+        }
+        
+        // Search for locations using Nominatim API
+        function searchLocation(query) {
+            const searchResults = document.getElementById('search-results');
+            const searchLoader = document.getElementById('search-loader');
+            
+            // Add viewbox parameter to bias results toward Zamboanga City area
+            // viewbox=min_lon,min_lat,max_lon,max_lat
+            const viewbox = '121.8790,6.8214,122.2790,7.0214'; // Box around Zamboanga City
+            
+            fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&viewbox=${viewbox}&bounded=1&format=json&limit=5`)
+                .then(response => response.json())
+                .then(data => {
+                    searchLoader.style.display = 'none';
+                    searchResults.innerHTML = '';
+                    
+                    if (data.length === 0) {
+                        searchResults.innerHTML = '<div class="search-result-item">No results found</div>';
+                        searchResults.style.display = 'block';
+                        return;
+                    }
+                    
+                    data.forEach(result => {
+                        const resultItem = document.createElement('div');
+                        resultItem.className = 'search-result-item';
+                        resultItem.textContent = result.display_name;
+                        resultItem.addEventListener('click', function() {
+                            // Update map and marker
+                            const lat = parseFloat(result.lat);
+                            const lon = parseFloat(result.lon);
+                            map.setView([lat, lon], 16);
+                            marker.setLatLng([lat, lon]);
+                            
+                            // Update address input
+                            document.getElementById('address-input').value = result.display_name;
+                            document.getElementById('address-display').textContent = result.display_name;
+                            document.getElementById('address-search').value = result.display_name;
+                            
+                            // Hide search results
+                            searchResults.style.display = 'none';
+                        });
+                        searchResults.appendChild(resultItem);
+                    });
+                    
+                    searchResults.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error searching location:', error);
+                    searchLoader.style.display = 'none';
+                    searchResults.innerHTML = '<div class="search-result-item">Error searching location</div>';
+                    searchResults.style.display = 'block';
+                });
+        }
+        
+        // Reverse geocode coordinates to address
+        function reverseGeocode(lat, lng, isInitial = false) {
+            fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.display_name) {
+                        document.getElementById('address-input').value = data.display_name;
+                        document.getElementById('address-display').textContent = data.display_name;
+                        document.getElementById('address-search').value = data.display_name;
+                        
+                        // If this is the initial load and we're using default Zamboanga City coordinates,
+                        // add a specific note to make it clear
+                        if (isInitial) {
+                            document.getElementById('address-display').textContent = data.display_name + " (Default)";
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error in reverse geocoding:', error);
+                });
+        }
+        
+        // Geocode address to coordinates
+        function geocodeLocation(address) {
+            // If address doesn't include Zamboanga, append it to bias results
+            let searchAddress = address;
+            if (!address.toLowerCase().includes('zamboanga')) {
+                searchAddress = address + ", Zamboanga City";
+            }
+            
+            fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchAddress)}&format=json&limit=1`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        const result = data[0];
+                        const lat = parseFloat(result.lat);
+                        const lon = parseFloat(result.lon);
+                        
+                        if (map) {
+                            map.setView([lat, lon], 16);
+                            if (marker) {
+                                marker.setLatLng([lat, lon]);
+                            } else {
+                                marker = L.marker([lat, lon], {
+                                    draggable: true
+                                }).addTo(map);
+                                
+                                marker.on('dragend', function(event) {
+                                    const position = marker.getLatLng();
+                                    reverseGeocode(position.lat, position.lng);
+                                });
+                            }
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error geocoding address:', error);
+                });
+        }
+        
+        // Initialize map when DOM is loaded
+        initMap();
     });
     
     function confirmLogout(event) {
