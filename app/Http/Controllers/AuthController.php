@@ -30,17 +30,17 @@ class AuthController extends Controller
         // Remove terms from form fields as it's not a database column
         unset($formFields['terms']);
         
+        // Set default value for number field to prevent SQL error
+        $formFields['number'] = $request->input('number', '');
+        
         // Hash Password
         $formFields['password'] = bcrypt($formFields['password']);
         
         // Create User
         $user = User::create($formFields);
         
-        // Login
-        auth()->login($user);
-        
-        // Removed email verification - redirect directly to posts page
-        return redirect('/posts')->with('message', 'Account created successfully! Welcome to Recyclo.');
+        // Instead of logging in, redirect to login page
+        return redirect('/login')->with('message', 'Account created successfully! Please login to continue.');
     }
 
     // Verify Email Notice Handler - Modified to redirect to dashboard
