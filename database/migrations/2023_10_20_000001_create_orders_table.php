@@ -13,10 +13,24 @@ return new class extends Migration
      */
     public function up()
     {
-        // Skip creating the orders table if one already exists
-        if (Schema::hasTable('orders')) {
+        // Skip creating the orders table if one already exists or if posts doesn't exist
+        if (Schema::hasTable('orders') || !Schema::hasTable('posts')) {
             return;
         }
+        
+        Schema::create('orders', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('seller_id')->constrained('users');
+            $table->foreignId('buyer_id')->constrained('users');
+            $table->unsignedBigInteger('post_id');
+            $table->string('quantity')->nullable();
+            $table->string('status')->default('pending');
+            $table->decimal('total_amount', 10, 2)->nullable();
+            $table->timestamps();
+            
+            // Add foreign key
+            $table->foreign('post_id')->references('id')->on('posts');
+        });
     }
 
     /**
@@ -26,6 +40,6 @@ return new class extends Migration
      */
     public function down()
     {
-        // No action needed as we're not creating anything in up()
+        Schema::dropIfExists('orders');
     }
 };

@@ -138,7 +138,6 @@
         <div class="main-content">
             <div class="sell-container">
                 <h1 class="page-title">Sell an Item</h1>
-                <p>List your recyclable products for sale without needing to register a shop.</p>
                 
                 <form action="{{ route('posts.store') }}" method="post" enctype="multipart/form-data">
                     @csrf

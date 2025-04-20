@@ -13,28 +13,20 @@ return new class extends Migration
      */
     public function up()
     {
-        // Skip if posts table doesn't exist
-        if (!Schema::hasTable('posts')) {
+        // Skip if either posts table or products table doesn't exist
+        if (!Schema::hasTable('posts') || !Schema::hasTable('products')) {
             return;
         }
         
-        // Skip if products table doesn't exist
-        if (!Schema::hasTable('products')) {
+        // Check if column already exists
+        if (Schema::hasColumn('products', 'post_id')) {
             return;
         }
         
+        // Add post_id column
         Schema::table('products', function (Blueprint $table) {
-            if (!Schema::hasColumn('products', 'post_id')) {
-                // First add the column without constraints
-                $table->unsignedBigInteger('post_id')->nullable()->after('user_id');
-            }
-        });
-        
-        // Then add the foreign key constraint in a separate step
-        Schema::table('products', function (Blueprint $table) {
-            if (!Schema::hasColumn('products', 'post_id')) {
-                $table->foreign('post_id')->references('id')->on('posts')->onDelete('cascade');
-            }
+            $table->unsignedBigInteger('post_id')->nullable()->after('user_id');
+            $table->foreign('post_id')->references('id')->on('posts')->onDelete('cascade');
         });
     }
 
@@ -52,7 +44,7 @@ return new class extends Migration
         
         Schema::table('products', function (Blueprint $table) {
             if (Schema::hasColumn('products', 'post_id')) {
-                // Drop foreign key first
+                // Drop foreign key first - use the standard naming convention
                 $table->dropForeign(['post_id']);
                 $table->dropColumn('post_id');
             }

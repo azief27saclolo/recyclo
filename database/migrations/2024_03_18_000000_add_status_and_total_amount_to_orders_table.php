@@ -20,11 +20,19 @@ return new class extends Migration
 
         Schema::table('orders', function (Blueprint $table) {
             if (!Schema::hasColumn('orders', 'status')) {
-                $table->string('status')->default('pending')->after('quantity');
+                if (Schema::hasColumn('orders', 'quantity')) {
+                    $table->string('status')->default('pending')->after('quantity');
+                } else {
+                    $table->string('status')->default('pending');
+                }
             }
             
             if (!Schema::hasColumn('orders', 'total_amount')) {
-                $table->decimal('total_amount', 10, 2)->nullable()->after('status');
+                if (Schema::hasColumn('orders', 'status')) {
+                    $table->decimal('total_amount', 10, 2)->nullable()->after('status');
+                } else {
+                    $table->decimal('total_amount', 10, 2)->nullable();
+                }
             }
         });
     }

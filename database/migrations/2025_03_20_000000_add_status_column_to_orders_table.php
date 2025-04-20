@@ -8,10 +8,8 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
-    public function up()
+    public function up(): void
     {
         // Skip if orders table doesn't exist
         if (!Schema::hasTable('orders')) {
@@ -19,27 +17,25 @@ return new class extends Migration
         }
         
         Schema::table('orders', function (Blueprint $table) {
-            if (!Schema::hasColumn('orders', 'receipt_image')) {
-                // Add receipt_image column for storing payment receipts
-                $table->string('receipt_image')->nullable()->after('total_amount');
+            // Check if column doesn't exist before adding it
+            if (!Schema::hasColumn('orders', 'status')) {
+                $table->string('status')->default('pending')->after('total_amount');
             }
         });
     }
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
-    public function down()
+    public function down(): void
     {
         if (!Schema::hasTable('orders')) {
             return;
         }
         
         Schema::table('orders', function (Blueprint $table) {
-            if (Schema::hasColumn('orders', 'receipt_image')) {
-                $table->dropColumn('receipt_image');
+            if (Schema::hasColumn('orders', 'status')) {
+                $table->dropColumn('status');
             }
         });
     }

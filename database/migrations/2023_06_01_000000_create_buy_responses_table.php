@@ -11,9 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Create buy_responses table without foreign key constraints initially
         Schema::create('buy_responses', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('buy_id')->constrained('buys')->onDelete('cascade');
+            $table->unsignedBigInteger('buy_id');
             $table->foreignId('seller_id')->constrained('users')->onDelete('cascade');
             $table->text('message');
             $table->string('contact_method'); // email, phone
