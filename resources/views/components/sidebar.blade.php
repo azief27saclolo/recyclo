@@ -33,6 +33,11 @@
             <span>Profile</span>
         </a>
         
+        <a href="{{ route('sell.item') }}" class="menu-item {{ $activePage == 'sell-item' ? 'active' : '' }}">
+            <i class="bi bi-plus-circle"></i>
+            <span>Sell an Item</span>
+        </a>
+        
         @if(Auth::user()->shop && Auth::user()->shop->status === 'approved')
             <a href="{{ route('shop.dashboard') }}" class="menu-item {{ $activePage == 'shop' ? 'active' : '' }}">
                 <i class="bi bi-shop"></i>

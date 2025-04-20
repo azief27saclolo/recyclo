@@ -30,15 +30,6 @@
             background-color: #f5f5f5;
         }
 
-        .sidebar {
-            width: 250px;
-            background: var(--hoockers-green);
-            padding: 20px;
-            color: white;
-            position: fixed;
-            height: 100vh;
-        }
-
         .main-content {
             flex: 1;
             margin-left: 250px;
@@ -185,48 +176,6 @@
             margin-top: 5px;
         }
 
-        /* Matching sidebar styles from profile.php */
-        .sidebar-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .sidebar-header img {
-            width: 40px;
-            height: 40px;
-            margin-right: 10px;
-        }
-
-        .sidebar-header h2 {
-            margin: 0;
-            font-size: 24px;
-        }
-
-        .menu-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 15px;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            margin-bottom: 5px;
-            transition: all 0.3s ease;
-            font-size: 16px;
-        }
-
-        .menu-item:hover, .menu-item.active {
-            background: rgba(255,255,255,0.1);
-            transform: translateX(5px);
-        }
-
-        .menu-item i {
-            margin-right: 10px;
-            font-size: 20px;
-        }
-
         /* Application status styles */
         .application-status-container {
             max-width: 800px;
@@ -360,38 +309,8 @@
 </head>
 <body>
     <div class="profile-container">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <img src="{{ asset('images/mainlogo.png') }}" alt="Recyclo Logo">
-                <h2>Recyclo</h2>
-            </div>
-            <nav>
-                <a href="{{ url('/') }}" class="menu-item">
-                    <i class="bi bi-house-door"></i>
-                    <span>Home</span>
-                </a>
-                <a href="{{ route('profile') }}" class="menu-item">
-                    <i class="bi bi-person"></i>
-                    <span>Profile</span>
-                </a>
-                <a href="#" class="menu-item">
-                    <i class="bi bi-shield-lock"></i>
-                    <span>Privacy Settings</span>
-                </a>
-                <a href="{{ route('shop.register') }}" class="menu-item active">
-                    <i class="bi bi-person-check-fill"></i>
-                    <span>Register a Shop</span>
-                </a>
-                <form action="{{ route('logout') }}" method="POST" id="logout-form" style="display: none;">
-                    @csrf
-                </form>
-                <a href="#" class="menu-item" style="color: #dc3545;" onclick="confirmLogout(event)">
-                    <i class="bi bi-box-arrow-right"></i>
-                    <span>Logout</span>
-                </a>
-            </nav>
-        </div>
+        <!-- Sidebar Component -->
+        <x-sidebar activePage="shop-register" />
 
         <!-- Main Content -->
         <div class="main-content">

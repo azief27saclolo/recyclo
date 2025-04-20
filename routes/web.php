@@ -128,6 +128,9 @@ Route::middleware('auth')->group(function() {
     
     // Route for getting all user products - use specific naming to avoid conflicts
     Route::get('/user-products', [PostController::class, 'getUserProducts'])->name('user.products');
+    
+    // Sell Item Route
+    Route::get('/sell-item', [App\Http\Controllers\SellController::class, 'showItemForm'])->name('sell.item');
 });
 
 // Routes for guests users
