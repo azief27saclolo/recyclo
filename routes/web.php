@@ -135,8 +135,9 @@ Route::middleware('auth')->group(function() {
 
 // Routes for guests users
 Route::middleware('guest')->group(function() {
-    // The view route isn't needed anymore since we're using login.blade.php for both
-    // Route::view('/register', 'auth.register')->name('register');
+    // Use dedicated route for registration form 
+    Route::view('/register', 'auth.login')->name('register.form');
+    // Keep the post route for registration
     Route::post('/register', [AuthController::class, 'register'])->name('register');
     
     Route::view('/login', 'auth.login')->name('login');

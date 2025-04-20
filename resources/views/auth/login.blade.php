@@ -82,6 +82,52 @@
         .sign-up-form .terms-checkbox {
             margin: 5px 0;
         }
+        
+        /* Add styling for CSRF token notice */
+        .csrf-notice {
+            color: #517A5B;
+            font-size: 12px;
+            margin-top: 5px;
+            text-align: center;
+        }
+        
+        /* Enhanced success message styling */
+        .success-message {
+            background-color: rgba(81, 122, 91, 0.15);
+            color: #3C6255;
+            font-size: 16px;
+            font-weight: 600;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+            border-left: 4px solid #3C6255;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Forgot password link styling */
+        .forgot-password-link {
+            font-size: 16px;
+            font-weight: 600;
+            color: #517A5B;
+            margin-top: 15px;
+            text-align: center;
+            display: block;
+            transition: all 0.3s ease;
+            padding: 8px;
+            border-radius: 6px;
+        }
+        
+        .forgot-password-link:hover {
+            background-color: rgba(81, 122, 91, 0.1);
+            text-decoration: underline;
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
@@ -104,6 +150,12 @@
                     @if (session('status'))
                         <div class="mb-4 text-sm font-medium text-green-600">
                             {{ session('status') }}
+                        </div>
+                    @endif
+
+                    @if (session('message'))
+                        <div class="success-message">
+                            {{ session('message') }}
                         </div>
                     @endif
                     
@@ -130,7 +182,7 @@
                     
                     <input type="submit" value="Login" class="btn solid" />
                     
-                    <a href="{{ route('password.request') }}" class="mt-3 text-sm text-secondary-green hover:underline">
+                    <a href="{{ route('password.request') }}" class="forgot-password-link">
                         Forgot your password?
                     </a>
                     
@@ -152,6 +204,9 @@
                 <form action="{{ route('register') }}" method="post" class="sign-up-form">
                     @csrf
                     <h2 class="title">Join Recyclo</h2>
+                    
+                    <!-- Add a hidden input with the token as a backup -->
+                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
                     
                     <!-- First Name -->
                     <div class="input-field">
@@ -229,6 +284,7 @@
                     </div>
                     
                     <input type="submit" class="btn" value="Sign up" />
+                    <p class="csrf-notice">This form is protected by CSRF security</p>
                     
                     <!-- Removed social login options here -->
                 </form>
@@ -312,6 +368,62 @@
         input.addEventListener('blur', () => {
             input.previousElementSibling.classList.remove('glow');
         });
+    });
+
+    // Add code to help debug CSRF token issues
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check for CSRF token in both forms
+        const loginForm = document.querySelector('.sign-in-form');
+        const registerForm = document.querySelector('.sign-up-form');
+        
+        // Function to check if form has CSRF token
+        function checkCsrfToken(form, formName) {
+            const csrfField = form.querySelector('input[name="_token"]');
+            if (!csrfField || !csrfField.value) {
+                console.warn(`⚠️ CSRF token missing in ${formName} form`);
+            } else {
+                console.info(`✓ CSRF token present in ${formName} form: ${csrfField.value.substring(0, 10)}...`);
+            }
+        }
+        
+        // Check both forms
+        checkCsrfToken(loginForm, 'login');
+        checkCsrfToken(registerForm, 'registration');
+        
+        // Add event listener to registration form for debugging
+        registerForm.addEventListener('submit', function(e) {
+            const csrfToken = registerForm.querySelector('input[name="_token"]');
+            console.info('Form submission attempt with token:', csrfToken ? csrfToken.value.substring(0, 10) + '...' : 'MISSING');
+        });
+
+        // Special handling for registration success
+        const successMessage = "{{ session('message') }}";
+        if (successMessage && successMessage.includes('Account created successfully')) {
+            container.classList.remove('sign-up-mode');
+            
+            // Add attention to the success message
+            const messageDiv = document.querySelector('.success-message');
+            if (messageDiv) {
+                setTimeout(() => {
+                    messageDiv.style.transform = 'scale(1.05)';
+                    setTimeout(() => {
+                        messageDiv.style.transform = 'scale(1)';
+                    }, 200);
+                }, 500);
+            }
+        }
+
+        // Add subtle pulse animation to the forgot password link
+        const forgotPasswordLink = document.querySelector('.forgot-password-link');
+        if (forgotPasswordLink) {
+            setTimeout(() => {
+                forgotPasswordLink.style.transition = 'all 0.6s ease';
+                forgotPasswordLink.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    forgotPasswordLink.style.transform = 'scale(1)';
+                }, 300);
+            }, 2000);
+        }
     });
 </script>
 </body>

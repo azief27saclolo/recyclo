@@ -39,8 +39,11 @@ class AuthController extends Controller
         // Create User
         $user = User::create($formFields);
         
-        // Instead of logging in, redirect to login page
-        return redirect('/login')->with('message', 'Account created successfully! Please login to continue.');
+        // Explicitly regenerate the session to ensure the CSRF token is refreshed
+        $request->session()->regenerate();
+        
+        // Redirect to login page with success message
+        return redirect()->route('login')->with('message', 'Account created successfully! Please log in to continue.');
     }
 
     // Verify Email Notice Handler - Modified to redirect to dashboard
