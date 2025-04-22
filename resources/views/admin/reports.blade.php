@@ -104,20 +104,33 @@
 
         .filters-section {
             display: flex;
-            gap: 20px;
+            gap: 15px;
             margin-bottom: 20px;
-            flex-wrap: wrap;
+            align-items: flex-end;
+            flex-wrap: nowrap;
         }
 
         .filter-group {
             flex: 1;
-            min-width: 200px;
+            min-width: 0;
+        }
+
+        .filter-group.date-filter {
+            flex: 0.8;
+        }
+
+        .filter-group.button-group {
+            flex: 1.2;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
         }
 
         .filter-label {
             display: block;
             margin-bottom: 8px;
             color: #666;
+            font-size: 0.9rem;
         }
 
         .filter-input {
@@ -125,7 +138,36 @@
             padding: 10px;
             border: 2px solid #eee;
             border-radius: 8px;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
+            height: 42px;
+            box-sizing: border-box;
+        }
+
+        .btn-filter {
+            height: 42px;
+            background-color: var(--hoockers-green);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 15px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .export-btn {
+            height: 42px;
+            background: var(--hoockers-green);
+            color: white;
+            border: none;
+            padding: 0 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+            white-space: nowrap;
+            box-sizing: border-box;
         }
 
         .reports-table {
@@ -168,25 +210,6 @@
         .status-pending { background: #fff3cd; color: #856404; }
         .status-cancelled { background: #f8d7da; color: #721c24; }
         .status-approved { background: #d1e7dd; color: #0f5132; }
-
-        .export-btn {
-            background: var(--hoockers-green);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .export-btn:hover {
-            background: var(--hoockers-green_80);
-            transform: translateY(-2px);
-        }
 
         .summary-cards {
             display: grid;
@@ -432,11 +455,11 @@
                 <h1 class="header-title">Transaction Reports</h1>
                 <form action="{{ route('admin.reports') }}" method="GET">
                     <div class="filters-section">
-                        <div class="filter-group">
+                        <div class="filter-group date-filter">
                             <label class="filter-label">From Date</label>
                             <input type="date" name="from_date" class="filter-input" value="{{ request('from_date') }}">
                         </div>
-                        <div class="filter-group">
+                        <div class="filter-group date-filter">
                             <label class="filter-label">To Date</label>
                             <input type="date" name="to_date" class="filter-input" value="{{ request('to_date') }}">
                         </div>
@@ -454,10 +477,10 @@
                             <label class="filter-label">Search</label>
                             <input type="text" name="search" class="filter-input" placeholder="Search transactions..." value="{{ request('search') }}">
                         </div>
-                        <div class="filter-group" style="display: flex; align-items: flex-end;">
-                            <button type="submit" class="btn btn-primary" style="height: 42px; margin-right: 10px;">Filter</button>
+                        <div class="filter-group button-group">
+                            <button type="submit" class="btn-filter">Filter</button>
                             <a href="{{ route('admin.reports.export', request()->all()) }}" class="export-btn">
-                                <i class="bi bi-download"></i> Export Report
+                                <i class="bi bi-download"></i> Export
                             </a>
                         </div>
                     </div>
@@ -548,7 +571,7 @@
             <div class="reports-header" style="margin-top: 40px;">
                 <h1 class="header-title">Sellers Overview</h1>
                 <div class="filters-section">
-                    <div class="filter-group">
+                    <div class="filter-group" style="flex-basis: 100%;">
                         <label class="filter-label">Search Seller</label>
                         <input type="text" id="sellerSearch" class="filter-input" placeholder="Search sellers...">
                     </div>
