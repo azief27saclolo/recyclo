@@ -34,6 +34,9 @@ class PostController extends Controller implements HasMiddleware
         // Get categories for the filter from the database
         $categories = Category::where('is_active', true)->orderBy('name')->get();
         
+        // Extract just the category names for the filter dropdown
+        $categoryNames = $categories->pluck('name', 'id')->toArray();
+        
         // Apply category filter if selected
         $category = $request->input('category');
         $query = Post::query();
@@ -76,6 +79,7 @@ class PostController extends Controller implements HasMiddleware
         return view('posts.index', [
             'posts' => $posts,
             'categories' => $categories,
+            'categoryNames' => $categoryNames,
             'selectedCategory' => $category,
             'priceSort' => $priceSort
         ]);

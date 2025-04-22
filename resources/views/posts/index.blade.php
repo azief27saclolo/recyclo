@@ -51,8 +51,8 @@
           <form action="{{ route('posts') }}" method="GET" class="filter-form" id="filter-form">
             <select name="category" id="category-filter" class="category-select">
               <option value="all" {{ (!request('category') || request('category') == 'all') ? 'selected' : '' }}>All Categories</option>
-              @foreach ($categories as $cat)
-                <option value="{{ $cat }}" {{ request('category') == $cat ? 'selected' : '' }}>{{ ucfirst($cat) }}</option>
+              @foreach ($categoryNames as $id => $name)
+                <option value="{{ $id }}" {{ request('category') == $id ? 'selected' : '' }}>{{ ucfirst($name) }}</option>
               @endforeach
             </select>
             
