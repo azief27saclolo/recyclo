@@ -4,7 +4,7 @@
     <div class="shop-card">
         <div class="card-banner img-holder" style="--width: 270; --height: 360;">
           <img src="{{ asset('storage/' . $post->image) }}" width="270" height="360" loading="lazy"
-            alt="Facial cleanser" class="img-cover" style="object-fit: cover; width: 100%; height: 100%;">
+            alt="{{ $post->title }}" class="img-cover" style="object-fit: cover; width: 100%; height: 100%; max-height: 360px;">
 
           <span class="badge" aria-label="20% off">{{ $post->category }}</span>
           <div class="card-actions">
@@ -96,5 +96,50 @@
     align-items: center;
     width: 48px;
     height: 48px;
+}
+
+/* Fix for slider product cards */
+.shop-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.card-banner {
+    height: 360px;
+    overflow: hidden;
+}
+.card-banner img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+.card-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+.scrollbar-item {
+    width: calc(20% - 16px);
+    min-width: 250px;
+    margin-right: 16px;
+}
+
+@media (max-width: 992px) {
+    .scrollbar-item {
+        width: calc(33.333% - 16px);
+    }
+}
+
+@media (max-width: 768px) {
+    .scrollbar-item {
+        width: calc(50% - 16px);
+    }
+}
+
+@media (max-width: 480px) {
+    .scrollbar-item {
+        width: calc(100% - 16px);
+    }
 }
 </style>

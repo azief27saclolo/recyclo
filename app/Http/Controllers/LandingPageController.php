@@ -10,7 +10,16 @@ use App\Http\Controllers\Controller;
 class LandingPageController extends Controller
 {
     public function index() {
-        $posts = Post::latest()->paginate(10); // Fetch the latest posts with pagination
+        // Fetch only approved posts with pagination and ensure we get at least 6
+        $posts = Post::where('status', Post::STATUS_APPROVED)
+                     ->latest()
+                     ->take(6)
+                     ->get();
+        
+        // If we don't have enough approved posts, get any posts to fill the slider
+        if ($posts->count() < 6) {
+            $posts = Post::latest()->take(6)->get();
+        }
         
         // Fetch approved shops to display in "Shops For You" section
         $shops = Shop::where('status', 'approved')

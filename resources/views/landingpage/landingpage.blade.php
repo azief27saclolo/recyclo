@@ -104,12 +104,53 @@
                         <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
                     </a>
                 </div>
-                <ul class="has-scrollbar">
-                    @foreach ($posts as $post)       
+                <ul class="has-scrollbar product-slider">
+                    @forelse ($posts as $post)       
                         <li class="scrollbar-item">
                             <x-postCard :post="$post"/>
                         </li>
-                    @endforeach
+                    @empty
+                        @for($i = 1; $i <= 6; $i++)
+                        <li class="scrollbar-item">
+                            <div class="shop-card">
+                                <div class="card-banner img-holder" style="--width: 270; --height: 360;">
+                                    <img src="{{ asset('images/f' . ($i % 6 + 1) . '.jpg') }}" width="270" height="360" loading="lazy"
+                                        alt="Sample Product" class="img-cover" style="object-fit: cover; width: 100%; height: 100%; max-height: 360px;">
+                                    <span class="badge" aria-label="category">Sample</span>
+                                    <div class="card-actions">
+                                        <button class="action-btn" aria-label="add to cart">
+                                            <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
+                                        </button>
+                                        <button class="action-btn" aria-label="add to wishlist">
+                                            <ion-icon name="heart-outline" aria-hidden="true"></ion-icon>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-content">
+                                    <div class="price">
+                                        <span class="span">₱150.00</span>
+                                    </div>
+                                    <h3>
+                                        <a href="#" class="card-title">Sample Product {{ $i }}</a>
+                                    </h3>
+                                    <h3>
+                                        <a href="#" class="card-title">Sample Shop</a>
+                                    </h3>
+                                    <div class="card-rating">
+                                        <div class="rating-wrapper" aria-label="5 start rating">
+                                            <ion-icon name="star" aria-hidden="true"></ion-icon>
+                                            <ion-icon name="star" aria-hidden="true"></ion-icon>
+                                            <ion-icon name="star" aria-hidden="true"></ion-icon>
+                                            <ion-icon name="star" aria-hidden="true"></ion-icon>
+                                            <ion-icon name="star" aria-hidden="true"></ion-icon>
+                                        </div>
+                                        <p class="rating-text">{{ random_int(10, 500) }} reviews</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        @endfor
+                    @endforelse
                 </ul>
             </div>
         </section>
@@ -275,6 +316,7 @@
                 </ul>
             </div>
         </section>
+        
         <section class="section offer" id="offer" aria-label="offer">
             <div class="container">
                 <figure class="offer-banner">
@@ -302,6 +344,7 @@
                 </div>
             </div>
         </section>
+        
         <section class="section blog" id="blog" aria-label="blog">
             <div class="container">
                 <h2 class="h2-large section-title">More about <span><img src="images/mainlogo.png" alt="logo" style="width: 50px; height: 50px; margin-left: 600px;"></span></h2>
@@ -352,5 +395,79 @@
             </div>
         </section>
     </article>
-  </div>
-  @endsection
+</div>
+
+<style>
+/* Product slider fixes */
+.product-slider {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 1rem 0;
+    margin: 0 -8px;
+    scroll-snap-type: x mandatory;
+}
+
+.product-slider .scrollbar-item {
+    scroll-snap-align: start;
+    flex: 0 0 auto;
+}
+
+.has-scrollbar {
+    gap: 15px;
+    scroll-padding-inline: 15px;
+}
+
+@media (min-width: 768px) {
+    .has-scrollbar::-webkit-scrollbar-thumb { 
+        background-color: hsl(0, 0%, 80%);
+    }
+}
+
+/* Shop card fixes */
+.shop-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.card-banner {
+    height: 360px;
+    overflow: hidden;
+}
+.card-banner img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+.card-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+.scrollbar-item {
+    width: calc(20% - 16px);
+    min-width: 250px;
+    margin-right: 16px;
+}
+
+@media (max-width: 992px) {
+    .scrollbar-item {
+        width: calc(33.333% - 16px);
+    }
+}
+
+@media (max-width: 768px) {
+    .scrollbar-item {
+        width: calc(50% - 16px);
+    }
+}
+
+@media (max-width: 480px) {
+    .scrollbar-item {
+        width: calc(100% - 16px);
+    }
+}
+</style>
+@endsection
