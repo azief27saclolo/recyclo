@@ -466,13 +466,20 @@
         }
         
         .icon-dropdown .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 180px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 5px;
+            overflow: hidden;
             left: -60px;
             top: 100%;
             margin-top: 5px;
-            min-width: 180px;
         }
         
-        .icon-dropdown:hover .dropdown-content {
+        .dropdown-content.show {
             display: block;
         }
     </style>
@@ -511,19 +518,7 @@
         </div>
 
         <div class="main-content">
-            @if (session('success'))
-                <div class="alert alert-success">
-                    {{ session('success') }}
-                </div>
-            @endif
-            
-            @if (session('error'))
-                <div class="alert alert-danger">
-                    {{ session('error') }}
-                </div>
-            @endif
-            
-            <!-- Add SweetAlert2 success handling -->
+            <!-- Keep SweetAlert2 success handling -->
             @if (session('swalSuccess'))
                 <script>
                     document.addEventListener('DOMContentLoaded', function() {
@@ -608,10 +603,10 @@
                                             </a>
                                             
                                             <div class="icon-dropdown">
-                                                <a href="#" class="action-icon status" data-tooltip="Update Status">
+                                                <a href="#" class="action-icon status" data-tooltip="Update Status" onclick="toggleDropdown(event, {{ $shop->id }})">
                                                     <i class="bi bi-arrow-down-up"></i>
                                                 </a>
-                                                <div class="dropdown-content">
+                                                <div id="dropdown-{{ $shop->id }}" class="dropdown-content">
                                                     <button onclick="approveShop({{ $shop->id }}, '{{ addslashes($shop->shop_name) }}')" class="dropdown-option">
                                                         <i class="bi bi-check-circle text-success"></i> Approve
                                                     </button>
@@ -688,7 +683,7 @@
                 <h2>Edit Shop Details</h2>
                 <span class="close" onclick="closeEditShopModal()">&times;</span>
             </div>
-            <form id="editShopForm" method="POST" enctype="multipart/form-data">
+            <form id="editShopForm" method="POST" enctype="multipart/form-data" onsubmit="submitEditForm(event)">
                 @csrf
                 @method('PUT')
                 
@@ -1153,6 +1148,127 @@
                     
                     // Submit the form
                     form.submit();
+                }
+            });
+        }
+
+        // Function to toggle dropdown visibility
+        function toggleDropdown(event, shopId) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // Close all other dropdowns first
+            document.querySelectorAll('.dropdown-content').forEach(dropdown => {
+                if (dropdown.id !== `dropdown-${shopId}` && dropdown.classList.contains('show')) {
+                    dropdown.classList.remove('show');
+                }
+            });
+            
+            // Toggle current dropdown
+            const dropdown = document.getElementById(`dropdown-${shopId}`);
+            dropdown.classList.toggle('show');
+        }
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.matches('.status, .status *')) {
+                document.querySelectorAll('.dropdown-content').forEach(dropdown => {
+                    dropdown.classList.remove('show');
+                });
+            }
+        });
+
+        // Edit Shop form submission with SweetAlert2 - improved version
+        function submitEditForm(event) {
+            event.preventDefault();
+            
+            // Show loading state
+            Swal.fire({
+                title: 'Saving changes...',
+                html: 'Please wait while we update the shop information.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            const form = document.getElementById('editShopForm');
+            const formData = new FormData(form);
+            
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                // Don't automatically follow redirects
+                redirect: 'manual'
+            })
+            .then(response => {
+                // Close the modal first
+                closeEditShopModal();
+                
+                // If response is a redirect (Laravel often redirects after form submission)
+                if (response.type === 'opaqueredirect' || response.redirected || response.status === 302) {
+                    // Show success message and reload
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Shop information has been updated successfully.',
+                        icon: 'success',
+                        confirmButtonColor: '#517A5B'
+                    }).then(() => {
+                        // Reload the page to show the updated information
+                        window.location.reload();
+                    });
+                    return { success: true }; // Return a dummy object to avoid error in next then block
+                }
+                
+                // Try to parse response as JSON
+                return response.json().catch(error => {
+                    // If response is not JSON, check if it was successful based on status code
+                    if (response.ok) {
+                        return { success: true, message: 'Shop updated successfully' };
+                    } else {
+                        return { success: false, message: 'Error updating shop: ' + response.statusText };
+                    }
+                });
+            })
+            .then(data => {
+                if (data.success) {
+                    if (!Swal.isVisible()) { // Only show if not already showing success
+                        Swal.fire({
+                            title: 'Success!',
+                            text: data.message || 'Shop information has been updated successfully.',
+                            icon: 'success',
+                            confirmButtonColor: '#517A5B'
+                        }).then(() => {
+                            // Reload the page to show the updated information
+                            window.location.reload();
+                        });
+                    }
+                } else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: data.message || 'An error occurred while updating the shop information.',
+                        icon: 'error',
+                        confirmButtonColor: '#dc3545'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                closeEditShopModal();
+                
+                // Check if we already showed a success alert (in case of redirect)
+                if (!Swal.isVisible()) {
+                    Swal.fire({
+                        title: 'Shop Updated',
+                        text: 'The shop was likely updated successfully, but there was an issue with the response. Please check if your changes were applied.',
+                        icon: 'info',
+                        confirmButtonColor: '#517A5B'
+                    }).then(() => {
+                        window.location.reload();
+                    });
                 }
             });
         }
