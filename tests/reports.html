@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Reports - Recyclo Admin</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --hoockers-green: #517A5B;
+            --hoockers-green_80: #517A5Bcc;
+        }
+
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--hoockers-green);
+            padding: 25px;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 30px;
+            background: #f5f5f5;
+        }
+
+        .reports-header {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+
+        .header-title {
+            color: var(--hoockers-green);
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .filters-section {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #666;
+        }
+
+        .filter-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        .reports-table {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .table td {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-completed { background: #d4edda; color: #155724; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-cancelled { background: #f8d7da; color: #721c24; }
+
+        .export-btn {
+            background: var(--hoockers-green);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .export-btn:hover {
+            background: var(--hoockers-green_80);
+            transform: translateY(-2px);
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .card-label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .card-value {
+            font-size: 1.8rem;
+            color: var(--hoockers-green);
+            font-weight: 600;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: flex-end;
+            padding: 20px;
+            gap: 10px;
+        }
+
+        .page-btn {
+            padding: 8px 15px;
+            border: 2px solid var(--hoockers-green);
+            border-radius: 5px;
+            background: white;
+            color: var(--hoockers-green);
+            cursor: pointer;
+        }
+
+        .page-btn.active {
+            background: var(--hoockers-green);
+            color: white;
+        }
+
+        .view-btn {
+            padding: 6px 15px;
+            background: var(--hoockers-green);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .view-btn:hover {
+            background: var(--hoockers-green_80);
+            transform: translateY(-2px);
+        }
+
+        .view-btn i {
+            font-size: 1rem;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: relative;
+            background: white;
+            width: 90%;
+            max-width: 1200px;
+            margin: 20px auto;
+            border-radius: 15px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px;
+            background: var(--hoockers-green);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        /* Transaction Modal Specific Styles */
+        .transaction-details {
+            padding: 30px;
+        }
+
+        .details-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            color: var(--hoockers-green);
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            font-size: 1.4rem;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .detail-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .detail-label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .detail-value {
+            color: #333;
+            font-size: 1.1rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .detail-value i {
+            color: var(--hoockers-green);
+            font-size: 1.1rem;
+        }
+
+        .transaction-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .price-value {
+            color: var(--hoockers-green);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo-section">
+                <img src="../assets/images/mainlogo.png" alt="Recyclo Logo" style="width: 40px; height: 40px;">
+                <h2 style="color: white; margin-left: 10px;">Recyclo Admin</h2>
+            </div>
+            <nav>
+                <a href="dashboard.php" class="nav-link">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+                <a href="reports.html" class="nav-link active">
+                    <i class="bi bi-file-earmark-text"></i> Reports
+                </a>
+                <a href="users.php" class="nav-link">
+                    <i class="bi bi-people"></i> Users
+                </a>
+                <a href="sellers.php" class="nav-link">
+                    <i class="bi bi-shop"></i> Sellers
+                </a>
+                <a href="products.php" class="nav-link">
+                    <i class="bi bi-box"></i> Products
+                </a>
+                <a href="logout.php" class="nav-link">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="reports-header">
+                <h1 class="header-title">Transaction Reports</h1>
+                <div class="filters-section">
+                    <div class="filter-group">
+                        <label class="filter-label">Date Range</label>
+                        <input type="date" class="filter-input">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Status</label>
+                        <select class="filter-input" id="statusFilter" onchange="filterTransactions()">
+                            <option value="all">All Status</option>
+                            <option value="completed">Completed</option>
+                            <option value="pending">Pending</option>
+                            <option value="processing">Processing</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Search</label>
+                        <input type="text" class="filter-input" placeholder="Search transactions...">
+                    </div>
+                    <div class="filter-group" style="display: flex; align-items: flex-end;">
+                        <button class="export-btn">
+                            <i class="bi bi-download"></i> Export Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <div class="card-label">Total Transactions</div>
+                    <div class="card-value">2,459</div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-label">Total Revenue</div>
+                    <div class="card-value">₱145,850</div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-label">Average Order Value</div>
+                    <div class="card-value">₱59.31</div>
+                </div>
+            </div>
+
+            <div class="reports-table">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Transaction ID</th>
+                            <th>Date</th>
+                            <th>Buyer</th>
+                            <th>Seller</th>
+                            <th>Product</th>
+                            <th>Quantity</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>#TRX001</td>
+                            <td>Jan 15, 2024</td>
+                            <td>John Doe</td>
+                            <td>Ronald's Shop</td>
+                            <td>Wood Scraps</td>
+                            <td>3 kg</td>
+                            <td>₱60.00</td>
+                            <td><span class="status-badge status-completed">Completed</span></td>
+                            <td>
+                                <button class="view-btn">
+                                    <i class="bi bi-eye"></i> View
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>#TRX002</td>
+                            <td>Jan 15, 2024</td>
+                            <td>Maria Garcia</td>
+                            <td>John's Metal Shop</td>
+                            <td>Metal Cans</td>
+                            <td>5 kg</td>
+                            <td>₱75.00</td>
+                            <td><span class="status-badge status-pending">Pending</span></td>
+                            <td>
+                                <button class="view-btn">
+                                    <i class="bi bi-eye"></i> View
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>#TRX003</td>
+                            <td>Jan 14, 2024</td>
+                            <td>Peter Smith</td>
+                            <td>Teppey's Shop</td>
+                            <td>Glass Bottles</td>
+                            <td>4 kg</td>
+                            <td>₱100.00</td>
+                            <td><span class="status-badge status-cancelled">Cancelled</span></td>
+                            <td>
+                                <button class="view-btn">
+                                    <i class="bi bi-eye"></i> View
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="pagination">
+                    <button class="page-btn">Previous</button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn">3</button>
+                    <button class="page-btn">Next</button>
+                </div>
+            </div>
+
+            <!-- Sellers Table Section -->
+            <div class="reports-header" style="margin-top: 40px;">
+                <h1 class="header-title">Sellers Overview</h1>
+                <div class="filters-section">
+                    <div class="filter-group">
+                        <label class="filter-label">Search Seller</label>
+                        <input type="text" class="filter-input" placeholder="Search sellers...">
+                    </div>
+                </div>
+            </div>
+
+            <div class="reports-table">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Seller ID</th>
+                            <th>Shop Name</th>
+                            <th>Owner Name</th>
+                            <th>Total Products</th>
+                            <th>Total Sales</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>#SELLER001</td>
+                            <td>Ronald's Shop</td>
+                            <td>Ronald Smith</td>
+                            <td>15</td>
+                            <td>₱12,450.00</td>
+                            <td><span class="status-badge status-completed">Active</span></td>
+                            <td>
+                                <button class="view-btn">
+                                    <i class="bi bi-eye"></i> View
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>#SELLER002</td>
+                            <td>John's Metal Shop</td>
+                            <td>John Garcia</td>
+                            <td>8</td>
+                            <td>₱8,750.00</td>
+                            <td><span class="status-badge status-completed">Active</span></td>
+                            <td>
+                                <button class="view-btn">
+                                    <i class="bi bi-eye"></i> View
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>#SELLER003</td>
+                            <td>Teppey's Shop</td>
+                            <td>Teppey Wang</td>
+                            <td>12</td>
+                            <td>₱15,200.00</td>
+                            <td><span class="status-badge status-completed">Active</span></td>
+                            <td>
+                                <button class="view-btn">
+                                    <i class="bi bi-eye"></i> View
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="pagination">
+                    <button class="page-btn">Previous</button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn">3</button>
+                    <button class="page-btn">Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="sellerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Seller Details</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="seller-profile">
+                    <img src="" alt="Seller Photo" id="sellerPhoto" class="seller-image">
+                    <div class="seller-info">
+                        <h3 id="shopName"></h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">Seller ID</div>
+                                <div class="info-value" id="sellerId"></div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Owner Name</div>
+                                <div class="info-value" id="ownerName"></div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Email</div>
+                                <div class="info-value">
+                                    <i class="bi bi-envelope"></i>
+                                    <span id="sellerEmail"></span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Contact Number</div>
+                                <div class="info-value">
+                                    <i class="bi bi-telephone"></i>
+                                    <span id="sellerContact"></span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Location</div>
+                                <div class="info-value" id="sellerLocation">
+                                    <i class="bi bi-geo-alt"></i>
+                                    <span id="locationText"></span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Total Sales</div>
+                                <div class="info-value" id="totalSales"></div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Total Transactions</div>
+                                <div class="info-value" id="totalTransactions"></div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Shop Rating</div>
+                                <div class="info-value rating-display">
+                                    <div id="shopRating"></div>
+                                    <span id="ratingValue"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Products Section -->
+                <h3 style="color: var(--hoockers-green); margin: 20px 0;">Products</h3>
+                <div class="products-grid" id="productsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;"></div>
+
+                <!-- Transactions Section -->
+                <h3 style="color: var(--hoockers-green); margin: 20px 0;">Transaction History</h3>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Transaction ID</th>
+                                <th>Date</th>
+                                <th>Buyer ID</th>
+                                <th>Buyer Name</th>
+                                <th>Product</th>
+                                <th>Quantity</th>
+                                <th>Payment Method</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionHistory"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="transactionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="bi bi-receipt"></i> Transaction Details</h2>
+                <button class="close-modal" onclick="closeTransactionModal()">&times;</button>
+            </div>
+            <div class="transaction-details">
+                <!-- Transaction Info Section -->
+                <div class="details-section">
+                    <h3 class="section-title">
+                        <i class="bi bi-info-circle"></i> Transaction Information
+                    </h3>
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">Transaction ID</div>
+                            <div class="detail-value">
+                                <i class="bi bi-upc"></i>
+                                <span id="txnId"></span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Date</div>
+                            <div class="detail-value">
+                                <i class="bi bi-calendar"></i>
+                                <span id="txnDate"></span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Status</div>
+                            <div class="detail-value">
+                                <span id="txnStatus" class="transaction-status"></span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Payment Method</div>
+                            <div class="detail-value">
+                                <i class="bi bi-credit-card"></i>
+                                <span id="paymentMethod"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seller Info Section -->
+                <div class="details-section">
+                    <h3 class="section-title">
+                        <i class="bi bi-shop"></i> Seller Information
+                    </h3>
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">Shop Name</div>
+                            <div class="detail-value">
+                                <i class="bi bi-shop"></i>
+                                <span id="sellerName"></span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Seller ID</div>
+                            <div class="detail-value">
+                                <i class="bi bi-person-badge"></i>
+                                <span id="sellerId"></span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Email</div>
+                            <div class="detail-value">
+                                <i class="bi bi-envelope"></i>
+                                <span id="sellerEmail"></span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Contact</div>
+                            <div class="detail-value">
+                                <i class="bi bi-telephone"></i>
+                                <span id="sellerContact"></span>
+                            </div>
+                        </div>
+                        <div class="detail-item" style="grid-column: 1 / -1;">
+                            <div class="detail-label">Location</div>
+                            <div class="detail-value">
+                                <i class="bi bi-geo-alt"></i>
+                                <span id="sellerLocation"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Buyer Info Section -->
+                <div class="details-section">
+                    <h3 class="section-title">
+                        <i class="bi bi-person"></i> Buyer Information
+                    </h3>
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">Name</div>
+                            <div class="detail-value">
+                                <i class="bi bi-person"></i>
+                                <span id="buyerName"></span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Buyer ID</div>
+                            <div class="detail-value">
+                                <i class="bi bi-person-badge"></i>
+                                <span id="buyerId"></span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Email</div>
+                            <div class="detail-value">
+                                <i class="bi bi-envelope"></i>
+                                <span id="buyerEmail"></span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Contact</div>
+                            <div class="detail-value">
+                                <i class="bi bi-telephone"></i>
+                                <span id="buyerContact"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Info Section -->
+                <div class="details-section">
+                    <h3 class="section-title">
+                        <i class="bi bi-box"></i> Product Details
+                    </h3>
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">Product Name</div>
+                            <div class="detail-value">
+                                <i class="bi bi-box"></i>
+                                <span id="productName"></span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Quantity</div>
+                            <div class="detail-value">
+                                <i class="bi bi-plus-slash-minus"></i>
+                                <span id="quantity"></span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Price per Unit</div>
+                            <div class="detail-value price-value">
+                                <i class="bi bi-tag"></i>
+                                <span id="unitPrice"></span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Total Amount</div>
+                            <div class="detail-value price-value">
+                                <i class="bi bi-cash"></i>
+                                <span id="totalPrice"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Filter functionality
+        document.querySelector('.filter-input[type="text"]').addEventListener('input', function(e) {
+            // Add filter logic here
+        });
+
+        // Export functionality
+        document.querySelector('.export-btn').addEventListener('click', function() {
+            // Add export logic here
+        });
+
+        // Date range filter
+        document.querySelector('.filter-input[type="date"]').addEventListener('change', function(e) {
+            // Add date filter logic here
+        });
+
+        function filterTransactions() {
+            const filterValue = document.getElementById('statusFilter').value.toLowerCase();
+            const rows = document.querySelectorAll('.table tbody tr');
+            let totalAmount = 0;
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const statusCell = row.querySelector('td:nth-child(8)'); // Status column
+                const statusText = statusCell.textContent.toLowerCase();
+                const amountText = row.querySelector('td:nth-child(7)').textContent; // Amount column
+                const amount = parseFloat(amountText.replace('₱', '').replace(',', ''));
+
+                if (filterValue === 'all' || statusText.includes(filterValue)) {
+                    row.style.display = '';
+                    totalAmount += amount;
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Update summary cards
+            updateSummaryStats(visibleCount, totalAmount);
+        }
+
+        function updateSummaryStats(count, total) {
+            const avgValue = count > 0 ? total / count : 0;
+            
+            document.querySelectorAll('.card-value')[0].textContent = count;
+            document.querySelectorAll('.card-value')[1].textContent = `₱${total.toFixed(2)}`;
+            document.querySelectorAll('.card-value')[2].textContent = `₱${avgValue.toFixed(2)}`;
+        }
+
+        // Initialize status badges with appropriate colors
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusBadges = document.querySelectorAll('.status-badge');
+            statusBadges.forEach(badge => {
+                const status = badge.textContent.toLowerCase().trim();
+                badge.classList.add(`status-${status}`);
+            });
+        });
+
+        function viewSellerDetails(sellerId) {
+            const modal = document.getElementById('sellerModal');
+            modal.style.display = 'block';
+
+            // Example data - replace with actual API call
+            const sellerData = {
+                id: sellerId,
+                photo: '../assets/images/seller-photo.jpg',
+                shopName: "Ronald's Shop",
+                ownerName: "Ronald Smith",
+                email: "ronald.shop@example.com",
+                contactNumber: "+63 912 345 6789",
+                location: "123 Main Street, Barangay San Antonio, Manila",
+                totalSales: "₱12,450.00",
+                totalTransactions: 156,
+                rating: 4.5,
+                products: [
+                    { name: "Wood Scraps", image: "../assets/images/wood.jpg", price: "₱20.00" },
+                    { name: "Metal Cans", image: "../assets/images/metal.jpg", price: "₱15.00" }
+                ],
+                transactions: [
+                    {
+                        transactionId: "TRX001",
+                        date: "2024-01-15",
+                        buyerId: "BUY001",
+                        buyerName: "John Doe",
+                        product: "Wood Scraps",
+                        quantity: "3 kg",
+                        paymentMethod: "GCash",
+                        amount: "₱60.00"
+                    }
+                ]
+            };
+
+            // Update modal content
+            document.getElementById('sellerPhoto').src = sellerData.photo;
+            document.getElementById('shopName').textContent = sellerData.shopName;
+            document.getElementById('sellerId').textContent = sellerData.id;
+            document.getElementById('ownerName').textContent = sellerData.ownerName;
+            document.getElementById('sellerEmail').textContent = sellerData.email;
+            document.getElementById('sellerContact').textContent = sellerData.contactNumber;
+            document.getElementById('locationText').textContent = sellerData.location;
+            document.getElementById('totalSales').textContent = sellerData.totalSales;
+            document.getElementById('totalTransactions').textContent = sellerData.totalTransactions;
+            
+            // Generate star rating display
+            const ratingStars = document.getElementById('shopRating');
+            const fullStars = Math.floor(sellerData.rating);
+            const hasHalfStar = sellerData.rating % 1 !== 0;
+            
+            let starsHTML = '';
+            for (let i = 0; i < 5; i++) {
+                if (i < fullStars) {
+                    starsHTML += '<i class="bi bi-star-fill star-rating"></i>';
+                } else if (i === fullStars && hasHalfStar) {
+                    starsHTML += '<i class="bi bi-star-half star-rating"></i>';
+                } else {
+                    starsHTML += '<i class="bi bi-star star-rating"></i>';
+                }
+            }
+            ratingStars.innerHTML = starsHTML;
+            document.getElementById('ratingValue').textContent = `(${sellerData.rating})`;
+
+            // Populate products grid
+            const productsGrid = document.getElementById('productsGrid');
+            productsGrid.innerHTML = sellerData.products.map(product => `
+                <div class="product-card" style="background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <img src="${product.image}" alt="${product.name}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px;">
+                    <h4 style="margin: 10px 0;">${product.name}</h4>
+                    <p style="color: var(--hoockers-green);">${product.price}</p>
+                </div>
+            `).join('');
+
+            // Populate transaction history
+            const transactionHistory = document.getElementById('transactionHistory');
+            transactionHistory.innerHTML = sellerData.transactions.map(tx => `
+                <tr>
+                    <td>${tx.transactionId}</td>
+                    <td>${tx.date}</td>
+                    <td>${tx.buyerId}</td>
+                    <td>${tx.buyerName}</td>
+                    <td>${tx.product}</td>
+                    <td>${tx.quantity}</td>
+                    <td>${tx.paymentMethod}</td>
+                    <td>${tx.amount}</td>
+                </tr>
+            `).join('');
+        }
+
+        function viewTransactionDetails(transactionId) {
+            const modal = document.getElementById('transactionModal');
+            
+            // Example data - replace with actual API call
+            const txnData = {
+                id: '#TRX001',
+                date: 'Jan 15, 2024',
+                seller: {
+                    id: 'SELLER001',
+                    name: "Ronald's Shop",
+                    email: 'ronald.shop@example.com',
+                    contact: '+63 912 345 6789',
+                    location: '123 Main Street, Barangay San Antonio, Manila'
+                },
+                buyer: {
+                    id: 'BUYER001',
+                    name: 'John Doe',
+                    email: 'john.doe@example.com',
+                    contact: '+63 923 456 7890'
+                },
+                product: 'Wood Scraps',
+                quantity: '3 kg',
+                unitPrice: '₱20.00',
+                totalPrice: '₱60.00',
+                paymentMethod: 'GCash',
+                status: 'completed'
+            };
+
+            // Populate modal with transaction data
+            document.getElementById('txnId').textContent = txnData.id;
+            document.getElementById('txnDate').textContent = txnData.date;
+            
+            // Seller details
+            document.getElementById('sellerName').textContent = txnData.seller.name;
+            document.getElementById('sellerId').textContent = txnData.seller.id;
+            document.getElementById('sellerEmail').textContent = txnData.seller.email;
+            document.getElementById('sellerContact').textContent = txnData.seller.contact;
+            document.getElementById('sellerLocation').textContent = txnData.seller.location;
+            
+            // Buyer details
+            document.getElementById('buyerName').textContent = txnData.buyer.name;
+            document.getElementById('buyerId').textContent = txnData.buyer.id;
+            document.getElementById('buyerEmail').textContent = txnData.buyer.email;
+            document.getElementById('buyerContact').textContent = txnData.buyer.contact;
+            
+            // Transaction details
+            document.getElementById('productName').textContent = txnData.product;
+            document.getElementById('quantity').textContent = txnData.quantity;
+            document.getElementById('unitPrice').textContent = txnData.unitPrice;
+            document.getElementById('totalPrice').textContent = txnData.totalPrice;
+            document.getElementById('paymentMethod').textContent = txnData.paymentMethod;
+            
+            // Status badge
+            const statusBadge = document.getElementById('txnStatus');
+            statusBadge.textContent = txnData.status.charAt(0).toUpperCase() + txnData.status.slice(1);
+            statusBadge.className = `status-badge status-${txnData.status}`;
+
+            modal.style.display = 'block';
+        }
+
+        function closeTransactionModal() {
+            document.getElementById('transactionModal').style.display = 'none';
+        }
+
+        // Close modal when clicking the close button
+        document.querySelector('.close-modal').onclick = function() {
+            document.getElementById('sellerModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('sellerModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Update view buttons to use new function
+        document.querySelectorAll('.view-btn').forEach(btn => {
+            btn.onclick = function() {
+                const row = this.closest('tr');
+                const transactionId = row.querySelector('td:first-child').textContent;
+                viewTransactionDetails(transactionId);
+            }
+        });
+    </script>
+</body>
+</html>

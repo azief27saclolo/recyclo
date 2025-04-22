@@ -7,9 +7,12 @@ use App\Models\User;
 use App\Models\Shop;
 use App\Models\Order;
 use App\Models\Admin;
+use App\Models\Post;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\View;
 
 class AdminController extends Controller
 {
@@ -169,5 +172,253 @@ class AdminController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect('/login');
+    }
+
+    /**
+     * Display transaction reports and analytics
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\Response
+     */
+    public function reports(Request $request)
+    {
+        // Get filters from request
+        $fromDate = $request->input('from_date');
+        $toDate = $request->input('to_date');
+        $status = $request->input('status', 'all');
+        $search = $request->input('search');
+        
+        // Build transaction query
+        $query = Order::with(['buyer', 'seller', 'post', 'user']);
+        
+        // Apply date filters if provided
+        if ($fromDate) {
+            $query->whereDate('created_at', '>=', $fromDate);
+        }
+        
+        if ($toDate) {
+            $query->whereDate('created_at', '<=', $toDate);
+        }
+        
+        // Apply status filter if not 'all'
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+        
+        // Apply search if provided
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->whereHas('buyer', function($q) use ($search) {
+                    $q->where('firstname', 'like', "%{$search}%")
+                      ->orWhere('lastname', 'like', "%{$search}%");
+                })
+                ->orWhereHas('seller', function($q) use ($search) {
+                    $q->where('firstname', 'like', "%{$search}%")
+                      ->orWhere('lastname', 'like', "%{$search}%");
+                })
+                ->orWhereHas('post', function($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%");
+                });
+            });
+        }
+        
+        // Execute the query with pagination
+        $transactions = $query->latest()->paginate(10);
+        
+        // Calculate summary statistics
+        $totalTransactions = $query->count();
+        $totalRevenue = $query->sum('total_amount');
+        $averageOrderValue = $totalTransactions > 0 ? $totalRevenue / $totalTransactions : 0;
+        
+        // Get sellers with their stats
+        $sellers = User::whereHas('posts')
+            ->withCount('posts')
+            ->withSum(['soldOrders as total_sales' => function($query) {
+                $query->where('status', 'completed');
+            }], 'total_amount')
+            ->paginate(10);
+            
+        // Convert null values to 0 for total_sales
+        $sellers->transform(function($seller) {
+            $seller->total_sales = $seller->total_sales ?? 0;
+            return $seller;
+        });
+
+        return view('admin.reports', compact(
+            'transactions',
+            'totalTransactions',
+            'totalRevenue',
+            'averageOrderValue',
+            'sellers'
+        ));
+    }
+
+    /**
+     * Get detailed seller information for modal
+     *
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getSellerDetails($id)
+    {
+        $seller = User::with(['shop', 'posts.orders'])
+            ->withCount('posts')
+            ->withSum(['soldOrders as total_sales' => function($query) {
+                $query->where('status', 'completed');
+            }], 'total_amount')
+            ->findOrFail($id);
+        
+        // Prevent null total_sales
+        $seller->total_sales = $seller->total_sales ?? 0;
+        
+        // Get seller transactions
+        $transactions = Order::where('seller_id', $id)
+            ->with(['buyer', 'post'])
+            ->latest()
+            ->take(10)
+            ->get();
+            
+        // Get seller products
+        $products = Post::where('user_id', $id)
+            ->withCount('orders')
+            ->latest()
+            ->take(6)
+            ->get();
+            
+        // Render the seller details HTML
+        $html = View::make('admin.partials.seller_details', [
+            'seller' => $seller,
+            'transactions' => $transactions,
+            'products' => $products
+        ])->render();
+        
+        return response()->json([
+            'success' => true,
+            'html' => $html
+        ]);
+    }
+
+    /**
+     * Get detailed transaction information for modal
+     *
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getTransactionDetails($id)
+    {
+        $transaction = Order::with(['buyer', 'seller', 'post'])
+            ->findOrFail($id);
+            
+        // Render the transaction details HTML
+        $html = View::make('admin.partials.transaction_details', [
+            'transaction' => $transaction
+        ])->render();
+        
+        return response()->json([
+            'success' => true,
+            'html' => $html
+        ]);
+    }
+    
+    /**
+     * Export reports to CSV
+     *
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
+    public function exportReports(Request $request)
+    {
+        // Get filters from request
+        $fromDate = $request->input('from_date');
+        $toDate = $request->input('to_date');
+        $status = $request->input('status', 'all');
+        $search = $request->input('search');
+        
+        // Build transaction query with the same filters as the report page
+        $query = Order::with(['buyer', 'seller', 'post']);
+        
+        // Apply date filters if provided
+        if ($fromDate) {
+            $query->whereDate('created_at', '>=', $fromDate);
+        }
+        
+        if ($toDate) {
+            $query->whereDate('created_at', '<=', $toDate);
+        }
+        
+        // Apply status filter if not 'all'
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+        
+        // Apply search if provided
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->whereHas('buyer', function($q) use ($search) {
+                    $q->where('firstname', 'like', "%{$search}%")
+                      ->orWhere('lastname', 'like', "%{$search}%");
+                })
+                ->orWhereHas('seller', function($q) use ($search) {
+                    $q->where('firstname', 'like', "%{$search}%")
+                      ->orWhere('lastname', 'like', "%{$search}%");
+                })
+                ->orWhereHas('post', function($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%");
+                });
+            });
+        }
+        
+        // Get all records for export
+        $transactions = $query->latest()->get();
+        
+        // Create a filename
+        $filename = 'recyclo_transactions_report_' . Carbon::now()->format('Y-m-d') . '.csv';
+        
+        // Create a temporary file
+        $handle = fopen('php://temp', 'w+');
+        
+        // Add CSV header
+        fputcsv($handle, [
+            'Transaction ID',
+            'Date',
+            'Buyer',
+            'Seller',
+            'Product',
+            'Quantity',
+            'Unit',
+            'Amount',
+            'Status'
+        ]);
+        
+        // Add each transaction as a CSV row
+        foreach ($transactions as $transaction) {
+            fputcsv($handle, [
+                $transaction->id,
+                $transaction->created_at->format('Y-m-d H:i:s'),
+                $transaction->buyer ? $transaction->buyer->firstname . ' ' . $transaction->buyer->lastname : 'N/A',
+                $transaction->seller ? $transaction->seller->firstname . ' ' . $transaction->seller->lastname : 'N/A',
+                $transaction->post ? $transaction->post->title : 'N/A',
+                $transaction->quantity,
+                $transaction->post ? $transaction->post->unit : 'N/A',
+                $transaction->total_amount,
+                ucfirst($transaction->status)
+            ]);
+        }
+        
+        // Reset file pointer to the beginning
+        rewind($handle);
+        
+        // Get all content from the file
+        $content = stream_get_contents($handle);
+        fclose($handle);
+        
+        // Create response with CSV content
+        $response = response($content)
+            ->withHeaders([
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            ]);
+            
+        return $response;
     }
 }

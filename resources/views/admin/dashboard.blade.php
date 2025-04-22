@@ -230,6 +230,9 @@
                 <a href="{{ route('admin.shops') }}" class="nav-link">
                     <i class="bi bi-shop"></i> Shops
                 </a>
+                <a href="{{ route('admin.reports') }}" class="nav-link">
+                    <i class="bi bi-file-earmark-text"></i> Reports
+                </a>
                 <!-- Change to use SweetAlert2 for logout -->
                 <a href="javascript:void(0)" class="nav-link" onclick="confirmLogout()">
                     <i class="bi bi-box-arrow-right"></i> Logout
