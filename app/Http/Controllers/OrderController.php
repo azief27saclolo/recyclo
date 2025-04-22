@@ -170,14 +170,23 @@ class OrderController extends Controller
             return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
         }
         
-        // Load products and posts
-        $cart->load('items.product.post');
+        // Load products and posts with eager loading to reduce database queries
+        $cart->load(['items.product.post.user', 'items.product.user.shop']);
         
         // Check for missing or invalid products
+        $validItems = 0;
         foreach ($cart->items as $item) {
-            if (!$item->product || !$item->product->post) {
-                return redirect()->route('cart.index')->with('error', 'Some products in your cart are no longer available.');
+            if ($item->product && $item->product->post) {
+                $validItems++;
             }
+        }
+        
+        if ($validItems === 0) {
+            return redirect()->route('cart.index')->with('error', 'All products in your cart are no longer available.');
+        }
+        
+        if ($validItems < $cart->items->count()) {
+            session()->flash('warning', 'Some products in your cart are no longer available.');
         }
         
         return view('orders.checkout', [

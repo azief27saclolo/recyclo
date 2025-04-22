@@ -9,6 +9,13 @@
                 <p style="color: #666; margin-top: 5px; font-size: 18px;">Complete your purchase</p>
             </div>
 
+            @if(session('warning'))
+            <div style="max-width: 800px; margin: 0 auto 20px auto; background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; border-radius: 10px; padding: 15px 20px; text-align: center;">
+                <i class="bi bi-exclamation-triangle" style="font-size: 20px; margin-right: 10px; vertical-align: middle;"></i>
+                <span style="vertical-align: middle; font-size: 16px;">{{ session('warning') }}</span>
+            </div>
+            @endif
+
             <!-- Admin Approval Notice -->
             <div style="max-width: 800px; margin: 0 auto 20px auto; background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; border-radius: 10px; padding: 15px 20px; text-align: center;">
                 <i class="bi bi-info-circle" style="font-size: 20px; margin-right: 10px; vertical-align: middle;"></i>
@@ -47,20 +54,29 @@
                                     </div>
 
                                     @foreach($items as $item)
-                                        @if($item->product)
+                                        @if($item->product && $item->product->post)
                                             <div style="display: flex; gap: 20px; padding-bottom: 15px; margin-bottom: 15px; border-bottom: 1px dashed #eee;">
-                                                <img src="{{ asset('storage/' . ($item->product->post->image ?? 'images/placeholder.jpg')) }}" alt="Product Image" 
+                                                <!-- Product Image -->
+                                                <img src="{{ asset('storage/' . $item->product->post->image) }}" alt="{{ $item->product->post->title }}" 
                                                     style="width: 80px; height: 80px; border-radius: 10px; object-fit: cover;">
+                                                
+                                                <!-- Product Details -->
                                                 <div style="flex: 1;">
-                                                    <h4 style="margin: 0 0 5px 0; font-size: 18px;">{{ $item->product->post->title ?? 'Product' }}</h4>
-                                                    <div style="color: #666; font-size: 16px;">₱{{ $item->price }} × {{ $item->quantity }}kg</div>
+                                                    <h4 style="margin: 0 0 5px 0; font-size: 18px;">{{ $item->product->post->title }}</h4>
+                                                    <div style="color: #666; font-size: 16px;">₱{{ number_format($item->price, 2) }} × {{ $item->quantity }} kg</div>
                                                     <div style="color: #517a5b; font-weight: 600; font-size: 16px; margin-top: 5px;">
-                                                        ₱{{ $item->price * $item->quantity }}
+                                                        ₱{{ number_format($item->price * $item->quantity, 2) }}
                                                     </div>
                                                 </div>
                                             </div>
                                         @endif
                                     @endforeach
+                                    
+                                    <!-- Seller Subtotal -->
+                                    <div style="display: flex; justify-content: space-between; padding: 10px 15px; background: #f9f9f9; border-radius: 8px;">
+                                        <span style="font-size: 16px;">Seller Subtotal:</span>
+                                        <span style="font-size: 16px; font-weight: 600;">₱{{ number_format($sellerTotal, 2) }}</span>
+                                    </div>
                                 </div>
                             @endif
                         @endforeach
@@ -68,11 +84,11 @@
                         <div style="margin-top: 20px;">
                             <div style="display: flex; justify-content: space-between; padding: 10px 0; color: #666;">
                                 <span style="font-size: 18px;">Subtotal ({{ $totalItems }} items)</span>
-                                <span style="font-size: 18px;">₱{{ $totalPrice }}</span>
+                                <span style="font-size: 18px;">₱{{ number_format($totalPrice, 2) }}</span>
                             </div>
                             <div style="display: flex; justify-content: space-between; padding: 10px 0; border-top: 2px solid #eee; margin-top: 10px; padding-top: 15px; font-weight: 600; color: #517a5b; font-size: 24px;">
                                 <span>Total</span>
-                                <span>₱{{ $totalPrice }}</span>
+                                <span>₱{{ number_format($totalPrice, 2) }}</span>
                             </div>
                         </div>
                     </div>
@@ -129,14 +145,14 @@
                                         $seller = $firstItem->product->post->user;
                                         $location = $firstItem->product->post->location ?? 'Location not specified';
                                     @endphp
-                                    <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #eee;">
+                                    <div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
                                         <p style="margin-bottom: 5px; color: #333; font-size: 18px; font-weight: 600;">{{ $seller->username }}'s Shop</p>
                                         <p style="margin-bottom: 5px; color: #333; font-size: 16px;">{{ $location }}</p>
                                     </div>
                                 @endif
                             @endforeach
                             
-                            <p style="color: #666; font-size: 16px;">Please pick up your order within 3 days after your order has been approved and payment is confirmed.</p>
+                            <p style="color: #666; font-size: 16px; margin-top: 15px;">Please pick up your order within 3 days after your order has been approved and payment is confirmed.</p>
                         </div>
 
                         <div style="display: grid; gap: 15px; margin-top: 25px;">
@@ -144,9 +160,9 @@
                                     style="background: #517a5b; color: white; border: none; padding: 15px; border-radius: 8px; font-size: 18px; cursor: pointer; transition: all 0.3s ease; width: 100%;">
                                 Submit Order Request
                             </button>
-                            <button type="button" onclick="window.location.href='{{ route('posts') }}'" 
+                            <button type="button" onclick="window.location.href='{{ route('cart.index') }}'" 
                                     style="background: none; border: 2px solid #517a5b; color: #517a5b; padding: 15px; border-radius: 8px; font-size: 18px; cursor: pointer; transition: all 0.3s ease; width: 100%;">
-                                Continue Shopping
+                                Back to Cart
                             </button>
                         </div>
                     </div>
