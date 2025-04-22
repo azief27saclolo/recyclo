@@ -461,6 +461,54 @@ class AdminController extends Controller
     }
     
     /**
+     * Update a product
+     *
+     * @param Request $request
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function updateProduct(Request $request, $id)
+    {
+        try {
+            $product = Post::findOrFail($id);
+            
+            // Validate the request
+            $validatedData = $request->validate([
+                'title' => 'required|string|max:255',
+                'category' => 'required|string',
+                'price' => 'required|numeric|min:0',
+                'unit' => 'required|string|max:50',
+                'quantity' => 'required|numeric|min:0',
+                'location' => 'required|string|max:255',
+                'address' => 'required|string|max:255',
+                'description' => 'required|string',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3000',
+            ]);
+            
+            // Handle image upload
+            if ($request->hasFile('image')) {
+                // Delete old image if it exists
+                if ($product->image && \Storage::disk('public')->exists($product->image)) {
+                    \Storage::disk('public')->delete($product->image);
+                }
+                
+                // Store the new image
+                $path = \Storage::disk('public')->put('posts_images', $request->file('image'));
+                $validatedData['image'] = $path;
+            }
+            
+            // Update the product
+            $product->update($validatedData);
+            
+            return redirect()->route('admin.products')
+                ->with('success', 'Product updated successfully');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.products')
+                ->with('error', 'Failed to update product: ' . $e->getMessage());
+        }
+    }
+    
+    /**
      * Delete a product
      *
      * @param int $id

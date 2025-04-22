@@ -203,6 +203,15 @@
             background-color: #c82333;
         }
 
+        .btn-warning {
+            background-color: #ffc107;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
+
         .alert {
             padding: 12px 15px;
             margin-bottom: 20px;
@@ -325,6 +334,25 @@
                 height: auto;
             }
         }
+
+        /* Add styles for the edit modal */
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            margin-top: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -435,6 +463,9 @@
                                         <button class="btn btn-primary btn-sm view-product" data-id="{{ $product->id }}">
                                             <i class="bi bi-eye"></i> View
                                         </button>
+                                        <button class="btn btn-warning btn-sm edit-product" data-id="{{ $product->id }}">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </button>
                                         <form action="{{ route('admin.products.delete', $product->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this product?');">
                                             @csrf
                                             @method('DELETE')
@@ -509,6 +540,74 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Product Edit Modal -->
+    <div id="editProductModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Edit Product</h2>
+                <span class="close" id="closeEditModal">&times;</span>
+            </div>
+            <form id="editProductForm" method="POST" action="" enctype="multipart/form-data">
+                @csrf
+                @method('PUT')
+                <div class="form-group">
+                    <label for="edit_title">Title</label>
+                    <input type="text" class="form-control" id="edit_title" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit_category">Category</label>
+                    <select class="form-control" id="edit_category" name="category" required>
+                        <option value="Metal">Metal</option>
+                        <option value="Plastic">Plastic</option>
+                        <option value="Paper">Paper</option>
+                        <option value="Glass">Glass</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Wood">Wood</option>
+                        <option value="Fabric">Fabric</option>
+                        <option value="Rubber">Rubber</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit_price">Price</label>
+                    <input type="number" step="0.01" class="form-control" id="edit_price" name="price" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit_unit">Unit</label>
+                    <input type="text" class="form-control" id="edit_unit" name="unit" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit_quantity">Quantity</label>
+                    <input type="number" step="0.01" class="form-control" id="edit_quantity" name="quantity" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit_location">Location</label>
+                    <input type="text" class="form-control" id="edit_location" name="location" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit_address">Address</label>
+                    <input type="text" class="form-control" id="edit_address" name="address" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit_description">Description</label>
+                    <textarea class="form-control" id="edit_description" name="description" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="edit_image">Image</label>
+                    <input type="file" class="form-control" id="edit_image" name="image" accept="image/*">
+                    <small class="text-muted">Leave empty to keep current image</small>
+                    <div id="currentImageContainer" class="mt-2">
+                        <p>Current Image:</p>
+                        <img id="currentImage" src="" alt="Current Product Image" style="max-width: 200px; max-height: 200px;">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancelEditBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -601,6 +700,80 @@
                         
                         // Show modal
                         modal.style.display = 'block';
+                    } else {
+                        alert('Error loading product details');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error loading product details');
+                });
+        }
+
+        // Edit product functionality
+        const editModal = document.getElementById('editProductModal');
+        const editButtons = document.querySelectorAll('.edit-product');
+        const closeEditBtn = document.getElementById('closeEditModal');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const editForm = document.getElementById('editProductForm');
+        
+        // Click event for edit buttons
+        editButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const productId = this.getAttribute('data-id');
+                fetchProductForEdit(productId);
+            });
+        });
+        
+        // Close edit modal when clicking X button
+        closeEditBtn.addEventListener('click', function() {
+            editModal.style.display = 'none';
+        });
+        
+        // Close edit modal when clicking Cancel button
+        cancelEditBtn.addEventListener('click', function() {
+            editModal.style.display = 'none';
+        });
+        
+        // Close edit modal when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target == editModal) {
+                editModal.style.display = 'none';
+            }
+        });
+        
+        // Function to fetch product details for editing
+        function fetchProductForEdit(productId) {
+            fetch(`/admin/products/${productId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const product = data.product;
+                        
+                        // Set form action
+                        editForm.action = `/admin/products/${productId}/update`;
+                        
+                        // Populate form fields
+                        document.getElementById('edit_title').value = product.title;
+                        document.getElementById('edit_category').value = product.category;
+                        document.getElementById('edit_price').value = product.price;
+                        document.getElementById('edit_unit').value = product.unit;
+                        document.getElementById('edit_quantity').value = product.quantity;
+                        document.getElementById('edit_location').value = product.location;
+                        document.getElementById('edit_address').value = product.address;
+                        document.getElementById('edit_description').value = product.description;
+                        
+                        // Display current image
+                        const currentImage = document.getElementById('currentImage');
+                        if (product.image) {
+                            currentImage.src = `/storage/${product.image}`;
+                            document.getElementById('currentImageContainer').style.display = 'block';
+                        } else {
+                            document.getElementById('currentImageContainer').style.display = 'none';
+                        }
+                        
+                        // Show modal
+                        editModal.style.display = 'block';
                     } else {
                         alert('Error loading product details');
                     }

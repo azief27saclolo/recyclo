@@ -76,6 +76,7 @@ Route::group(['prefix' => 'admin', 'middleware' => [AdminMiddleware::class]], fu
     Route::get('/products', [AdminController::class, 'products'])->name('admin.products');
     Route::get('/products/{id}', [AdminController::class, 'getProductDetails']);
     Route::delete('/products/{id}', [AdminController::class, 'deleteProduct'])->name('admin.products.delete');
+    Route::put('/products/{id}/update', [AdminController::class, 'updateProduct'])->name('admin.products.update');
     
     Route::get('/logout', [AdminController::class, 'logout'])->name('admin.logout');
 });
