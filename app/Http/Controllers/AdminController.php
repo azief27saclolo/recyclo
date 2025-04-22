@@ -156,15 +156,180 @@ class AdminController extends Controller
         ]);
         
         $shop->status = $validated['status'];
+        $originalStatus = $shop->getOriginal('status');
         
-        if ($validated['status'] == 'rejected' && isset($validated['remarks'])) {
-            $shop->remarks = $validated['remarks'];
+        // Handle remarks field
+        if ($validated['status'] == 'rejected') {
+            $shop->remarks = $validated['remarks'] ?? 'Application rejected by admin';
+        } else if ($validated['status'] == 'approved') {
+            // Clear remarks when approving
+            $shop->remarks = null;
+        } else {
+            // For pending, keep existing remarks or use new ones if provided
+            $shop->remarks = $validated['remarks'] ?? $shop->remarks;
         }
         
+        // Save the changes
         $shop->save();
         
-        return redirect()->route('admin.shops')
-            ->with('success', "Shop '{$shop->shop_name}' status updated to {$validated['status']}");
+        // Prepare SweetAlert2 message
+        $title = '';
+        $text = '';
+        $icon = 'success';
+        
+        switch($validated['status']) {
+            case 'approved':
+                $title = 'Shop Approved';
+                $text = "Shop '{$shop->shop_name}' has been approved successfully.";
+                break;
+            case 'rejected':
+                $title = 'Shop Rejected';
+                $text = "Shop '{$shop->shop_name}' has been rejected with provided reason.";
+                break;
+            case 'pending':
+                $title = 'Status Updated';
+                $text = "Shop '{$shop->shop_name}' has been set to pending status.";
+                break;
+        }
+        
+        // Flash SweetAlert2 message to session
+        session()->flash('swalSuccess', [
+            'title' => $title,
+            'text' => $text,
+            'icon' => $icon
+        ]);
+        
+        return redirect()->route('admin.shops');
+    }
+
+    /**
+     * Get shop details for editing
+     *
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getShopDetails($id)
+    {
+        try {
+            $shop = Shop::findOrFail($id);
+            
+            return response()->json([
+                'success' => true,
+                'shop' => $shop
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load shop details: ' . $e->getMessage()
+            ], 404);
+        }
+    }
+
+    /**
+     * Update shop details
+     *
+     * @param Request $request
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function editShop(Request $request, $id)
+    {
+        try {
+            $shop = Shop::findOrFail($id);
+            
+            // Validate the request
+            $validated = $request->validate([
+                'shop_name' => 'required|string|max:255',
+                'shop_address' => 'required|string',
+                'status' => 'required|in:pending,approved,rejected',
+                'remarks' => 'nullable|string|max:255',
+                'valid_id' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+            ]);
+            
+            // Update shop details
+            $shop->shop_name = $validated['shop_name'];
+            $shop->shop_address = $validated['shop_address'];
+            $shop->status = $validated['status'];
+            
+            // Handle remarks
+            if ($validated['status'] == 'rejected') {
+                $shop->remarks = $validated['remarks'] ?? 'Application rejected by admin';
+            } else {
+                $shop->remarks = $validated['remarks'];
+            }
+            
+            // Handle new valid ID if uploaded
+            if ($request->hasFile('valid_id')) {
+                // Delete old ID file if exists
+                if ($shop->valid_id_path && \Storage::disk('public')->exists($shop->valid_id_path)) {
+                    \Storage::disk('public')->delete($shop->valid_id_path);
+                }
+                
+                // Store the new ID
+                $validIdPath = $request->file('valid_id')->store('shop_documents', 'public');
+                $shop->valid_id_path = $validIdPath;
+            }
+            
+            // Save changes
+            $shop->save();
+            
+            return redirect()->route('admin.shops')
+                ->with('success', "Shop '{$shop->shop_name}' updated successfully");
+        } catch (\Exception $e) {
+            return redirect()->route('admin.shops')
+                ->with('error', 'Failed to update shop: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Delete a shop
+     *
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+     */
+    public function deleteShop($id)
+    {
+        try {
+            $shop = Shop::findOrFail($id);
+            
+            // Store shop information for message
+            $shopName = $shop->shop_name;
+            
+            // Delete valid ID file from storage if it exists
+            if ($shop->valid_id_path && \Storage::disk('public')->exists($shop->valid_id_path)) {
+                \Storage::disk('public')->delete($shop->valid_id_path);
+            }
+            
+            // Delete the shop record
+            $shop->delete();
+            
+            // Check if the request is Ajax
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "Shop '{$shopName}' has been deleted successfully. The owner can now register a new shop."
+                ]);
+            }
+            
+            // Flash a message to the session for SweetAlert2
+            session()->flash('swalSuccess', [
+                'title' => 'Shop Deleted',
+                'text' => "Shop '{$shopName}' has been deleted successfully. The owner can now register a new shop.",
+                'icon' => 'success'
+            ]);
+            
+            return redirect()->route('admin.shops');
+        } catch (\Exception $e) {
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to delete shop: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->route('admin.shops')
+                ->with('error', 'Failed to delete shop: ' . $e->getMessage());
+        }
     }
 
     public function logout(Request $request)

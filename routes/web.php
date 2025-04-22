@@ -66,6 +66,11 @@ Route::group(['prefix' => 'admin', 'middleware' => [AdminMiddleware::class]], fu
     Route::get('/shops', [AdminController::class, 'shops'])->name('admin.shops');
     Route::put('/shops/{shop}/status', [AdminController::class, 'updateShopStatus'])->name('admin.shops.update-status');
     
+    // Add new routes for shop editing
+    Route::get('/shops/{id}', [AdminController::class, 'getShopDetails']);
+    Route::put('/shops/{id}/edit', [AdminController::class, 'editShop'])->name('admin.shops.edit');
+    Route::delete('/shops/{id}/delete', [AdminController::class, 'deleteShop'])->name('admin.shops.delete');
+    
     // Add new reports routes
     Route::get('/reports', [AdminController::class, 'reports'])->name('admin.reports');
     Route::get('/reports/export', [AdminController::class, 'exportReports'])->name('admin.reports.export');

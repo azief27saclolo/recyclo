@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Shops Management - Recyclo Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -274,6 +275,12 @@
             border: 1px solid #c3e6cb;
         }
         
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
         .modal {
             display: none;
             position: fixed;
@@ -377,6 +384,97 @@
                 width: 90%;
             }
         }
+
+        /* Action icons styling */
+        .action-icons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .action-icon {
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .action-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .action-icon.view-id {
+            background-color: #6c757d;
+        }
+        
+        .action-icon.edit {
+            background-color: var(--hoockers-green);
+        }
+        
+        .action-icon.status {
+            background-color: #007bff;
+        }
+        
+        .action-icon.delete {
+            background-color: #dc3545;
+        }
+        
+        .action-icon i {
+            font-size: 1rem;
+        }
+        
+        /* Tooltip styling */
+        [data-tooltip] {
+            position: relative;
+        }
+        
+        [data-tooltip]:before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 5px;
+            padding: 5px 10px;
+            border-radius: 3px;
+            background-color: #333;
+            color: #fff;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        [data-tooltip]:hover:before {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Status dropdown styling adjustments for icons */
+        .icon-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .icon-dropdown .dropdown-content {
+            left: -60px;
+            top: 100%;
+            margin-top: 5px;
+            min-width: 180px;
+        }
+        
+        .icon-dropdown:hover .dropdown-content {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -417,6 +515,26 @@
                 <div class="alert alert-success">
                     {{ session('success') }}
                 </div>
+            @endif
+            
+            @if (session('error'))
+                <div class="alert alert-danger">
+                    {{ session('error') }}
+                </div>
+            @endif
+            
+            <!-- Add SweetAlert2 success handling -->
+            @if (session('swalSuccess'))
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        Swal.fire({
+                            title: "{{ session('swalSuccess.title') }}",
+                            text: "{{ session('swalSuccess.text') }}",
+                            icon: "{{ session('swalSuccess.icon') }}",
+                            confirmButtonColor: '#517A5B'
+                        });
+                    });
+                </script>
             @endif
             
             <div class="shops-card">
@@ -480,24 +598,35 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <a href="#" class="btn-view" onclick="viewID('{{ $shop->id }}', '{{ asset('storage/' . $shop->valid_id_path) }}')">View ID</a>
-                                        <div class="dropdown">
-                                            <button class="btn btn-primary">Update Status</button>
-                                            <div class="dropdown-content">
-                                                <form action="/admin/shops/{{ $shop->id }}/status" method="POST">
-                                                    @csrf
-                                                    @method('PUT')
-                                                    <input type="hidden" name="status" value="approved">
-                                                    <button type="submit" class="dropdown-option">Approve</button>
-                                                </form>
-                                                <button onclick="rejectShop({{ $shop->id }})" class="dropdown-option">Reject</button>
-                                                <form action="/admin/shops/{{ $shop->id }}/status" method="POST">
-                                                    @csrf
-                                                    @method('PUT')
-                                                    <input type="hidden" name="status" value="pending">
-                                                    <button type="submit" class="dropdown-option">Set as Pending</button>
-                                                </form>
+                                        <div class="action-icons">
+                                            <a href="#" class="action-icon view-id" data-tooltip="View ID" onclick="viewID('{{ $shop->id }}', '{{ asset('storage/' . $shop->valid_id_path) }}')">
+                                                <i class="bi bi-card-image"></i>
+                                            </a>
+                                            
+                                            <a href="#" class="action-icon edit" data-tooltip="Edit Shop" onclick="editShop({{ $shop->id }})">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+                                            
+                                            <div class="icon-dropdown">
+                                                <a href="#" class="action-icon status" data-tooltip="Update Status">
+                                                    <i class="bi bi-arrow-down-up"></i>
+                                                </a>
+                                                <div class="dropdown-content">
+                                                    <button onclick="approveShop({{ $shop->id }}, '{{ addslashes($shop->shop_name) }}')" class="dropdown-option">
+                                                        <i class="bi bi-check-circle text-success"></i> Approve
+                                                    </button>
+                                                    <button onclick="rejectShop({{ $shop->id }})" class="dropdown-option">
+                                                        <i class="bi bi-x-circle text-danger"></i> Reject
+                                                    </button>
+                                                    <button onclick="setPendingShop({{ $shop->id }}, '{{ addslashes($shop->shop_name) }}')" class="dropdown-option">
+                                                        <i class="bi bi-hourglass text-warning"></i> Set as Pending
+                                                    </button>
+                                                </div>
                                             </div>
+                                            
+                                            <a href="#" class="action-icon delete" data-tooltip="Delete Shop" onclick="confirmDeleteShop({{ $shop->id }}, '{{ addslashes($shop->shop_name) }}')">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
                                         </div>
                                     </td>
                                 </tr>
@@ -547,6 +676,62 @@
                 <div class="modal-footer">
                     <button type="button" class="btn" onclick="closeRejectModal()">Cancel</button>
                     <button type="submit" class="btn btn-primary">Confirm Rejection</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Edit Shop Modal -->
+    <div id="editShopModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Shop Details</h2>
+                <span class="close" onclick="closeEditShopModal()">&times;</span>
+            </div>
+            <form id="editShopForm" method="POST" enctype="multipart/form-data">
+                @csrf
+                @method('PUT')
+                
+                <div class="form-group">
+                    <label for="edit_shop_name">Shop Name:</label>
+                    <input type="text" class="form-control" id="edit_shop_name" name="shop_name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit_shop_address">Shop Address:</label>
+                    <textarea class="form-control" id="edit_shop_address" name="shop_address" rows="2" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit_status">Status:</label>
+                    <select class="form-control" id="edit_status" name="status" required>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="remarks_container">
+                    <label for="edit_remarks">Remarks (required for rejection):</label>
+                    <textarea class="form-control" id="edit_remarks" name="remarks" rows="3"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit_valid_id">Replace Valid ID (optional):</label>
+                    <input type="file" class="form-control" id="edit_valid_id" name="valid_id">
+                    <small class="text-muted">Leave empty to keep the current ID</small>
+                </div>
+                
+                <div class="form-group">
+                    <label>Current Valid ID:</label>
+                    <div>
+                        <img id="current_valid_id" src="" alt="Current Valid ID" style="max-width: 100%; max-height: 200px; margin-top: 10px;">
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn" onclick="closeEditShopModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
                 </div>
             </form>
         </div>
@@ -608,13 +793,164 @@
         const rejectForm = document.getElementById('rejectForm');
         
         function rejectShop(shopId) {
-            rejectForm.action = `/admin/shops/${shopId}/status`;
-            rejectModal.style.display = "block";
+            Swal.fire({
+                title: 'Reject Shop Application',
+                html: `<div class="form-group">
+                        <label for="swal-remarks" style="text-align: left; display: block; margin-bottom: 8px;">Reason for Rejection:</label>
+                        <textarea id="swal-remarks" class="swal2-textarea" style="width: 100%; padding: 12px; border: 1px solid #d9d9d9; border-radius: 4px;" placeholder="Please provide a reason for rejection..." rows="4"></textarea>
+                       </div>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Reject Shop',
+                cancelButtonText: 'Cancel',
+                focusCancel: true,
+                didOpen: () => {
+                    const textarea = document.getElementById('swal-remarks');
+                    textarea.focus();
+                },
+                preConfirm: () => {
+                    const remarks = document.getElementById('swal-remarks').value;
+                    if (!remarks.trim()) {
+                        Swal.showValidationMessage('You must provide a reason for rejection');
+                        return false;
+                    }
+                    return remarks;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading state
+                    Swal.fire({
+                        title: 'Processing...',
+                        html: 'Please wait while rejecting the shop.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    
+                    // Create form and submit
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/admin/shops/${shopId}/status`;
+                    form.style.display = 'none';
+                    
+                    // Add CSRF token
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    form.appendChild(csrfToken);
+                    
+                    // Add method field for PUT request
+                    const methodField = document.createElement('input');
+                    methodField.type = 'hidden';
+                    methodField.name = '_method';
+                    methodField.value = 'PUT';
+                    form.appendChild(methodField);
+                    
+                    // Add status field
+                    const statusField = document.createElement('input');
+                    statusField.type = 'hidden';
+                    statusField.name = 'status';
+                    statusField.value = 'rejected';
+                    form.appendChild(statusField);
+                    
+                    // Add remarks field
+                    const remarksField = document.createElement('input');
+                    remarksField.type = 'hidden';
+                    remarksField.name = 'remarks';
+                    remarksField.value = result.value;
+                    form.appendChild(remarksField);
+                    
+                    // Append form to body
+                    document.body.appendChild(form);
+                    
+                    // Submit the form
+                    form.submit();
+                }
+            });
         }
         
         function closeRejectModal() {
             rejectModal.style.display = "none";
         }
+        
+        // Edit Shop Modal
+        const editShopModal = document.getElementById('editShopModal');
+        const editShopForm = document.getElementById('editShopForm');
+        
+        function editShop(shopId) {
+            // Fetch shop details and populate the form
+            fetch(`/admin/shops/${shopId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if(data.success) {
+                        const shop = data.shop;
+                        
+                        // Set form action
+                        editShopForm.action = `/admin/shops/${shopId}/edit`;
+                        
+                        // Populate form fields
+                        document.getElementById('edit_shop_name').value = shop.shop_name;
+                        document.getElementById('edit_shop_address').value = shop.shop_address;
+                        document.getElementById('edit_status').value = shop.status;
+                        document.getElementById('edit_remarks').value = shop.remarks || '';
+                        
+                        // Show/hide remarks field based on status
+                        toggleRemarksField();
+                        
+                        // Set current ID image
+                        document.getElementById('current_valid_id').src = `/storage/${shop.valid_id_path}`;
+                        
+                        // Show the modal
+                        editShopModal.style.display = 'block';
+                    } else {
+                        Swal.fire('Error', 'Failed to load shop details', 'error');
+                    }
+                })
+                .catch(error => {
+                    Swal.fire('Error', 'An error occurred while fetching shop details', 'error');
+                });
+        }
+        
+        function closeEditShopModal() {
+            editShopModal.style.display = 'none';
+        }
+        
+        // Toggle remarks field based on status selection
+        document.getElementById('edit_status').addEventListener('change', toggleRemarksField);
+        
+        function toggleRemarksField() {
+            const status = document.getElementById('edit_status').value;
+            const remarksField = document.getElementById('edit_remarks');
+            
+            if (status === 'rejected') {
+                remarksField.setAttribute('required', 'required');
+                document.getElementById('remarks_container').style.display = 'block';
+            } else {
+                remarksField.removeAttribute('required');
+                document.getElementById('remarks_container').style.display = status === 'approved' ? 'none' : 'block';
+            }
+        }
+        
+        // Add styles for form controls
+        document.head.insertAdjacentHTML('beforeend', `
+            <style>
+                .form-control {
+                    width: 100%;
+                    padding: 8px;
+                    border-radius: 4px;
+                    border: 1px solid #ddd;
+                    margin-bottom: 10px;
+                }
+                select.form-control {
+                    height: 38px;
+                    background-color: white;
+                }
+            </style>
+        `);
         
         // Close modals when clicking outside
         window.onclick = function(event) {
@@ -623,6 +959,9 @@
             }
             if (event.target == rejectModal) {
                 rejectModal.style.display = "none";
+            }
+            if (event.target == editShopModal) {
+                editShopModal.style.display = "none";
             }
         }
 
@@ -640,6 +979,180 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     window.location.href = "{{ route('admin.logout') }}";
+                }
+            });
+        }
+
+        // Function to confirm and delete a shop
+        function confirmDeleteShop(shopId, shopName) {
+            Swal.fire({
+                title: 'Delete Shop',
+                html: `Are you sure you want to delete the shop "<strong>${shopName}</strong>"?<br><br>
+                       <div class="text-danger"><strong>Warning:</strong> This action cannot be undone. All shop data, including valid ID and status history will be permanently removed.</div><br>
+                       <div>The shop owner will be able to register a new shop after deletion.</div>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Delete',
+                cancelButtonText: 'Cancel',
+                focusCancel: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading state
+                    Swal.fire({
+                        title: 'Deleting Shop...',
+                        html: 'Please wait while we process your request.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    
+                    // Create and submit a form for the DELETE request
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/admin/shops/${shopId}/delete`;
+                    form.style.display = 'none';
+                    
+                    // Add CSRF token
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    form.appendChild(csrfToken);
+                    
+                    // Add method field for DELETE request
+                    const methodField = document.createElement('input');
+                    methodField.type = 'hidden';
+                    methodField.name = '_method';
+                    methodField.value = 'DELETE';
+                    form.appendChild(methodField);
+                    
+                    // Append form to body
+                    document.body.appendChild(form);
+                    
+                    // Submit the form
+                    form.submit();
+                }
+            });
+        }
+
+        // Function to approve a shop with SweetAlert2 confirmation
+        function approveShop(shopId, shopName) {
+            Swal.fire({
+                title: 'Approve Shop',
+                html: `Are you sure you want to approve "<strong>${shopName}</strong>"?<br><br>
+                       <div>The shop owner will be able to start selling products after approval.</div>`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Approve',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading state
+                    Swal.fire({
+                        title: 'Processing...',
+                        html: 'Please wait while approving the shop.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    
+                    // Create form and submit
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/admin/shops/${shopId}/status`;
+                    form.style.display = 'none';
+                    
+                    // Add CSRF token
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    form.appendChild(csrfToken);
+                    
+                    // Add method field for PUT request
+                    const methodField = document.createElement('input');
+                    methodField.type = 'hidden';
+                    methodField.name = '_method';
+                    methodField.value = 'PUT';
+                    form.appendChild(methodField);
+                    
+                    // Add status field
+                    const statusField = document.createElement('input');
+                    statusField.type = 'hidden';
+                    statusField.name = 'status';
+                    statusField.value = 'approved';
+                    form.appendChild(statusField);
+                    
+                    // Append form to body
+                    document.body.appendChild(form);
+                    
+                    // Submit the form
+                    form.submit();
+                }
+            });
+        }
+        
+        // Function to set shop status to pending
+        function setPendingShop(shopId, shopName) {
+            Swal.fire({
+                title: 'Set as Pending',
+                html: `Are you sure you want to set "<strong>${shopName}</strong>" as pending?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#ffc107',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Set as Pending',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading state
+                    Swal.fire({
+                        title: 'Processing...',
+                        html: 'Please wait while updating the shop status.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    
+                    // Create form and submit
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/admin/shops/${shopId}/status`;
+                    form.style.display = 'none';
+                    
+                    // Add CSRF token
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    form.appendChild(csrfToken);
+                    
+                    // Add method field for PUT request
+                    const methodField = document.createElement('input');
+                    methodField.type = 'hidden';
+                    methodField.name = '_method';
+                    methodField.value = 'PUT';
+                    form.appendChild(methodField);
+                    
+                    // Add status field
+                    const statusField = document.createElement('input');
+                    statusField.type = 'hidden';
+                    statusField.name = 'status';
+                    statusField.value = 'pending';
+                    form.appendChild(statusField);
+                    
+                    // Append form to body
+                    document.body.appendChild(form);
+                    
+                    // Submit the form
+                    form.submit();
                 }
             });
         }
