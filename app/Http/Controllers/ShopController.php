@@ -18,7 +18,8 @@ class ShopController extends Controller
     {
         // Check if the user already has an application
         $application = Shop::where('user_id', Auth::id())->first();
-        return view('shops.register', compact('application'));
+        $user = Auth::user();
+        return view('shops.register', compact('application', 'user'));
     }
 
     /**
