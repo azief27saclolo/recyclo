@@ -15,11 +15,35 @@ use Illuminate\Validation\Rule;
 
 class DashboardController extends Controller
 {
-    public function index() {
-        $posts = Auth::user()->posts()->latest()->paginate(10);
-        $orders = Auth::user()->boughtOrders()->with('post')->get();
-
-        return view('users.dashboard', compact('posts', 'orders'));
+    /**
+     * Show user dashboard with their posts and status information
+     */
+    public function index()
+    {
+        $user = auth()->user();
+        
+        // Group posts by status for cleaner display
+        $posts = $user->posts()->latest()->get();
+        
+        $postsByStatus = [
+            'pending' => $posts->where('status', 'pending'),
+            'approved' => $posts->where('status', 'approved'),
+            'rejected' => $posts->where('status', 'rejected'),
+        ];
+        
+        // Get counts for dashboard stats
+        $pendingCount = $postsByStatus['pending']->count();
+        $approvedCount = $postsByStatus['approved']->count();
+        $rejectedCount = $postsByStatus['rejected']->count();
+        
+        return view('dashboard', compact(
+            'user', 
+            'posts', 
+            'postsByStatus',
+            'pendingCount',
+            'approvedCount',
+            'rejectedCount'
+        ));
     }
 
     public function userPosts(User $user) {

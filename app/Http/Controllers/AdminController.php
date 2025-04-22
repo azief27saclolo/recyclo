@@ -596,11 +596,81 @@ class AdminController extends Controller
     public function products()
     {
         // Get all products with their user information
-        $products = Post::with('user')
+        $products = Post::with(['user', 'category'])
+            ->where('status', Post::STATUS_APPROVED) // Show only approved posts
             ->orderBy('created_at', 'desc')
             ->paginate(10);
+        
+        // Get pending post requests count for notification badge
+        $pendingPostsCount = Post::where('status', Post::STATUS_PENDING)->count();
             
-        return view('admin.products', compact('products'));
+        return view('admin.products', compact('products', 'pendingPostsCount'));
+    }
+    
+    /**
+     * Display pending post requests
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function postRequests()
+    {
+        $pendingPosts = Post::where('status', Post::STATUS_PENDING)
+            ->with('user', 'category')
+            ->latest()
+            ->paginate(15);
+            
+        return view('admin.post_requests', compact('pendingPosts'));
+    }
+    
+    /**
+     * Approve a post request
+     *
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function approvePost($id)
+    {
+        try {
+            $post = Post::findOrFail($id);
+            $post->status = Post::STATUS_APPROVED;
+            $post->admin_remarks = null; // Clear any previous remarks
+            $post->save();
+            
+            return redirect()->back()->with('success', "Post '{$post->title}' has been approved successfully.");
+        } catch (\Exception $e) {
+            \Log::error('Failed to approve post', [
+                'post_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return redirect()->back()->with('error', 'Failed to approve post: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Reject a post request
+     *
+     * @param Request $request
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function rejectPost(Request $request, $id)
+    {
+        try {
+            $post = Post::findOrFail($id);
+            $post->status = Post::STATUS_REJECTED;
+            $post->admin_remarks = $request->input('remarks', 'Post rejected by admin');
+            $post->save();
+            
+            return redirect()->back()->with('success', "Post '{$post->title}' has been rejected.");
+        } catch (\Exception $e) {
+            \Log::error('Failed to reject post', [
+                'post_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return redirect()->back()->with('error', 'Failed to reject post: ' . $e->getMessage());
+        }
     }
     
     /**
@@ -612,11 +682,19 @@ class AdminController extends Controller
     public function getProductDetails($id)
     {
         try {
-            $product = Post::with('user')->findOrFail($id);
+            $product = Post::with(['user', 'category'])->findOrFail($id);
+            
+            // Get stored request information if available
+            $requestInfo = [
+                'id' => $id,
+                'user_agent' => request()->header('User-Agent'),
+                'ip_address' => request()->ip(),
+            ];
             
             return response()->json([
                 'success' => true,
-                'product' => $product
+                'product' => $product,
+                'request_info' => $requestInfo
             ]);
         } catch (\Exception $e) {
             return response()->json([

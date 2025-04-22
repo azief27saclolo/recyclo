@@ -22,6 +22,18 @@ class Post extends Model
         'description',
         'image',
         'quantity',
+        'status', // Add status field
+        'admin_remarks', // Add field for admin feedback
+    ];
+
+    // Add status constants
+    const STATUS_PENDING = 'pending';
+    const STATUS_APPROVED = 'approved';
+    const STATUS_REJECTED = 'rejected';
+
+    // Default attribute values
+    protected $attributes = [
+        'status' => self::STATUS_PENDING, // Default status is pending
     ];
 
     public function user() : BelongsTo 
@@ -66,5 +78,29 @@ class Post extends Model
         }
         
         return $this->attributes['category'];
+    }
+
+    /**
+     * Check if post is approved
+     */
+    public function isApproved(): bool
+    {
+        return $this->status === self::STATUS_APPROVED;
+    }
+
+    /**
+     * Check if post is pending approval
+     */
+    public function isPending(): bool
+    {
+        return $this->status === self::STATUS_PENDING;
+    }
+
+    /**
+     * Check if post is rejected
+     */
+    public function isRejected(): bool
+    {
+        return $this->status === self::STATUS_REJECTED;
     }
 }

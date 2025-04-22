@@ -79,9 +79,14 @@ Route::group(['prefix' => 'admin', 'middleware' => [AdminMiddleware::class]], fu
     
     // Products routes
     Route::get('/products', [AdminController::class, 'products'])->name('admin.products');
+    Route::get('/post-requests', [AdminController::class, 'postRequests'])->name('admin.post.requests');
     Route::get('/products/{id}', [AdminController::class, 'getProductDetails']);
     Route::delete('/products/{id}', [AdminController::class, 'deleteProduct'])->name('admin.products.delete');
     Route::put('/products/{id}/update', [AdminController::class, 'updateProduct'])->name('admin.products.update');
+    
+    // Add post request management routes
+    Route::post('/post-requests/{id}/approve', [AdminController::class, 'approvePost'])->name('admin.post.approve');
+    Route::post('/post-requests/{id}/reject', [AdminController::class, 'rejectPost'])->name('admin.post.reject');
     
     // Category management routes
     Route::get('/categories', [AdminController::class, 'getCategories'])->name('admin.categories');

@@ -402,6 +402,14 @@
                 <a href="{{ route('admin.users') }}" class="nav-link">
                     <i class="bi bi-people"></i> Users
                 </a>
+                <a href="{{ route('admin.post.requests') }}" class="nav-link">
+                    <i class="bi bi-file-earmark-plus"></i> Post Requests
+                    @if(App\Models\Post::where('status', App\Models\Post::STATUS_PENDING)->count() > 0)
+                        <span class="badge" style="background-color: #FF6B6B; color: white; margin-left: 5px; border-radius: 50%; padding: 3px 8px;">
+                            {{ App\Models\Post::where('status', App\Models\Post::STATUS_PENDING)->count() }}
+                        </span>
+                    @endif
+                </a>
                 <a href="{{ route('admin.products') }}" class="nav-link">
                     <i class="bi bi-box-seam"></i> Products
                 </a>
@@ -411,7 +419,7 @@
                 <a href="{{ route('admin.reports') }}" class="nav-link">
                     <i class="bi bi-file-earmark-text"></i> Reports
                 </a>
-                <!-- Change to use SweetAlert2 directly instead of showing custom modal -->
+                <!-- Change to use SweetAlert2 for logout -->
                 <a href="javascript:void(0)" class="nav-link" onclick="confirmLogout()">
                     <i class="bi bi-box-arrow-right"></i> Logout
                 </a>

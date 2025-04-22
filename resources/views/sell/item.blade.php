@@ -299,7 +299,7 @@
                     <div class="form-group">
                         <label class="form-label" for="price">Price per unit</label>
                         <input type="text" name="price" id="price" class="form-control" placeholder="Enter price..." value="{{ old('price') }}" required>
-                        <button type="button" id="pricesGuideBtn" class="btn btn-link" style="padding: 0; margin-top: 5px; color: var(--hoockers-green); display: block; text-decoration: none; font-weight: 500;">
+                        <button type="button" id="pricesGuideBtn" class="btn btn-link" style="padding: 8px 12px; margin-top: 10px; color: white; background-color: var(--hoockers-green); display: inline-block; text-decoration: none; font-weight: 500; border-radius: 6px; width: auto; text-align: center;">
                             <i class="bi bi-info-circle"></i> Prices Guide
                         </button>
                         @error('price')

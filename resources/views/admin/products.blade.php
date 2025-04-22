@@ -392,6 +392,30 @@
     </style>
 </head>
 <body>
+    <?php
+    // Helper function to determine text color based on background color
+    function getContrastColor($hexColor) {
+        // Remove # if present
+        $hexColor = str_replace('#', '', $hexColor);
+        
+        // Default to black if invalid hex color
+        if (strlen($hexColor) != 6) {
+            return '#000000';
+        }
+        
+        // Convert hex to RGB
+        $r = hexdec(substr($hexColor, 0, 2));
+        $g = hexdec(substr($hexColor, 2, 2));
+        $b = hexdec(substr($hexColor, 4, 2));
+        
+        // Calculate luminance
+        $luminance = (0.299 * $r + 0.587 * $g + 0.114 * $b) / 255;
+        
+        // Return black for light colors, white for dark colors
+        return ($luminance > 0.5) ? '#000000' : '#ffffff';
+    }
+    ?>
+    
     <div class="admin-container">
         <div class="sidebar">
             <div class="logo-section">
@@ -407,6 +431,14 @@
                 </a>
                 <a href="{{ route('admin.users') }}" class="nav-link">
                     <i class="bi bi-people"></i> Users
+                </a>
+                <a href="{{ route('admin.post.requests') }}" class="nav-link">
+                    <i class="bi bi-file-earmark-plus"></i> Post Requests
+                    @if(App\Models\Post::where('status', App\Models\Post::STATUS_PENDING)->count() > 0)
+                        <span class="badge" style="background-color: #FF6B6B; color: white; margin-left: 5px; border-radius: 50%; padding: 3px 8px;">
+                            {{ App\Models\Post::where('status', App\Models\Post::STATUS_PENDING)->count() }}
+                        </span>
+                    @endif
                 </a>
                 <a href="{{ route('admin.products') }}" class="nav-link active">
                     <i class="bi bi-box-seam"></i> Products
@@ -433,27 +465,34 @@
             <div class="products-card">
                 <div class="products-heading">
                     <h1><i class="bi bi-box-seam"></i> Products Management</h1>
-                    <button id="manageCategoriesBtn" class="btn btn-primary">
-                        <i class="bi bi-tags"></i> Manage Categories
-                    </button>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <a href="{{ route('admin.post.requests') }}" class="btn btn-primary">
+                            <i class="bi bi-file-earmark-plus"></i> 
+                            Post Requests 
+                            @if(isset($pendingPostsCount) && $pendingPostsCount > 0)
+                                <span class="badge" style="background-color: #FF6B6B; color: white; margin-left: 5px; border-radius: 50%; padding: 3px 8px;">
+                                    {{ $pendingPostsCount }}
+                                </span>
+                            @endif
+                        </a>
+                        <button id="manageCategoriesBtn" class="btn btn-primary">
+                            <i class="bi bi-tags"></i> Manage Categories
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="search-filters">
                     <div class="search-box">
-                        <input type="text" id="productSearch" class="form-control" placeholder="Search products by title, seller, etc...">
+                        <input type="text" id="productSearch" class="form-control" placeholder="Search products...">
                     </div>
                     <div class="category-filter">
                         <select id="categoryFilter" class="form-control">
                             <option value="">All Categories</option>
-                            @php
-                                $categories = \App\Models\Category::where('is_active', true)
-                                                ->orderBy('name')
-                                                ->get();
-                            @endphp
-                            
-                            @foreach($categories as $category)
-                                <option value="{{ $category->id }}">{{ $category->name }}</option>
-                            @endforeach
+                            @if(isset($categories))
+                                @foreach($categories as $category)
+                                    <option value="{{ $category->name }}">{{ $category->name }}</option>
+                                @endforeach
+                            @endif
                         </select>
                     </div>
                 </div>
@@ -488,7 +527,16 @@
                                         @endif
                                     </td>
                                     <td>{{ $product->title }}</td>
-                                    <td><span class="badge" style="background-color: {{ $product->category->color ?? '#f0f0f0' }}; color: {{ $product->category->color ? getContrastColor($product->category->color) : '#333' }}">{{ $product->category->name }}</span></td>
+                                    <td>
+                                        @php
+                                            // Determine if category is an object or string and set color accordingly
+                                            $categoryColor = is_object($product->category) && isset($product->category->color) ? $product->category->color : '#f0f0f0';
+                                            $categoryName = is_object($product->category) ? $product->category->name : $product->category;
+                                        @endphp
+                                        <span class="badge" style="background-color: {{ $categoryColor }}; color: {{ getContrastColor($categoryColor) }}">
+                                            {{ $categoryName }}
+                                        </span>
+                                    </td>
                                     <td>₱{{ number_format($product->price, 2) }} / {{ $product->unit }}</td>
                                     <td>{{ $product->quantity }} {{ $product->unit }}</td>
                                     <td>
@@ -524,14 +572,12 @@
                         </tbody>
                     </table>
                 </div>
-                
                 <div class="pagination">
                     {{ $products->links('pagination::bootstrap-4') }}
                 </div>
             </div>
         </div>
     </div>
-
     <!-- Product View Modal -->
     <div id="productModal" class="modal">
         <div class="modal-content">
@@ -582,7 +628,6 @@
             </div>
         </div>
     </div>
-
     <!-- Product Edit Modal -->
     <div id="editProductModal" class="modal">
         <div class="modal-content">
@@ -647,7 +692,6 @@
             </form>
         </div>
     </div>
-
     <!-- Category Management Modal -->
     <div id="categoryModal" class="modal">
         <div class="modal-content">
@@ -657,10 +701,8 @@
             </div>
             <div class="modal-body">
                 <p>Add new categories or remove existing ones. When removing a category, you must select a replacement category for existing products.</p>
-                
                 <h3>Current Categories</h3>
                 <div id="categoriesList" class="categories-modal"></div>
-                
                 <h3>Add New Category</h3>
                 <div class="form-group">
                     <input type="text" id="newCategoryName" class="form-control" placeholder="Enter new category name">
@@ -676,7 +718,6 @@
                 <button id="addCategoryBtn" class="btn btn-primary">
                     <i class="bi bi-plus-circle"></i> Add Category
                 </button>
-                
                 <h3>Remove Category</h3>
                 <div class="form-group">
                     <label for="categoryToRemove">Select category to remove:</label>
@@ -696,27 +737,25 @@
             </div>
         </div>
     </div>
-
     <script>
         // Search functionality for products table
         document.getElementById('productSearch').addEventListener('keyup', function() {
             const searchTerm = this.value.toLowerCase();
             filterProducts(searchTerm, document.getElementById('categoryFilter').value);
         });
-        
+
         // Category filter functionality
         document.getElementById('categoryFilter').addEventListener('change', function() {
             const categoryTerm = this.value;
             filterProducts(document.getElementById('productSearch').value.toLowerCase(), categoryTerm);
         });
-        
+
         function filterProducts(searchTerm, categoryTerm) {
             const tableRows = document.querySelectorAll('.table tbody tr');
             
             tableRows.forEach(row => {
                 const text = row.textContent.toLowerCase();
                 const categoryCell = row.children[3].textContent.trim();
-                
                 const matchesSearch = text.includes(searchTerm);
                 const matchesCategory = categoryTerm === '' || categoryCell === categoryTerm;
                 
@@ -727,12 +766,12 @@
                 }
             });
         }
-        
+
         // View product details modal
         const modal = document.getElementById('productModal');
         const closeBtn = document.querySelector('.close');
         const viewButtons = document.querySelectorAll('.view-product');
-        
+
         // Click event for view buttons
         viewButtons.forEach(button => {
             button.addEventListener('click', function() {
@@ -740,19 +779,19 @@
                 fetchProductDetails(productId);
             });
         });
-        
+
         // Close modal when clicking X button
         closeBtn.addEventListener('click', function() {
             modal.style.display = 'none';
         });
-        
+
         // Close modal when clicking outside
         window.addEventListener('click', function(event) {
             if (event.target == modal) {
                 modal.style.display = 'none';
             }
         });
-        
+
         // Function to fetch product details via AJAX
         function fetchProductDetails(productId) {
             fetch(`/admin/products/${productId}`)
@@ -763,7 +802,7 @@
                         
                         // Update modal content
                         document.getElementById('modalProductTitle').textContent = product.title;
-                        document.getElementById('modalProductCategory').textContent = product.category.name;
+                        document.getElementById('modalProductCategory').textContent = product.category.name || product.category;
                         document.getElementById('modalProductPrice').textContent = `₱${parseFloat(product.price).toFixed(2)} / ${product.unit}`;
                         document.getElementById('modalProductQuantity').textContent = `${product.quantity} ${product.unit}`;
                         document.getElementById('modalProductSeller').textContent = product.user ? `${product.user.firstname} ${product.user.lastname}` : 'Unknown';
@@ -802,7 +841,7 @@
         const closeEditBtn = document.getElementById('closeEditModal');
         const cancelEditBtn = document.getElementById('cancelEditBtn');
         const editForm = document.getElementById('editProductForm');
-        
+
         // Click event for edit buttons
         editButtons.forEach(button => {
             button.addEventListener('click', function() {
@@ -810,24 +849,24 @@
                 fetchProductForEdit(productId);
             });
         });
-        
+
         // Close edit modal when clicking X button
         closeEditBtn.addEventListener('click', function() {
             editModal.style.display = 'none';
         });
-        
+
         // Close edit modal when clicking Cancel button
         cancelEditBtn.addEventListener('click', function() {
             editModal.style.display = 'none';
         });
-        
+
         // Close edit modal when clicking outside
         window.addEventListener('click', function(event) {
             if (event.target == editModal) {
                 editModal.style.display = 'none';
             }
         });
-        
+
         // Function to fetch product details for editing
         function fetchProductForEdit(productId) {
             fetch(`/admin/products/${productId}`)
@@ -898,25 +937,25 @@
         const categoryToRemove = document.getElementById('categoryToRemove');
         const replacementCategory = document.getElementById('replacementCategory');
         const removeCategoryBtn = document.getElementById('removeCategoryBtn');
-        
+
         // Open category management modal
         manageCategoriesBtn.addEventListener('click', function() {
             loadCategories();
             categoryModal.style.display = 'block';
         });
-        
+
         // Close category modal
         closeCategoryModal.addEventListener('click', function() {
             categoryModal.style.display = 'none';
         });
-        
+
         // Close category modal when clicking outside
         window.addEventListener('click', function(e) {
             if (e.target === categoryModal) {
                 categoryModal.style.display = 'none';
             }
         });
-        
+
         // Load categories from server - improved to display more details
         function loadCategories() {
             fetch('{{ route("admin.categories") }}')
@@ -929,7 +968,7 @@
                         // Populate dropdowns
                         categoryToRemove.innerHTML = '<option value="">Select a category</option>';
                         replacementCategory.innerHTML = '<option value="">Select a category</option>';
-                        
+
                         // Sort categories - active first, then by name
                         const sortedCategories = data.categories.sort((a, b) => {
                             if (a.is_active !== b.is_active) {
@@ -937,14 +976,13 @@
                             }
                             return a.name.localeCompare(b.name); // Then alphabetically
                         });
-                        
+
                         sortedCategories.forEach(category => {
                             // Add to visual list
                             const badge = document.createElement('span');
                             badge.className = 'category-badge';
                             badge.style.backgroundColor = category.color || '#f0f0f0';
                             badge.style.color = getContrastColor(category.color || '#f0f0f0');
-                            
                             if (!category.is_active) {
                                 badge.style.opacity = '0.5';
                                 badge.style.textDecoration = 'line-through';
@@ -960,7 +998,7 @@
                                 option1.textContent = category.name;
                                 option1.style.backgroundColor = category.color + '20';
                                 categoryToRemove.appendChild(option1);
-                                
+
                                 // Only add active categories to the replacement dropdown
                                 const option2 = document.createElement('option');
                                 option2.value = category.id;
@@ -968,14 +1006,13 @@
                                 option2.style.backgroundColor = category.color + '20';
                                 replacementCategory.appendChild(option2);
                             }
-                            
                             categoriesList.appendChild(badge);
                         });
-                        
+
                         // Also update the filter dropdown in the main page
                         const categoryFilter = document.getElementById('categoryFilter');
                         categoryFilter.innerHTML = '<option value="">All Categories</option>';
-                        
+
                         // Only active categories for the filter
                         sortedCategories.filter(cat => cat.is_active).forEach(category => {
                             const option = document.createElement('option');
@@ -1003,30 +1040,38 @@
                     });
                 });
         }
-        
+
         // Helper function to determine text color based on background color
         function getContrastColor(hexColor) {
+            if (!hexColor) return '#000000';
+            
             // Remove # if present
             hexColor = hexColor.replace('#', '');
             
+            // Handle invalid hex values
+            if (hexColor.length !== 6) return '#000000';
+
             // Convert to RGB
             const r = parseInt(hexColor.substr(0, 2), 16);
             const g = parseInt(hexColor.substr(2, 2), 16);
             const b = parseInt(hexColor.substr(4, 2), 16);
             
+            // Handle invalid RGB values
+            if (isNaN(r) || isNaN(g) || isNaN(b)) return '#000000';
+
             // Calculate luminance
             const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
             
             // Return black for light colors, white for dark colors
             return luminance > 0.5 ? '#000000' : '#ffffff';
         }
-        
+
         // Add new category
         addCategoryBtn.addEventListener('click', function() {
             const newCategoryName = document.getElementById('newCategoryName').value.trim();
             const newCategoryDescription = document.getElementById('newCategoryDescription').value.trim();
             const newCategoryColor = document.getElementById('newCategoryColor').value;
-            
+
             if (!newCategoryName) {
                 Swal.fire({
                     title: 'Error!',
@@ -1063,7 +1108,7 @@
                     document.getElementById('newCategoryName').value = '';
                     document.getElementById('newCategoryDescription').value = '';
                     document.getElementById('newCategoryColor').value = '#517A5B';
-                    
+
                     // Reload categories
                     loadCategories();
                 } else {
@@ -1090,7 +1135,7 @@
         removeCategoryBtn.addEventListener('click', function() {
             const categoryId = categoryToRemove.value;
             const replacementCategoryId = replacementCategory.value;
-            
+
             if (!categoryId) {
                 Swal.fire({
                     title: 'Error!',
@@ -1150,7 +1195,7 @@
                                 title: 'Deleted!',
                                 text: data.message || 'Category removed successfully',
                                 icon: 'success',
-                                confirmButtonColor: '#517A5B'
+                                confirmButtonColor: '#517A5B',
                             });
                             
                             // Reset selects

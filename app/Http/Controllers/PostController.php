@@ -38,6 +38,9 @@ class PostController extends Controller implements HasMiddleware
         $category = $request->input('category');
         $query = Post::query();
         
+        // Only show approved posts to regular users
+        $query->where('status', Post::STATUS_APPROVED);
+        
         if ($category && $category !== 'all') {
             if (is_numeric($category)) {
                 // Filter by category ID if it's a number
@@ -113,7 +116,7 @@ class PostController extends Controller implements HasMiddleware
         $category = Category::find($request->category_id);
         $categoryName = $category ? $category->name : '';
 
-        // Create a post
+        // Create a post with pending status
         $post = Auth::user()->posts()->create([
             'title' => $request->title,
             'category_id' => $request->category_id,
@@ -125,10 +128,11 @@ class PostController extends Controller implements HasMiddleware
             'image' => $path,
             'unit' => $request->unit,
             'quantity' => $request->quantity,
+            'status' => Post::STATUS_PENDING, // Set as pending by default
         ]);
 
-        // Redirect to dashboard
-        return back()->with('success', 'Your post was created!');
+        // Redirect with pending message
+        return back()->with('success', 'Your post has been submitted and is awaiting admin approval!');
     }
 
     /**
