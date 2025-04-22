@@ -14,16 +14,9 @@ return new class extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            // Check if profile_picture exists before trying to add status after it
-            if (Schema::hasColumn('users', 'profile_picture')) {
-                if (!Schema::hasColumn('users', 'status')) {
-                    $table->string('status')->default('active')->after('profile_picture');
-                }
-            } else {
-                // If profile_picture doesn't exist, add status after email
-                if (!Schema::hasColumn('users', 'status')) {
-                    $table->string('status')->default('active')->after('email');
-                }
+            // Add status column if it doesn't exist
+            if (!Schema::hasColumn('users', 'status')) {
+                $table->string('status')->default('active');
             }
         });
     }

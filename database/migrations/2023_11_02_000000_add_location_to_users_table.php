@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             if (!Schema::hasColumn('users', 'location')) {
-                $table->string('location')->nullable()->after('email');
+                $table->string('location')->nullable();
             }
             if (!Schema::hasColumn('users', 'profile_picture')) {
-                $table->string('profile_picture')->nullable()->after('location');
+                $table->string('profile_picture')->nullable();
             }
         });
     }

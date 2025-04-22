@@ -11,12 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip if posts table doesn't exist
+        if (!Schema::hasTable('posts')) {
+            return;
+        }
+        
         Schema::table('posts', function (Blueprint $table) {
-            $table->string('unit')->after('price')->nullable();
+            if (!Schema::hasColumn('posts', 'unit')) {
+                $table->string('unit')->nullable()->after('price');
+            }
             
             // Also check if quantity column exists, if not add it too
             if (!Schema::hasColumn('posts', 'quantity')) {
-                $table->integer('quantity')->after('unit')->default(1);
+                $table->integer('quantity')->default(1)->after('unit');
             }
         });
     }
@@ -26,8 +33,14 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (!Schema::hasTable('posts')) {
+            return;
+        }
+        
         Schema::table('posts', function (Blueprint $table) {
-            $table->dropColumn('unit');
+            if (Schema::hasColumn('posts', 'unit')) {
+                $table->dropColumn('unit');
+            }
             
             if (Schema::hasColumn('posts', 'quantity')) {
                 $table->dropColumn('quantity');

@@ -11,7 +11,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Skip this migration since we've created a new one with earlier timestamp
         if (Schema::hasTable('posts')) {
             return;
         }
@@ -37,6 +36,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Do nothing since the other migration will handle this
+        Schema::dropIfExists('posts');
     }
 };

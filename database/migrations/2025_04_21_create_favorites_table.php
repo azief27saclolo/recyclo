@@ -11,20 +11,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Skip if favorites table already exists
-        if (Schema::hasTable('favorites')) {
+        // Skip if favorites table already exists or posts table doesn't exist
+        if (Schema::hasTable('favorites') || !Schema::hasTable('posts')) {
             return;
         }
         
-        Schema::create('favorites', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('post_id')->constrained()->onDelete('cascade');
-            $table->timestamps();
-            
-            // Ensure a user can favorite a post only once
-            $table->unique(['user_id', 'post_id']);
-        });
+        // Only create if not created by previous migration
+        if (!Schema::hasTable('favorites')) {
+            Schema::create('favorites', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('user_id')->constrained()->onDelete('cascade');
+                $table->foreignId('post_id')->constrained()->onDelete('cascade');
+                $table->timestamps();
+                
+                // Ensure a user can favorite a post only once
+                $table->unique(['user_id', 'post_id']);
+            });
+        }
     }
 
     /**
@@ -32,6 +35,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('favorites');
+        // Only drop if not handled by the other migration
+        if (Schema::hasTable('favorites')) {
+            Schema::dropIfExists('favorites');
+        }
     }
 };

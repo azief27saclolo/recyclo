@@ -13,9 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        // Add check if posts table exists first
-        if (!Schema::hasTable('posts')) {
-            // Posts table doesn't exist, so we should skip this migration
+        // Skip if table already exists or posts doesn't exist
+        if (Schema::hasTable('favorites') || !Schema::hasTable('posts')) {
             return;
         }
         
@@ -27,6 +26,9 @@ return new class extends Migration
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('post_id')->references('id')->on('posts')->onDelete('cascade');
+            
+            // Ensure a user can favorite a post only once
+            $table->unique(['user_id', 'post_id']);
         });
     }
 

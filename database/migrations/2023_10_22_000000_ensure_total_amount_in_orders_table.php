@@ -8,39 +8,19 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
-    public function up()
+    public function up(): void
     {
-        // Skip this migration if the orders table doesn't exist
-        if (!Schema::hasTable('orders')) {
-            return;
-        }
-        
-        Schema::table('orders', function (Blueprint $table) {
-            if (!Schema::hasColumn('orders', 'total_amount')) {
-                $table->decimal('total_amount', 10, 2)->default(0); 
-            }
-        });
+        // Skip entirely as total_amount is already added in the table creation
+        return;
     }
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
-    public function down()
+    public function down(): void
     {
-        // Skip this migration if the orders table doesn't exist
-        if (!Schema::hasTable('orders')) {
-            return;
-        }
-        
-        Schema::table('orders', function (Blueprint $table) {
-            if (Schema::hasColumn('orders', 'total_amount')) {
-                $table->dropColumn('total_amount');
-            }
-        });
+        // Skip entirely
+        return;
     }
 };

@@ -11,8 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip if posts table doesn't exist
+        if (!Schema::hasTable('posts')) {
+            return;
+        }
+        
         Schema::table('posts', function (Blueprint $table) {
-            $table->text('address')->nullable()->after('location');
+            if (!Schema::hasColumn('posts', 'address')) {
+                $table->text('address')->nullable()->after('location');
+            }
         });
     }
 
@@ -21,8 +28,14 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (!Schema::hasTable('posts')) {
+            return;
+        }
+        
         Schema::table('posts', function (Blueprint $table) {
-            $table->dropColumn('address');
+            if (Schema::hasColumn('posts', 'address')) {
+                $table->dropColumn('address');
+            }
         });
     }
 };

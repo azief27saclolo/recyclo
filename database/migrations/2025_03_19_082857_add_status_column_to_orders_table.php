@@ -11,14 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Skip if orders table doesn't exist or already has status column
-        if (!Schema::hasTable('orders') || Schema::hasColumn('orders', 'status')) {
-            return;
-        }
-        
-        Schema::table('orders', function (Blueprint $table) {
-            $table->string('status')->default('pending');
-        });
+        // Skip entirely as status is already added in the table creation
+        return;
     }
 
     /**
@@ -26,14 +20,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (!Schema::hasTable('orders')) {
-            return;
-        }
-        
-        Schema::table('orders', function (Blueprint $table) {
-            if (Schema::hasColumn('orders', 'status')) {
-                $table->dropColumn('status');
-            }
-        });
+        // Skip entirely
+        return;
     }
 };
