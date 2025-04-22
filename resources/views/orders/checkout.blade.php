@@ -22,28 +22,57 @@
                         <h3 style="margin: 0; font-size: 20px;">Order Summary</h3>
                     </div>
                     <div style="padding: 20px;">
-                        <div style="display: flex; gap: 20px; padding-bottom: 20px; border-bottom: 1px solid #eee;">
-                            <img src="{{ asset('storage/' . $post->image) }}" alt="Product Image" 
-                                 style="width: 100px; height: 100px; border-radius: 10px; object-fit: cover;">
-                            <div style="flex: 1;">
-                                <div style="color: #517a5b; font-size: 16px; margin-bottom: 5px;">{{ $post->user->username }}'s Shop</div>
-                                <h4 style="margin: 5px 0; font-size: 20px;">{{ $post->title }}</h4>
-                                <div style="color: #666; font-size: 18px;">₱{{ $post->price }}.00 × {{ $quantity }}kg</div>
-                            </div>
-                        </div>
+                        @php 
+                            $sellerGroups = $cart->items->groupBy(function($item) {
+                                return $item->product && $item->product->post && $item->product->post->user 
+                                    ? $item->product->post->user->id 
+                                    : 0;  // Group items with missing data separately
+                            });
+                            $totalItems = $cart->items->sum('quantity');
+                        @endphp
+
+                        @foreach($sellerGroups as $sellerId => $items)
+                            @if($sellerId > 0) {{-- Only process valid sellers --}}
+                                @php 
+                                    $firstItem = $items->first();
+                                    $seller = $firstItem->product->post->user;
+                                    $sellerTotal = $items->sum(function($item) { 
+                                        return $item->quantity * $item->price; 
+                                    });
+                                @endphp
+
+                                <div style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee;">
+                                    <div style="color: #517a5b; font-size: 16px; margin-bottom: 10px; font-weight: 600;">
+                                        <i class="bi bi-shop"></i> {{ $seller->username }}'s Shop
+                                    </div>
+
+                                    @foreach($items as $item)
+                                        @if($item->product)
+                                            <div style="display: flex; gap: 20px; padding-bottom: 15px; margin-bottom: 15px; border-bottom: 1px dashed #eee;">
+                                                <img src="{{ asset('storage/' . ($item->product->post->image ?? 'images/placeholder.jpg')) }}" alt="Product Image" 
+                                                    style="width: 80px; height: 80px; border-radius: 10px; object-fit: cover;">
+                                                <div style="flex: 1;">
+                                                    <h4 style="margin: 0 0 5px 0; font-size: 18px;">{{ $item->product->post->title ?? 'Product' }}</h4>
+                                                    <div style="color: #666; font-size: 16px;">₱{{ $item->price }} × {{ $item->quantity }}kg</div>
+                                                    <div style="color: #517a5b; font-weight: 600; font-size: 16px; margin-top: 5px;">
+                                                        ₱{{ $item->price * $item->quantity }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endif
+                                    @endforeach
+                                </div>
+                            @endif
+                        @endforeach
 
                         <div style="margin-top: 20px;">
                             <div style="display: flex; justify-content: space-between; padding: 10px 0; color: #666;">
-                                <span style="font-size: 18px;">Subtotal</span>
-                                <span style="font-size: 18px;">₱{{ $post->price * $quantity }}.00</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; padding: 10px 0; color: #666;">
-                                <span style="font-size: 18px;">Delivery Fee</span>
-                                <span style="font-size: 18px;">₱35.00</span>
+                                <span style="font-size: 18px;">Subtotal ({{ $totalItems }} items)</span>
+                                <span style="font-size: 18px;">₱{{ $totalPrice }}</span>
                             </div>
                             <div style="display: flex; justify-content: space-between; padding: 10px 0; border-top: 2px solid #eee; margin-top: 10px; padding-top: 15px; font-weight: 600; color: #517a5b; font-size: 24px;">
                                 <span>Total</span>
-                                <span>₱{{ $totalPrice }}.00</span>
+                                <span>₱{{ $totalPrice }}</span>
                             </div>
                         </div>
                     </div>
@@ -61,7 +90,7 @@
                                 <div style="width: 100%; text-align: center; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
                                     <p style="color: #666; margin-bottom: 10px; font-size: 18px;">Scan / Send payment to:</p>
                                     <p style="font-size: 32px; font-weight: 600; color: #517a5b; margin: 10px 0;">0929 519 0987</p>
-                                    <p style="color: #333; font-size: 22px; font-weight: 500;">{{ $post->user->username }}</p>
+                                    <p style="color: #333; font-size: 22px; font-weight: 500;">Recyclo Admin</p>
                                 </div>
                             </div>
                         </div>
@@ -92,7 +121,21 @@
                         
                         <div style="margin: 25px 0; padding: 20px; background: #f8f9fa; border-radius: 10px;">
                             <h4 style="color: #517a5b; margin-bottom: 15px; font-size: 20px;">Pickup Information</h4>
-                            <p style="margin-bottom: 10px; color: #333; font-size: 18px;">{{ $post->user->username }}'s Shop<br>{{ $post->location }}</p>
+                            
+                            @foreach($sellerGroups as $sellerId => $items)
+                                @if($sellerId > 0) {{-- Only process valid sellers --}}
+                                    @php 
+                                        $firstItem = $items->first();
+                                        $seller = $firstItem->product->post->user;
+                                        $location = $firstItem->product->post->location ?? 'Location not specified';
+                                    @endphp
+                                    <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #eee;">
+                                        <p style="margin-bottom: 5px; color: #333; font-size: 18px; font-weight: 600;">{{ $seller->username }}'s Shop</p>
+                                        <p style="margin-bottom: 5px; color: #333; font-size: 16px;">{{ $location }}</p>
+                                    </div>
+                                @endif
+                            @endforeach
+                            
                             <p style="color: #666; font-size: 16px;">Please pick up your order within 3 days after your order has been approved and payment is confirmed.</p>
                         </div>
 
@@ -198,13 +241,8 @@
             return;
         }
         
-        var quantity = "{{ $quantity }}";
-        var post_id = "{{ $post->id }}";
-        
         // Create FormData to handle file upload
         const formData = new FormData();
-        formData.append('post_id', post_id);
-        formData.append('quantity', quantity);
         formData.append('receipt_image', receiptInput.files[0]);
         formData.append('_token', "{{ csrf_token() }}");
         

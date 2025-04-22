@@ -61,6 +61,10 @@ Route::group(['prefix' => 'admin', 'middleware' => [AdminMiddleware::class]], fu
     Route::post('/orders/{orderId}/reject', [AdminController::class, 'rejectOrder'])->name('admin.orders.reject');
     Route::put('/orders/{order}/status', [AdminController::class, 'updateOrderStatus'])->name('admin.orders.status');
     
+    // Add order items management routes
+    Route::get('/orders/{order}/items', [AdminController::class, 'orderItems'])->name('admin.orders.items');
+    Route::get('/orders/{order}/details', [AdminController::class, 'orderDetails'])->name('admin.orders.details');
+    
     Route::get('/users', [AdminController::class, 'users'])->name('admin.users');
     Route::put('/users/{user}/status', [AdminController::class, 'updateUserStatus'])->name('admin.users.update-status');
     Route::get('/shops', [AdminController::class, 'shops'])->name('admin.shops');
@@ -142,7 +146,7 @@ Route::middleware('auth')->group(function() {
         Route::get('/cart', [App\Http\Controllers\CartController::class, 'index'])->name('cart.index');
         Route::post('/cart/add', [App\Http\Controllers\CartController::class, 'addToCart'])->name('cart.add');
         Route::post('/cart/update/{id}', [App\Http\Controllers\CartController::class, 'updateQuantity'])->name('cart.update');
-        Route::put('/cart/update/{id}', [App\Http\Controllers\CartController::class, 'updateQuantity']);
+        Route::put('/cart/update/{id}', [App\Http\Controllers\CartController::class, 'updateQuantity'])->name('cart.update');
         Route::delete('/cart/remove/{id}', [App\Http\Controllers\CartController::class, 'removeItem'])->name('cart.remove');
         Route::delete('/cart/empty', [App\Http\Controllers\CartController::class, 'emptyCart'])->name('cart.empty');
         Route::get('/cart/checkout', [App\Http\Controllers\CartController::class, 'checkout'])->name('checkout'); // Update the checkout route

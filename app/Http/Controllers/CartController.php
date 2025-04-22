@@ -96,6 +96,12 @@ class CartController extends Controller
             
             // Ensure the cart belongs to the current user
             if ($cart->user_id !== Auth::id()) {
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Unauthorized action.'
+                    ], 403);
+                }
                 return redirect()->route('cart.index')->with('error', 'Unauthorized action.');
             }
             
@@ -105,21 +111,34 @@ class CartController extends Controller
             
             // Refresh cart from database to get accurate data
             $cart->refresh();
-            $cart->load('items');
+            $cart->load('items.product');
             
             // Calculate total
-            $total = 0;
-            foreach($cart->items as $item) {
-                $total += $item->quantity * $item->price;
+            $this->updateCartTotal($cart);
+            
+            // For AJAX requests, return updated cart data
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Cart updated successfully',
+                    'itemPrice' => $cartItem->price,
+                    'cartTotal' => $cart->total,
+                    'itemsCount' => $cart->items->sum('quantity')
+                ]);
             }
             
-            $cart->total = $total;
-            $cart->save();
-            
-            // Return to cart without success message
+            // For non-AJAX requests, redirect to cart
             return redirect()->route('cart.index');
         } catch (\Exception $e) {
             \Log::error('Error updating cart: ' . $e->getMessage());
+            
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error updating cart: ' . $e->getMessage()
+                ], 500);
+            }
+            
             return redirect()->route('cart.index')->with('error', 'Error updating cart: ' . $e->getMessage());
         }
     }
@@ -238,7 +257,7 @@ class CartController extends Controller
         $cart = $this->getOrCreateCart();
         
         // Load cart items with product details
-        $cart->load('items.product');
+        $cart->load('items.product.post');
         
         // Check if cart has items
         if ($cart->items->count() === 0) {
@@ -255,24 +274,10 @@ class CartController extends Controller
                 ->with('error', 'Your cart contains products that are no longer available. Please remove them before checkout.');
         }
         
-        // For now, we'll use the first cart item for checkout demonstration
-        // In a real implementation, you might want to process multiple items
-        $firstItem = $cart->items->first();
-        $post = $firstItem->product->post ?? null;
-        
-        if (!$post) {
-            return redirect()->route('cart.index')
-                ->with('error', 'Could not find the associated post for checkout.');
-        }
-        
-        // Calculate total price including delivery fee
-        $totalPrice = $cart->total + 5; // Adding the service fee
-        
-        // Return the checkout view with post, quantity, and total price
+        // Return the checkout view with the cart containing all items
         return view('orders.checkout', [
-            'post' => $post,
-            'quantity' => $firstItem->quantity,
-            'totalPrice' => $totalPrice
+            'cart' => $cart,
+            'totalPrice' => $cart->total
         ]);
     }
 }

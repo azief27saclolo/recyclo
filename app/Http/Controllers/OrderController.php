@@ -3,13 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Post;
 use App\Models\Product;
+use App\Models\Cart;
+use App\Models\CartItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use Exception;
 
 class OrderController extends Controller
@@ -21,38 +25,19 @@ class OrderController extends Controller
             
             // Validate the request
             $validated = $request->validate([
-                'post_id' => ['required', 'exists:posts,id'],
-                'quantity' => ['required', 'integer', 'min:1'],
                 'receipt_image' => ['required', 'image', 'max:5120'], // Max 5MB
             ]);
             
-            // Find the post and make sure it exists
-            $post = Post::findOrFail($request->post_id);
+            // Get the user's active cart
+            $cart = Cart::where('user_id', Auth::id())->where('status', 'active')->first();
             
-            // Additional check to make sure the post is valid and has a price
-            if (!$post || !isset($post->price) || $post->price === null) {
-                Log::error('Post exists but price is null', ['post_id' => $request->post_id]);
+            if (!$cart || $cart->items->count() === 0) {
+                Log::error('Empty cart during checkout');
                 return response()->json([
                     'success' => false,
-                    'message' => 'The selected product is not available for purchase.'
+                    'message' => 'Your cart is empty.'
                 ], 422);
             }
-            
-            // Check if there's enough quantity available
-            if ($post->quantity < $request->quantity) {
-                Log::error('Not enough quantity available', [
-                    'post_id' => $request->post_id, 
-                    'requested' => $request->quantity, 
-                    'available' => $post->quantity
-                ]);
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Not enough quantity available for this product.'
-                ], 422);
-            }
-            
-            // Calculate total amount including delivery fee
-            $totalAmount = ($post->price * $request->quantity) + 35;
             
             // Store receipt image
             $receiptPath = null;
@@ -61,44 +46,97 @@ class OrderController extends Controller
                 Log::info('Receipt image saved', ['path' => $receiptPath]);
             }
 
-            // Create the order
-            $order = Order::create([
-                'seller_id' => $post->user_id,
-                'buyer_id' => Auth::id(),
-                'post_id' => $request->post_id,
-                'quantity' => $request->quantity,
-                'status' => 'pending', 
-                'total_amount' => $totalAmount,
-                'receipt_image' => $receiptPath,
-            ]);
-
-            // Decrease the post quantity right away
-            $post->quantity -= $request->quantity;
-            $post->save();
-            
-            // Also update any associated product if it exists
-            $product = Product::where('post_id', $post->id)->first();
-            if ($product) {
-                $product->stock -= $request->quantity;
-                $product->save();
-                Log::info('Product stock updated', [
-                    'product_id' => $product->id, 
-                    'new_stock' => $product->stock
+            // Use transaction to ensure all database operations succeed or fail together
+            DB::beginTransaction();
+            try {
+                // Create separate orders for each shop's products
+                $shopOrders = [];
+                $cartItems = $cart->items()->with('product.post.user')->get()->groupBy('product.post.user.id');
+                
+                foreach ($cartItems as $sellerId => $items) {
+                    $firstItem = $items->first();
+                    $sellerUser = $firstItem->product->post->user;
+                    
+                    // Calculate total amount for this seller's items
+                    $totalAmount = $items->sum(function($item) {
+                        return $item->quantity * $item->price;
+                    });
+                    
+                    // Create an order for this seller
+                    $order = Order::create([
+                        'seller_id' => $sellerId,
+                        'buyer_id' => Auth::id(),
+                        'post_id' => null, // We'll use order_items instead
+                        'quantity' => $items->sum('quantity'),
+                        'status' => 'pending',
+                        'total_amount' => $totalAmount,
+                        'receipt_image' => $receiptPath,
+                    ]);
+                    
+                    // Create order items for each product
+                    foreach ($items as $item) {
+                        // Get post associated with product
+                        $post = $item->product->post;
+                        
+                        if (!$post) {
+                            throw new Exception("Post not found for product ID: {$item->product->id}");
+                        }
+                        
+                        // Create order item
+                        OrderItem::create([
+                            'order_id' => $order->id,
+                            'post_id' => $post->id,
+                            'quantity' => $item->quantity,
+                            'price' => $item->price,
+                        ]);
+                        
+                        // Decrease post quantity
+                        if ($post->quantity < $item->quantity) {
+                            throw new Exception("Not enough quantity available for product: {$post->title}");
+                        }
+                        
+                        $post->quantity -= $item->quantity;
+                        $post->save();
+                        
+                        // Update product stock if exists
+                        if ($item->product) {
+                            $item->product->stock -= $item->quantity;
+                            $item->product->save();
+                        }
+                    }
+                    
+                    $shopOrders[] = $order;
+                }
+                
+                // Mark cart as checked out and empty it
+                $cart->status = 'completed';
+                $cart->save();
+                
+                // Create a new active cart for the user
+                Cart::create([
+                    'user_id' => Auth::id(),
+                    'status' => 'active',
+                    'total' => 0
                 ]);
+                
+                DB::commit();
+                
+                Log::info('Orders created successfully', [
+                    'order_count' => count($shopOrders),
+                    'order_ids' => collect($shopOrders)->pluck('id')
+                ]);
+                
+                // Return success response
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Order requests submitted successfully',
+                    'order_ids' => collect($shopOrders)->pluck('id')
+                ]);
+                
+            } catch (Exception $e) {
+                DB::rollBack();
+                throw $e;
             }
-
-            Log::info('Order created successfully and stock decreased', [
-                'order_id' => $order->id,
-                'post_id' => $post->id,
-                'new_quantity' => $post->quantity
-            ]);
-
-            // Return success response
-            return response()->json([
-                'success' => true,
-                'message' => 'Order request submitted successfully',
-                'order_id' => $order->id
-            ]);
             
         } catch (Exception $e) {
             // Log the error with detailed information
@@ -125,17 +163,27 @@ class OrderController extends Controller
 
     public function checkout(Request $request)
     {
-        // Find post and validate it exists
-        $post = Post::find($request->post_id);
+        // Get the current user's active cart
+        $cart = Cart::where('user_id', Auth::id())->where('status', 'active')->first();
         
-        // If post doesn't exist or has no price, redirect to posts with error
-        if (!$post || !isset($post->price) || $post->price === null) {
-            return redirect()->route('posts')->with('error', 'The selected product is no longer available.');
+        if (!$cart || $cart->items->count() === 0) {
+            return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
         }
         
-        $quantity = $request->quantity;
-        $totalPrice = ($post->price * $quantity) + 35; // Add delivery fee
-        return view('orders.checkout', ['post' => $post, 'quantity' => $quantity, 'totalPrice' => $totalPrice]);
+        // Load products and posts
+        $cart->load('items.product.post');
+        
+        // Check for missing or invalid products
+        foreach ($cart->items as $item) {
+            if (!$item->product || !$item->product->post) {
+                return redirect()->route('cart.index')->with('error', 'Some products in your cart are no longer available.');
+            }
+        }
+        
+        return view('orders.checkout', [
+            'cart' => $cart,
+            'totalPrice' => $cart->total
+        ]);
     }
 
     /**
@@ -159,31 +207,34 @@ class OrderController extends Controller
         $newStatus = $validStatus['status'];
         $orderAmount = null;
         
-        // If status is being changed to cancelled, restore the product quantity
+        // If status is being changed to cancelled, restore the product quantities
         if ($newStatus === 'cancelled') {
-            $post = Post::find($order->post_id);
-            
-            if ($post) {
-                // Restore the quantity from the order back to the post
-                $post->quantity += $order->quantity;
-                $post->save();
+            // Get all order items
+            foreach ($order->items as $item) {
+                $post = Post::find($item->post_id);
                 
-                // Restore any associated product stock
-                $product = Product::where('post_id', $post->id)->first();
-                if ($product) {
-                    $product->stock += $order->quantity;
-                    $product->save();
+                if ($post) {
+                    // Restore the quantity from the order item back to the post
+                    $post->quantity += $item->quantity;
+                    $post->save();
                     
-                    Log::info('Product stock restored after order cancellation', [
-                        'product_id' => $product->id,
-                        'new_stock' => $product->stock
+                    // Restore any associated product stock
+                    $product = Product::where('post_id', $post->id)->first();
+                    if ($product) {
+                        $product->stock += $item->quantity;
+                        $product->save();
+                        
+                        Log::info('Product stock restored after order cancellation', [
+                            'product_id' => $product->id,
+                            'new_stock' => $product->stock
+                        ]);
+                    }
+                    
+                    Log::info('Post quantity restored after order cancellation', [
+                        'post_id' => $post->id,
+                        'new_quantity' => $post->quantity
                     ]);
                 }
-                
-                Log::info('Post quantity restored after order cancellation', [
-                    'post_id' => $post->id,
-                    'new_quantity' => $post->quantity
-                ]);
             }
         }
         

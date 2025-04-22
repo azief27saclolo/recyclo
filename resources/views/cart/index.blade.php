@@ -206,7 +206,12 @@
                             <img src="{{ asset('storage/' . $item->product->image) }}" alt="{{ $item->product->name }}" class="item-image">
                             <div class="item-details">
                                 <div class="shop-name">
-                                    <i class="bi bi-shop"></i> {{ $item->product->user->shop->name ?? 'Unknown Shop' }}
+                                    <i class="bi bi-shop"></i> 
+                                    @if($item->product->user && $item->product->user->shop)
+                                        {{ $item->product->user->shop->shop_name }}
+                                    @else
+                                        Unknown Shop
+                                    @endif
                                 </div>
                                 <h3 class="item-name">{{ $item->product->name }}</h3>
                                 <div class="quantity-controls">
@@ -241,16 +246,12 @@
             <div class="cart-summary">
                 <h2 class="summary-title">Order Summary</h2>
                 <div class="summary-row">
-                    <span>Subtotal ({{ $cart->items->sum('quantity') }} items)</span>
-                    <span>₱{{ number_format($cart->total, 2) }}</span>
-                </div>
-                <div class="summary-row">
-                    <span>Service Fee</span>
-                    <span>₱5.00</span>
+                    <span>Subtotal (<span id="items-count">{{ $cart->items->sum('quantity') }} items</span>)</span>
+                    <span id="cart-subtotal">₱{{ number_format($cart->total, 2) }}</span>
                 </div>
                 <div class="summary-total">
                     <span>Total</span>
-                    <span>₱{{ number_format($cart->total + 5, 2) }}</span>
+                    <span id="cart-total">₱{{ number_format($cart->total, 2) }}</span>
                 </div>
                 <button class="checkout-btn" onclick="beforeCheckout()">
                     Proceed to Checkout
@@ -348,33 +349,68 @@
         // Show loading state
         input.disabled = true;
         
-        // Use a simple form submission instead of fetch API
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/cart/update/${itemId}`;
-        form.style.display = 'none';
-        
-        const csrfToken = document.createElement('input');
-        csrfToken.type = 'hidden';
-        csrfToken.name = '_token';
-        csrfToken.value = '{{ csrf_token() }}';
-        
-        const methodField = document.createElement('input');
-        methodField.type = 'hidden';
-        methodField.name = '_method';
-        methodField.value = 'PUT';
-        
-        const quantityField = document.createElement('input');
-        quantityField.type = 'hidden';
-        quantityField.name = 'quantity';
-        quantityField.value = value;
-        
-        form.appendChild(csrfToken);
-        form.appendChild(methodField);
-        form.appendChild(quantityField);
-        
-        document.body.appendChild(form);
-        form.submit();
+        // Use AJAX to update cart without refreshing the page
+        fetch(`/cart/update/${itemId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                quantity: value
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update quantity input
+                input.value = value;
+                
+                // Update item subtotal if needed
+                const itemPrice = parseFloat(data.itemPrice);
+                const itemSubtotal = itemPrice * value;
+                
+                // Update cart total
+                const cartTotal = document.getElementById('cart-total');
+                const cartSubtotal = document.getElementById('cart-subtotal');
+                if (cartTotal && cartSubtotal) {
+                    cartSubtotal.textContent = `₱${data.cartTotal.toFixed(2)}`;
+                    cartTotal.textContent = `₱${data.cartTotal.toFixed(2)}`;
+                }
+                
+                // Update items count
+                const itemsCount = document.getElementById('items-count');
+                if (itemsCount) {
+                    itemsCount.textContent = `${data.itemsCount} items`;
+                }
+                
+            } else {
+                console.error('Error updating cart:', data.message);
+                // Show error notification
+                Swal.fire({
+                    title: 'Error!',
+                    text: data.message || 'Something went wrong. Please try again.',
+                    icon: 'error',
+                    confirmButtonColor: '#517A5B',
+                    customClass: { popup: 'bigger-modal' }
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                title: 'Error!',
+                text: 'Something went wrong. Please try again.',
+                icon: 'error',
+                confirmButtonColor: '#517A5B',
+                customClass: { popup: 'bigger-modal' }
+            });
+        })
+        .finally(() => {
+            // Re-enable input
+            input.disabled = false;
+        });
     }
 
     // Confirmation function for removing cart items
@@ -399,18 +435,6 @@
         });
     }
 
-    // Remove the event listeners that interfere with form submission
-    // This code was conflicting with the form submission from the modal
-    /*
-    document.querySelectorAll('.remove-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const item = this.closest('.cart-item');
-            item.style.opacity = '0';
-            setTimeout(() => item.remove(), 300);
-        });
-    });
-    */
-
     // Check for unavailable products before proceeding to checkout
     function beforeCheckout() {
         @if($cart->items->contains(function($item) { return $item->product === null; }))
@@ -430,3 +454,4 @@
     }
 </script>
 @endsection
+``` 
