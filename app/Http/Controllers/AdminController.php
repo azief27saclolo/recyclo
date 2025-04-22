@@ -400,7 +400,7 @@ class AdminController extends Controller
         $sellers = User::whereHas('posts')
             ->withCount('posts')
             ->withSum(['soldOrders as total_sales' => function($query) {
-                $query->where('status', 'completed');
+                $query->where('orders.status', 'completed');  // Specify the table name for status column
             }], 'total_amount')
             ->paginate(10);
             
@@ -430,12 +430,9 @@ class AdminController extends Controller
         $seller = User::with(['shop', 'posts.orders'])
             ->withCount('posts')
             ->withSum(['soldOrders as total_sales' => function($query) {
-                $query->where('status', 'completed');
+                $query->where('orders.status', 'completed');  // Also fix this query for consistency
             }], 'total_amount')
             ->findOrFail($id);
-        
-        // Prevent null total_sales
-        $seller->total_sales = $seller->total_sales ?? 0;
         
         // Get seller transactions
         $transactions = Order::where('seller_id', $id)
