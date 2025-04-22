@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Post;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -37,6 +38,19 @@ class OrderController extends Controller
                 ], 422);
             }
             
+            // Check if there's enough quantity available
+            if ($post->quantity < $request->quantity) {
+                Log::error('Not enough quantity available', [
+                    'post_id' => $request->post_id, 
+                    'requested' => $request->quantity, 
+                    'available' => $post->quantity
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Not enough quantity available for this product.'
+                ], 422);
+            }
+            
             // Calculate total amount including delivery fee
             $totalAmount = ($post->price * $request->quantity) + 35;
             
@@ -47,6 +61,7 @@ class OrderController extends Controller
                 Log::info('Receipt image saved', ['path' => $receiptPath]);
             }
 
+            // Create the order
             $order = Order::create([
                 'seller_id' => $post->user_id,
                 'buyer_id' => Auth::id(),
@@ -57,7 +72,26 @@ class OrderController extends Controller
                 'receipt_image' => $receiptPath,
             ]);
 
-            Log::info('Order created successfully', ['order_id' => $order->id]);
+            // Decrease the post quantity right away
+            $post->quantity -= $request->quantity;
+            $post->save();
+            
+            // Also update any associated product if it exists
+            $product = Product::where('post_id', $post->id)->first();
+            if ($product) {
+                $product->stock -= $request->quantity;
+                $product->save();
+                Log::info('Product stock updated', [
+                    'product_id' => $product->id, 
+                    'new_stock' => $product->stock
+                ]);
+            }
+
+            Log::info('Order created successfully and stock decreased', [
+                'order_id' => $order->id,
+                'post_id' => $post->id,
+                'new_quantity' => $post->quantity
+            ]);
 
             // Return success response
             return response()->json([
@@ -125,38 +159,42 @@ class OrderController extends Controller
         $newStatus = $validStatus['status'];
         $orderAmount = null;
         
-        // If status is being changed to completed, update product quantity
-        if ($newStatus === 'completed') {
-            // Get the post (product) associated with the order
+        // If status is being changed to cancelled, restore the product quantity
+        if ($newStatus === 'cancelled') {
             $post = Post::find($order->post_id);
             
-            if (!$post) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Product not found.'
-                ], 404);
+            if ($post) {
+                // Restore the quantity from the order back to the post
+                $post->quantity += $order->quantity;
+                $post->save();
+                
+                // Restore any associated product stock
+                $product = Product::where('post_id', $post->id)->first();
+                if ($product) {
+                    $product->stock += $order->quantity;
+                    $product->save();
+                    
+                    Log::info('Product stock restored after order cancellation', [
+                        'product_id' => $product->id,
+                        'new_stock' => $product->stock
+                    ]);
+                }
+                
+                Log::info('Post quantity restored after order cancellation', [
+                    'post_id' => $post->id,
+                    'new_quantity' => $post->quantity
+                ]);
             }
-            
-            // Check if there's enough quantity to fulfill the order
-            if ($post->quantity < $order->quantity) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Not enough product quantity available to complete this order.'
-                ], 400);
-            }
-            
-            // Decrease the product quantity
-            $post->quantity -= $order->quantity;
-            $post->save();
-            
+        }
+        
+        // If status is being changed to completed, we don't need to update quantities again
+        // as we already decreased them when the order was created
+        if ($newStatus === 'completed') {
             // Store the order amount for the earnings update
             $orderAmount = $order->total_amount;
             
-            Log::info('Product quantity updated after order completion', [
+            Log::info('Order completed', [
                 'order_id' => $order->id,
-                'post_id' => $post->id,
-                'old_quantity' => $post->quantity + $order->quantity,
-                'new_quantity' => $post->quantity,
                 'order_amount' => $orderAmount
             ]);
         }
