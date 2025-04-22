@@ -497,7 +497,7 @@
                                                 style="flex: 1; margin-right: 5px; font-size: 16px; padding: 12px 10px; height: 48px;"
                                                 data-product-id="{{ $product->id }}"
                                                 data-product-title="{{ $product->title }}"
-                                                data-product-category="{{ $product->category }}"
+                                                data-product-category-id="{{ $product->category_id }}"
                                                 data-product-location="{{ $product->location }}"
                                                 data-product-unit="{{ $product->unit }}"
                                                 data-product-quantity="{{ $product->quantity }}"
@@ -548,19 +548,14 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="category">Category</label>
-                    <select name="category" id="category" class="form-control" required>
+                    <label class="form-label" for="category_id">Category</label>
+                    <select name="category_id" id="category_id" class="form-control" required>
                         <option value="">--Select--</option>
-                        <option value="Metal">Metal</option>
-                        <option value="Plastic">Plastic</option>
-                        <option value="Paper">Paper</option>
-                        <option value="Glass">Glass</option>
-                        <option value="Wood">Wood</option>
-                        <option value="Electronics">Electronics</option>
-                        <option value="Fabric">Fabric</option>
-                        <option value="Rubber">Rubber</option>
+                        @foreach(\App\Models\Category::where('is_active', true)->orderBy('name')->get() as $category)
+                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                        @endforeach
                     </select>
-                    @error('category')
+                    @error('category_id')
                         <p class="error-message">{{ $message }}</p>
                     @enderror
                 </div>
@@ -659,19 +654,14 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="edit-category">Category</label>
-                    <select name="category" id="edit-category" class="form-control" required>
+                    <label class="form-label" for="edit-category_id">Category</label>
+                    <select name="category_id" id="edit-category_id" class="form-control" required>
                         <option value="">--Select--</option>
-                        <option value="Metal">Metal</option>
-                        <option value="Plastic">Plastic</option>
-                        <option value="Paper">Paper</option>
-                        <option value="Glass">Glass</option>
-                        <option value="Wood">Wood</option>
-                        <option value="Electronics">Electronics</option>
-                        <option value="Fabric">Fabric</option>
-                        <option value="Rubber">Rubber</option>
+                        @foreach(\App\Models\Category::where('is_active', true)->orderBy('name')->get() as $category)
+                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                        @endforeach
                     </select>
-                    @error('category')
+                    @error('category_id')
                         <p class="error-message">{{ $message }}</p>
                     @enderror
                 </div>
@@ -1115,7 +1105,7 @@
             button.addEventListener('click', function() {
                 const productId = this.getAttribute('data-product-id');
                 const productTitle = this.getAttribute('data-product-title');
-                const productCategory = this.getAttribute('data-product-category');
+                const productCategoryId = this.getAttribute('data-product-category-id');
                 const productLocation = this.getAttribute('data-product-location');
                 const productUnit = this.getAttribute('data-product-unit');
                 const productQuantity = this.getAttribute('data-product-quantity');
@@ -1127,7 +1117,7 @@
                 
                 // Populate form fields
                 document.getElementById('edit-title').value = productTitle;
-                document.getElementById('edit-category').value = productCategory;
+                document.getElementById('edit-category_id').value = productCategoryId;
                 document.getElementById('edit-location').value = productLocation;
                 document.getElementById('edit-unit').value = productUnit;
                 document.getElementById('edit-quantity').value = productQuantity;

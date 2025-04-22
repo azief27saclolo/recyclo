@@ -8,6 +8,7 @@ use App\Models\Shop;
 use App\Models\Order;
 use App\Models\Admin;
 use App\Models\Post;
+use App\Models\Category;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -531,6 +532,134 @@ class AdminController extends Controller
         } catch (\Exception $e) {
             return redirect()->route('admin.products')
                 ->with('error', 'Failed to delete product: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get all categories
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getCategories()
+    {
+        try {
+            $categories = Category::orderBy('name')->get();
+            
+            return response()->json([
+                'success' => true,
+                'categories' => $categories
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load categories: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Add a new category
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function addCategory(Request $request)
+    {
+        try {
+            // Validate the request data
+            $validatedData = $request->validate([
+                'name' => 'required|string|max:50',
+                'description' => 'nullable|string',
+                'color' => 'nullable|string',
+            ]);
+            
+            // Check if a category with this name already exists but is inactive
+            $existingCategory = Category::where('name', $validatedData['name'])->first();
+            
+            if ($existingCategory) {
+                // If it exists but is inactive, reactivate it
+                if (!$existingCategory->is_active) {
+                    $existingCategory->is_active = true;
+                    $existingCategory->description = $validatedData['description'] ?? $existingCategory->description;
+                    $existingCategory->color = $validatedData['color'] ?? $existingCategory->color;
+                    $existingCategory->save();
+                    
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Category reactivated successfully',
+                        'category' => $existingCategory
+                    ]);
+                } else {
+                    // If it's already active, return an error
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'A category with this name already exists'
+                    ], 422);
+                }
+            }
+            
+            // Create a new category if it doesn't exist
+            $category = Category::create([
+                'name' => $validatedData['name'],
+                'slug' => \Illuminate\Support\Str::slug($validatedData['name']),
+                'description' => $validatedData['description'] ?? null,
+                'color' => $validatedData['color'] ?? '#517A5B',
+                'is_active' => true
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Category added successfully',
+                'category' => $category
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to add category: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Remove a category (Migration of products to replacement category)
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function removeCategory(Request $request)
+    {
+        try {
+            $validatedData = $request->validate([
+                'category_id' => 'required|exists:categories,id',
+                'replacement_category_id' => 'required|exists:categories,id|different:category_id'
+            ]);
+            
+            $category = Category::findOrFail($validatedData['category_id']);
+            $replacementCategory = Category::findOrFail($validatedData['replacement_category_id']);
+            
+            // Count products in this category
+            $productCount = Post::where('category_id', $category->id)->count();
+            
+            // Update all products in this category to the replacement category
+            Post::where('category_id', $category->id)
+                ->update([
+                    'category_id' => $replacementCategory->id,
+                    'category' => $replacementCategory->name // Update text field for backward compatibility
+                ]);
+            
+            // Mark the category as inactive
+            $category->is_active = false;
+            $category->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => "Category \"{$category->name}\" removed successfully. {$productCount} products moved to \"{$replacementCategory->name}\" category.",
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to remove category: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

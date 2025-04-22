@@ -78,6 +78,11 @@ Route::group(['prefix' => 'admin', 'middleware' => [AdminMiddleware::class]], fu
     Route::delete('/products/{id}', [AdminController::class, 'deleteProduct'])->name('admin.products.delete');
     Route::put('/products/{id}/update', [AdminController::class, 'updateProduct'])->name('admin.products.update');
     
+    // Category management routes
+    Route::get('/categories', [AdminController::class, 'getCategories'])->name('admin.categories');
+    Route::post('/categories/add', [AdminController::class, 'addCategory'])->name('admin.categories.add');
+    Route::delete('/categories/remove', [AdminController::class, 'removeCategory'])->name('admin.categories.remove');
+    
     Route::get('/logout', [AdminController::class, 'logout'])->name('admin.logout');
 });
 

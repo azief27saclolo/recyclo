@@ -15,6 +15,7 @@ use Illuminate\Routing\Controllers\HasMiddleware;
 use App\Models\User;
 use App\Models\Buy;
 use App\Models\Product;
+use App\Models\Category;
 
 class PostController extends Controller implements HasMiddleware
 {
@@ -30,15 +31,21 @@ class PostController extends Controller implements HasMiddleware
      */
     public function index(Request $request)
     {
-        // Get unique categories for the filter
-        $categories = Post::select('category')->distinct()->pluck('category')->toArray();
+        // Get categories for the filter from the database
+        $categories = Category::where('is_active', true)->orderBy('name')->get();
         
         // Apply category filter if selected
         $category = $request->input('category');
         $query = Post::query();
         
         if ($category && $category !== 'all') {
-            $query->where('category', $category);
+            if (is_numeric($category)) {
+                // Filter by category ID if it's a number
+                $query->where('category_id', $category);
+            } else {
+                // Filter by legacy category field for backward compatibility
+                $query->where('category', $category);
+            }
         }
         
         // Apply price sorting if selected
@@ -48,11 +55,9 @@ class PostController extends Controller implements HasMiddleware
         if ($priceSort) {
             switch ($priceSort) {
                 case 'low_high':
-                    // Force numeric ordering to ensure correct results
                     $query->orderByRaw('CAST(price AS DECIMAL(10,2)) ASC');
                     break;
                 case 'high_low':
-                    // Force numeric ordering to ensure correct results
                     $query->orderByRaw('CAST(price AS DECIMAL(10,2)) DESC');
                     break;
                 default:
@@ -78,7 +83,9 @@ class PostController extends Controller implements HasMiddleware
      */
     public function create()
     {
-        //
+        // Get categories for the form
+        $categories = Category::where('is_active', true)->orderBy('name')->get();
+        return view('posts.create', compact('categories'));
     }
 
     /**
@@ -86,13 +93,12 @@ class PostController extends Controller implements HasMiddleware
      */
     public function store(Request $request)
     {
-
         // Validate
         $request->validate([
             'title' => ['required', 'max:255'],
-            'category' => ['required'],
+            'category_id' => ['required', 'exists:categories,id'],
             'location' => ['required', 'max:255'],
-            'address' => ['required', 'max:255'],  // Add address validation
+            'address' => ['required', 'max:255'],
             'price' => ['required', 'numeric'],
             'description' => ['required', 'string'],
             'image' => ['required', 'file', 'max:3000', 'mimes:webp,png,jpg'],
@@ -103,21 +109,23 @@ class PostController extends Controller implements HasMiddleware
         // Store image
         $path = Storage::disk('public')->put('posts_images', $request->image);
 
+        // Get the category name for backwards compatibility
+        $category = Category::find($request->category_id);
+        $categoryName = $category ? $category->name : '';
+
         // Create a post
         $post = Auth::user()->posts()->create([
             'title' => $request->title,
-            'category' => $request->category,
+            'category_id' => $request->category_id,
+            'category' => $categoryName, // Keep category name for backwards compatibility
             'location' => $request->location,
-            'address' => $request->address,  // Add address field
+            'address' => $request->address,
             'price' => $request->price,
             'description' => $request->description,
             'image' => $path,
             'unit' => $request->unit,
             'quantity' => $request->quantity,
         ]);
-
-        // Send email
-        // Mail::to(Auth::user())->send(new WelcomeMail(Auth::user(), $post));
 
         // Redirect to dashboard
         return back()->with('success', 'Your post was created!');
@@ -191,9 +199,9 @@ class PostController extends Controller implements HasMiddleware
         // Validate with image as optional
         $validationRules = [
             'title' => ['required', 'max:255'],
-            'category' => ['required'],
+            'category_id' => ['required', 'exists:categories,id'],
             'location' => ['required', 'max:255'],
-            'address' => ['required', 'max:255'], // Add address validation
+            'address' => ['required', 'max:255'],
             'price' => ['required', 'numeric'],
             'description' => ['required', 'string'],
             'unit' => ['required'],
@@ -207,12 +215,17 @@ class PostController extends Controller implements HasMiddleware
 
         $request->validate($validationRules);
 
+        // Get the category name for backwards compatibility
+        $category = Category::find($request->category_id);
+        $categoryName = $category ? $category->name : '';
+
         // Prepare update data
         $updateData = [
             'title' => $request->title,
-            'category' => $request->category,
+            'category_id' => $request->category_id,
+            'category' => $categoryName, // Keep category name for backwards compatibility
             'location' => $request->location,
-            'address' => $request->address, // Add address field
+            'address' => $request->address,
             'price' => $request->price,
             'description' => $request->description,
             'unit' => $request->unit,

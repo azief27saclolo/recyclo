@@ -14,8 +14,9 @@ class Post extends Model
     protected $fillable = [
         'title',
         'category',
+        'category_id',
         'location',
-        'address', // Add address field
+        'address', 
         'unit',
         'price',
         'description',
@@ -43,5 +44,27 @@ class Post extends Model
     public function getSellerNameAttribute()
     {
         return $this->user ? $this->user->name : 'Unknown Seller';
+    }
+
+    /**
+     * Get the category that owns the post.
+     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * Get the category name attribute.
+     * 
+     * This maintains backwards compatibility with code that uses $post->category
+     */
+    public function getCategoryNameAttribute()
+    {
+        if ($this->category_id && $this->category()->exists()) {
+            return $this->category->name;
+        }
+        
+        return $this->attributes['category'];
     }
 }

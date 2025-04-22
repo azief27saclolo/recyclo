@@ -353,6 +353,42 @@
             margin-bottom: 5px;
             font-weight: 500;
         }
+
+        /* Category management styles */
+        .category-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .category-badge {
+            display: inline-block;
+            background-color: #f0f0f0;
+            border-radius: 20px;
+            padding: 5px 12px;
+            margin: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .category-badge:hover {
+            background-color: #e0e0e0;
+        }
+
+        .category-badge .remove-icon {
+            margin-left: 5px;
+            color: #dc3545;
+        }
+
+        .categories-modal {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -397,6 +433,9 @@
             <div class="products-card">
                 <div class="products-heading">
                     <h1><i class="bi bi-box-seam"></i> Products Management</h1>
+                    <button id="manageCategoriesBtn" class="btn btn-primary">
+                        <i class="bi bi-tags"></i> Manage Categories
+                    </button>
                 </div>
                 
                 <div class="search-filters">
@@ -406,14 +445,15 @@
                     <div class="category-filter">
                         <select id="categoryFilter" class="form-control">
                             <option value="">All Categories</option>
-                            <option value="Metal">Metal</option>
-                            <option value="Plastic">Plastic</option>
-                            <option value="Paper">Paper</option>
-                            <option value="Glass">Glass</option>
-                            <option value="Electronics">Electronics</option>
-                            <option value="Wood">Wood</option>
-                            <option value="Fabric">Fabric</option>
-                            <option value="Rubber">Rubber</option>
+                            @php
+                                $categories = \App\Models\Category::where('is_active', true)
+                                                ->orderBy('name')
+                                                ->get();
+                            @endphp
+                            
+                            @foreach($categories as $category)
+                                <option value="{{ $category->id }}">{{ $category->name }}</option>
+                            @endforeach
                         </select>
                     </div>
                 </div>
@@ -448,7 +488,7 @@
                                         @endif
                                     </td>
                                     <td>{{ $product->title }}</td>
-                                    <td><span class="badge {{ strtolower($product->category) }}">{{ $product->category }}</span></td>
+                                    <td><span class="badge" style="background-color: {{ $product->category->color ?? '#f0f0f0' }}; color: {{ $product->category->color ? getContrastColor($product->category->color) : '#333' }}">{{ $product->category->name }}</span></td>
                                     <td>₱{{ number_format($product->price, 2) }} / {{ $product->unit }}</td>
                                     <td>{{ $product->quantity }} {{ $product->unit }}</td>
                                     <td>
@@ -558,16 +598,13 @@
                     <input type="text" class="form-control" id="edit_title" name="title" required>
                 </div>
                 <div class="form-group">
-                    <label for="edit_category">Category</label>
-                    <select class="form-control" id="edit_category" name="category" required>
-                        <option value="Metal">Metal</option>
-                        <option value="Plastic">Plastic</option>
-                        <option value="Paper">Paper</option>
-                        <option value="Glass">Glass</option>
-                        <option value="Electronics">Electronics</option>
-                        <option value="Wood">Wood</option>
-                        <option value="Fabric">Fabric</option>
-                        <option value="Rubber">Rubber</option>
+                    <label for="edit_category_id">Category</label>
+                    <select class="form-control" id="edit_category_id" name="category_id" required>
+                        @foreach(\App\Models\Category::where('is_active', true)->orderBy('name')->get() as $category)
+                            <option value="{{ $category->id }}" data-color="{{ $category->color }}">
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="form-group">
@@ -608,6 +645,55 @@
                     <button type="submit" class="btn btn-primary">Save Changes</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Category Management Modal -->
+    <div id="categoryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Manage Categories</h2>
+                <span class="close" id="closeCategoryModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Add new categories or remove existing ones. When removing a category, you must select a replacement category for existing products.</p>
+                
+                <h3>Current Categories</h3>
+                <div id="categoriesList" class="categories-modal"></div>
+                
+                <h3>Add New Category</h3>
+                <div class="form-group">
+                    <input type="text" id="newCategoryName" class="form-control" placeholder="Enter new category name">
+                </div>
+                <div class="form-group">
+                    <label for="newCategoryDescription">Description (optional)</label>
+                    <textarea id="newCategoryDescription" class="form-control" placeholder="Enter category description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="newCategoryColor">Color (optional)</label>
+                    <input type="color" id="newCategoryColor" class="form-control" value="#517A5B">
+                </div>
+                <button id="addCategoryBtn" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Add Category
+                </button>
+                
+                <h3>Remove Category</h3>
+                <div class="form-group">
+                    <label for="categoryToRemove">Select category to remove:</label>
+                    <select id="categoryToRemove" class="form-control">
+                        <option value="">Select a category</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="replacementCategory">Move products to:</label>
+                    <select id="replacementCategory" class="form-control">
+                        <option value="">Select a category</option>
+                    </select>
+                </div>
+                <button id="removeCategoryBtn" class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Remove Category
+                </button>
+            </div>
         </div>
     </div>
 
@@ -677,7 +763,7 @@
                         
                         // Update modal content
                         document.getElementById('modalProductTitle').textContent = product.title;
-                        document.getElementById('modalProductCategory').textContent = product.category;
+                        document.getElementById('modalProductCategory').textContent = product.category.name;
                         document.getElementById('modalProductPrice').textContent = `₱${parseFloat(product.price).toFixed(2)} / ${product.unit}`;
                         document.getElementById('modalProductQuantity').textContent = `${product.quantity} ${product.unit}`;
                         document.getElementById('modalProductSeller').textContent = product.user ? `${product.user.firstname} ${product.user.lastname}` : 'Unknown';
@@ -755,7 +841,7 @@
                         
                         // Populate form fields
                         document.getElementById('edit_title').value = product.title;
-                        document.getElementById('edit_category').value = product.category;
+                        document.getElementById('edit_category_id').value = product.category_id || '';
                         document.getElementById('edit_price').value = product.price;
                         document.getElementById('edit_unit').value = product.unit;
                         document.getElementById('edit_quantity').value = product.quantity;
@@ -801,6 +887,299 @@
                 }
             });
         }
+
+        // Category Management
+        const categoryModal = document.getElementById('categoryModal');
+        const manageCategoriesBtn = document.getElementById('manageCategoriesBtn');
+        const closeCategoryModal = document.getElementById('closeCategoryModal');
+        const categoriesList = document.getElementById('categoriesList');
+        const newCategoryInput = document.getElementById('newCategoryName');
+        const addCategoryBtn = document.getElementById('addCategoryBtn');
+        const categoryToRemove = document.getElementById('categoryToRemove');
+        const replacementCategory = document.getElementById('replacementCategory');
+        const removeCategoryBtn = document.getElementById('removeCategoryBtn');
+        
+        // Open category management modal
+        manageCategoriesBtn.addEventListener('click', function() {
+            loadCategories();
+            categoryModal.style.display = 'block';
+        });
+        
+        // Close category modal
+        closeCategoryModal.addEventListener('click', function() {
+            categoryModal.style.display = 'none';
+        });
+        
+        // Close category modal when clicking outside
+        window.addEventListener('click', function(e) {
+            if (e.target === categoryModal) {
+                categoryModal.style.display = 'none';
+            }
+        });
+        
+        // Load categories from server - improved to display more details
+        function loadCategories() {
+            fetch('{{ route("admin.categories") }}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Populate categories list
+                        categoriesList.innerHTML = '';
+                        
+                        // Populate dropdowns
+                        categoryToRemove.innerHTML = '<option value="">Select a category</option>';
+                        replacementCategory.innerHTML = '<option value="">Select a category</option>';
+                        
+                        // Sort categories - active first, then by name
+                        const sortedCategories = data.categories.sort((a, b) => {
+                            if (a.is_active !== b.is_active) {
+                                return b.is_active - a.is_active; // Active categories first
+                            }
+                            return a.name.localeCompare(b.name); // Then alphabetically
+                        });
+                        
+                        sortedCategories.forEach(category => {
+                            // Add to visual list
+                            const badge = document.createElement('span');
+                            badge.className = 'category-badge';
+                            badge.style.backgroundColor = category.color || '#f0f0f0';
+                            badge.style.color = getContrastColor(category.color || '#f0f0f0');
+                            
+                            if (!category.is_active) {
+                                badge.style.opacity = '0.5';
+                                badge.style.textDecoration = 'line-through';
+                                badge.title = 'Inactive: ' + (category.description || '');
+                                badge.innerHTML = `${category.name} <small>(inactive)</small>`;
+                            } else {
+                                badge.title = category.description || '';
+                                badge.textContent = category.name;
+                                
+                                // Only add active categories to the removal dropdown
+                                const option1 = document.createElement('option');
+                                option1.value = category.id;
+                                option1.textContent = category.name;
+                                option1.style.backgroundColor = category.color + '20';
+                                categoryToRemove.appendChild(option1);
+                                
+                                // Only add active categories to the replacement dropdown
+                                const option2 = document.createElement('option');
+                                option2.value = category.id;
+                                option2.textContent = category.name;
+                                option2.style.backgroundColor = category.color + '20';
+                                replacementCategory.appendChild(option2);
+                            }
+                            
+                            categoriesList.appendChild(badge);
+                        });
+                        
+                        // Also update the filter dropdown in the main page
+                        const categoryFilter = document.getElementById('categoryFilter');
+                        categoryFilter.innerHTML = '<option value="">All Categories</option>';
+                        
+                        // Only active categories for the filter
+                        sortedCategories.filter(cat => cat.is_active).forEach(category => {
+                            const option = document.createElement('option');
+                            option.value = category.id;
+                            option.textContent = category.name;
+                            option.style.backgroundColor = category.color + '20';
+                            categoryFilter.appendChild(option);
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: data.message || 'Failed to load categories',
+                            icon: 'error',
+                            confirmButtonColor: '#517A5B'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'An unexpected error occurred while loading categories',
+                        icon: 'error',
+                        confirmButtonColor: '#517A5B'
+                    });
+                });
+        }
+        
+        // Helper function to determine text color based on background color
+        function getContrastColor(hexColor) {
+            // Remove # if present
+            hexColor = hexColor.replace('#', '');
+            
+            // Convert to RGB
+            const r = parseInt(hexColor.substr(0, 2), 16);
+            const g = parseInt(hexColor.substr(2, 2), 16);
+            const b = parseInt(hexColor.substr(4, 2), 16);
+            
+            // Calculate luminance
+            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            
+            // Return black for light colors, white for dark colors
+            return luminance > 0.5 ? '#000000' : '#ffffff';
+        }
+        
+        // Add new category
+        addCategoryBtn.addEventListener('click', function() {
+            const newCategoryName = document.getElementById('newCategoryName').value.trim();
+            const newCategoryDescription = document.getElementById('newCategoryDescription').value.trim();
+            const newCategoryColor = document.getElementById('newCategoryColor').value;
+            
+            if (!newCategoryName) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Please enter a category name',
+                    icon: 'error',
+                    confirmButtonColor: '#517A5B'
+                });
+                return;
+            }
+            
+            fetch('{{ route("admin.categories.add") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    name: newCategoryName,
+                    description: newCategoryDescription,
+                    color: newCategoryColor
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Success!',
+                        text: data.message || 'Category added successfully',
+                        icon: 'success',
+                        confirmButtonColor: '#517A5B'
+                    });
+                    
+                    // Clear inputs
+                    document.getElementById('newCategoryName').value = '';
+                    document.getElementById('newCategoryDescription').value = '';
+                    document.getElementById('newCategoryColor').value = '#517A5B';
+                    
+                    // Reload categories
+                    loadCategories();
+                } else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: data.message || 'Failed to add category',
+                        icon: 'error',
+                        confirmButtonColor: '#517A5B'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'An unexpected error occurred',
+                    icon: 'error',
+                    confirmButtonColor: '#517A5B'
+                });
+            });
+        });
+        
+        // Remove a category
+        removeCategoryBtn.addEventListener('click', function() {
+            const categoryId = categoryToRemove.value;
+            const replacementCategoryId = replacementCategory.value;
+            
+            if (!categoryId) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Please select a category to remove',
+                    icon: 'error',
+                    confirmButtonColor: '#517A5B'
+                });
+                return;
+            }
+            
+            if (!replacementCategoryId) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Please select a replacement category',
+                    icon: 'error',
+                    confirmButtonColor: '#517A5B'
+                });
+                return;
+            }
+            
+            if (categoryId === replacementCategoryId) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'The category to remove and replacement category cannot be the same',
+                    icon: 'error',
+                    confirmButtonColor: '#517A5B'
+                });
+                return;
+            }
+            
+            // Confirm before removing
+            Swal.fire({
+                title: 'Are you sure?',
+                text: `This will remove the selected category and move all its products to the replacement category.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, remove it'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('{{ route("admin.categories.remove") }}', {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            category_id: categoryId,
+                            replacement_category_id: replacementCategoryId
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Deleted!',
+                                text: data.message || 'Category removed successfully',
+                                icon: 'success',
+                                confirmButtonColor: '#517A5B'
+                            });
+                            
+                            // Reset selects
+                            categoryToRemove.value = '';
+                            replacementCategory.value = '';
+                            
+                            // Reload categories
+                            loadCategories();
+                        } else {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: data.message || 'Failed to remove category',
+                                icon: 'error',
+                                confirmButtonColor: '#517A5B'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'An unexpected error occurred',
+                            icon: 'error',
+                            confirmButtonColor: '#517A5B'
+                        });
+                    });
+                }
+            });
+        });
     </script>
 </body>
 </html>
