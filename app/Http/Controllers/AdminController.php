@@ -421,4 +421,68 @@ class AdminController extends Controller
             
         return $response;
     }
+
+    /**
+     * Display all products
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function products()
+    {
+        // Get all products with their user information
+        $products = Post::with('user')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+            
+        return view('admin.products', compact('products'));
+    }
+    
+    /**
+     * Get product details for the modal
+     *
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getProductDetails($id)
+    {
+        try {
+            $product = Post::with('user')->findOrFail($id);
+            
+            return response()->json([
+                'success' => true,
+                'product' => $product
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Product not found'
+            ], 404);
+        }
+    }
+    
+    /**
+     * Delete a product
+     *
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function deleteProduct($id)
+    {
+        try {
+            $product = Post::findOrFail($id);
+            
+            // If product has an image, delete it from storage
+            if ($product->image && \Storage::exists('public/' . $product->image)) {
+                \Storage::delete('public/' . $product->image);
+            }
+            
+            $product->delete();
+            
+            return redirect()->route('admin.products')
+                ->with('success', 'Product deleted successfully');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.products')
+                ->with('error', 'Failed to delete product: ' . $e->getMessage());
+        }
+    }
 }

@@ -402,6 +402,9 @@
                 <a href="{{ route('admin.users') }}" class="nav-link">
                     <i class="bi bi-people"></i> Users
                 </a>
+                <a href="{{ route('admin.products') }}" class="nav-link">
+                    <i class="bi bi-box-seam"></i> Products
+                </a>
                 <a href="{{ route('admin.shops') }}" class="nav-link">
                     <i class="bi bi-shop"></i> Shops
                 </a>

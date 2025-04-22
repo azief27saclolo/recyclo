@@ -284,7 +284,6 @@
                     </div>
                     
                     <input type="submit" class="btn" value="Sign up" />
-                    <p class="csrf-notice">This form is protected by CSRF security</p>
                     
                     <!-- Removed social login options here -->
                 </form>
