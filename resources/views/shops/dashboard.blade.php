@@ -609,6 +609,9 @@
                 <div class="form-group">
                     <label class="form-label" for="price">Price per unit</label>
                     <input type="text" name="price" id="price" class="form-control" placeholder="Enter price..." required>
+                    <button type="button" id="pricesGuideBtn" class="btn btn-link" style="padding: 0; margin-top: 5px; color: var(--hoockers-green); display: block; text-decoration: none; font-weight: 500;">
+                        <i class="bi bi-info-circle"></i> Prices Guide
+                    </button>
                     @error('price')
                         <p class="error-message">{{ $message }}</p>
                     @enderror
@@ -717,6 +720,9 @@
                 <div class="form-group">
                     <label class="form-label" for="edit-price">Price per unit</label>
                     <input type="text" name="price" id="edit-price" class="form-control" placeholder="Enter price..." required>
+                    <button type="button" id="editPricesGuideBtn" class="btn btn-link" style="padding: 0; margin-top: 5px; color: var(--hoockers-green); display: block; text-decoration: none; font-weight: 500;">
+                        <i class="bi bi-info-circle"></i> Prices Guide
+                    </button>
                     @error('price')
                         <p class="error-message">{{ $message }}</p>
                     @enderror
@@ -744,154 +750,282 @@
         </div>
     </div>
 
-    <!-- Orders Modal -->
-    <div id="ordersModal" class="modal">
-        <div class="modal-content" style="max-width: 900px;">
+    <!-- Prices Guide Modal -->
+    <div id="pricesGuideModal" class="modal">
+        <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title">Orders</h2>
+                <h2 class="modal-title">Materials Price Guide</h2>
                 <span class="close">&times;</span>
             </div>
             <div class="modal-body">
-                <div class="form-group" style="margin-bottom: 15px; display: flex; align-items: center;">
-                    <label for="order-status-filter" style="margin-right: 3px; font-weight: 600;">Filter by Status:</label>
-                    <select id="order-status-filter" class="form-control" style="display: inline-block; width: auto; padding: 8px;">
-                        <option value="all">All Orders</option>
-                        <option value="processing">Processing</option>
-                        <option value="delivering">Delivering</option>
-                        <option value="for_pickup">For Pick Up</option>
-                        <option value="cancelled">Cancelled</option>
-                    </select>
-                    
-                    <div class="search-box" style="margin-left: auto;">
-                        <input type="text" id="order-search" class="form-control" placeholder="Search orders..." style="padding: 8px;">
-                    </div>
+                <p>This guide provides current market prices for different types of recyclable materials.</p>
+                
+                <!-- Category tabs -->
+                <div style="display: flex; margin-bottom: 15px; border-bottom: 1px solid #dee2e6;">
+                    <button id="plasticTabBtn" class="category-tab active-tab" style="flex: 1; padding: 10px; border: none; background: none; cursor: pointer; font-size: 16px; font-weight: 600; position: relative;">
+                        Plastic
+                        <span style="position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background-color: var(--hoockers-green);"></span>
+                    </button>
+                    <button id="paperTabBtn" class="category-tab" style="flex: 1; padding: 10px; border: none; background: none; cursor: pointer; font-size: 16px; font-weight: 600; position: relative;">
+                        Paper
+                    </button>
+                    <button id="metalTabBtn" class="category-tab" style="flex: 1; padding: 10px; border: none; background: none; cursor: pointer; font-size: 16px; font-weight: 600; position: relative;">
+                        Metal
+                    </button>
+                    <button id="batteriesTabBtn" class="category-tab" style="flex: 1; padding: 10px; border: none; background: none; cursor: pointer; font-size: 16px; font-weight: 600; position: relative;">
+                        Batteries
+                    </button>
+                    <button id="glassTabBtn" class="category-tab" style="flex: 1; padding: 10px; border: none; background: none; cursor: pointer; font-size: 16px; font-weight: 600; position: relative;">
+                        Glass
+                    </button>
+                    <button id="ewasteTabBtn" class="category-tab" style="flex: 1; padding: 10px; border: none; background: none; cursor: pointer; font-size: 16px; font-weight: 600; position: relative;">
+                        E-waste
+                    </button>
                 </div>
                 
-                <div style="max-height: 500px; overflow-y: auto;">
-                    <table class="orders-table" style="width: 100%; border-collapse: collapse;">
+                <!-- Plastic prices table -->
+                <div id="plasticPricesTable" class="prices-table" style="overflow-x: auto; margin-top: 15px;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
                         <thead>
                             <tr style="background-color: var(--hoockers-green); color: white;">
-                                <th style="padding: 12px; text-align: left;">Order ID</th>
-                                <th style="padding: 12px; text-align: left;">Customer</th>
-                                <th style="padding: 12px; text-align: left;">Date</th>
-                                <th style="padding: 12px; text-align: left;">Items</th>
-                                <th style="padding: 12px; text-align: right;">Total</th>
-                                <th style="padding: 12px; text-align: center;">Status</th>
-                                <th style="padding: 12px; text-align: center;">Actions</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Type</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Description</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Buying Price (P/KG)</th>
                             </tr>
                         </thead>
-                        <tbody id="orders-table-body">
+                        <tbody>
                             <tr>
-                                <td colspan="7" style="text-align: center; padding: 20px;">Loading orders...</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">PET (e.g., water bottled)</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Common beverages containers</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱6.40-₱10.00</td>
+                            </tr>
+                            <tr style="background-color: #f2f2f2;">
+                                <td style="padding: 12px; border: 1px solid #ddd;">HDPE</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Detergent bottles, milk jugs</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱16.90</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">LDPE</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Plastic bags, film wraps</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱2.60-₱3.50</td>
+                            </tr>
+                            <tr style="background-color: #f2f2f2;">
+                                <td style="padding: 12px; border: 1px solid #ddd;">PP</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Food containers, bottle caps</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱15.22</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">PS</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Styrofoam, disposable utensils</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱10.25</td>
+                            </tr>
+                            <tr style="background-color: #f2f2f2;">
+                                <td style="padding: 12px; border: 1px solid #ddd;">Hard Plastic (Sibak)</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Toys, basins, containers</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱14.00-₱15.00</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Mixed Plastics</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Assorted plastic waste</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱5.00</td>
                             </tr>
                         </tbody>
                     </table>
-                    
-                    <div class="pagination-container" style="margin-top: 20px; text-align: center; display: flex; justify-content: center; gap: 10px;">
-                        <button id="prev-page-btn" class="pagination-btn" style="background-color: var(--hoockers-green); color: white; border: none; border-radius: 4px; padding: 8px 15px; cursor: pointer;" disabled>Previous</button>
-                        <span id="pagination-info" style="align-self: center; padding: 0 10px;">Page 1</span>
-                        <button id="next-page-btn" class="pagination-btn" style="background-color: var(--hoockers-green); color: white; border: none; border-radius: 4px; padding: 8px 15px; cursor: pointer;">Next</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Order Details Modal -->
-    <div id="orderDetailsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Order Details</h2>
-                <span class="close">&times;</span>
-            </div>
-            <div id="orderDetailsContent" class="modal-body">
-                <!-- Order details will be injected here -->
-            </div>
-        </div>
-    </div>
-
-    <!-- All Products Modal -->
-    <div id="allProductsModal" class="modal">
-        <div class="modal-content" style="max-width: 900px;">
-            <div class="modal-header">
-                <h2 class="modal-title">All Products</h2>
-                <span class="close">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div class="form-group" style="margin-bottom: 15px; display: flex; align-items: center; gap: 15px;">
-                    <!-- Add category filter dropdown -->
-                    <div class="category-filter">
-                        <select id="category-filter" class="form-control" style="padding: 8px; min-width: 150px;">
-                            <option value="all">All Categories</option>
-                            <option value="Metal">Metal</option>
-                            <option value="Plastic">Plastic</option>
-                            <option value="Paper">Paper</option>
-                            <option value="Glass">Glass</option>
-                            <option value="Wood">Wood</option>
-                            <option value="Electronics">Electronics</option>
-                            <option value="Fabric">Fabric</option>
-                            <option value="Rubber">Rubber</option>
-                        </select>
-                    </div>
-                    
-                    <div class="search-box" style="margin-left: auto;">
-                        <input type="text" id="product-search" class="form-control" placeholder="Search products..." style="padding: 8px;">
-                    </div>
                 </div>
                 
-                <div id="all-products-container" style="max-height: 500px; overflow-y: auto;">
-                    <div class="product-grid" id="allProductsGrid">
-                        <div class="loading-spinner" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-                            <i class="bi bi-arrow-repeat" style="font-size: 48px; animation: spin 1s linear infinite;"></i>
-                            <p>Loading products...</p>
-                        </div>
-                    </div>
+                <!-- Paper prices table (initially hidden) -->
+                <div id="paperPricesTable" class="prices-table" style="overflow-x: auto; margin-top: 15px; display: none;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="background-color: var(--hoockers-green); color: white;">
+                                <th style="padding: 12px; border: 1px solid #ddd;">Type</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Description</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Buying Price (P/KG)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Newspaper</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Old news paper</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱7.33-₱10.00</td>
+                            </tr>
+                            <tr style="background-color: #f2f2f2;">
+                                <td style="padding: 12px; border: 1px solid #ddd;">White/Bond paper</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Office documents</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱2.50-11.00</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Cartons/Cardboard</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Packaging materials</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱3.91-₱6.00</td>
+                            </tr>
+                            <tr style="background-color: #f2f2f2;">
+                                <td style="padding: 12px; border: 1px solid #ddd;">Magazines</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Glossy paper materials</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱5.00-₱8.00</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Assorted/Mixed Papers</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Various paper types</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱1.43-₱8.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Shop Settings Modal -->
-    <div id="shopSettingsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Shop Settings</h2>
-                <span class="close">&times;</span>
-            </div>
-            <div class="modal-body">
-                <form id="shopSettingsForm" method="post" enctype="multipart/form-data">
-                    @csrf
-                    @method('PUT')
-                    
-                    <div class="form-group">
-                        <label class="form-label" for="shop-name">Shop Name</label>
-                        <input type="text" name="shop_name" id="shop-name" class="form-control" placeholder="Enter shop name..." value="{{ $shop->shop_name }}" required>
-                    </div>
+                <!-- Metal prices table (initially hidden) -->
+                <div id="metalPricesTable" class="prices-table" style="overflow-x: auto; margin-top: 15px; display: none;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="background-color: var(--hoockers-green); color: white;">
+                                <th style="padding: 12px; border: 1px solid #ddd;">Type</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Description</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Buying Price (P/KG)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Copper</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Electrical wires, plumbing wires</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱70.00-₱323.81</td>
+                            </tr>
+                            <tr style="background-color: #f2f2f2;">
+                                <td style="padding: 12px; border: 1px solid #ddd;">Aluminum</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Cans, window frames</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱30.00-₱47.76</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Brass</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Fixtures, decorative items</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱30.00-₱170.94</td>
+                            </tr>
+                            <tr style="background-color: #f2f2f2;">
+                                <td style="padding: 12px; border: 1px solid #ddd;">Steel/Bakal</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Construction materials</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱11.00-₱14.79</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Tin Cans</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Food containers</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱8.00-₱11.94</td>
+                            </tr>
+                            <tr style="background-color: #f2f2f2;">
+                                <td style="padding: 12px; border: 1px solid #ddd;">GI Sheets/Yero</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Roofing materials</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱0.25-₱11.00</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Zinc</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Galvanized products</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱8.00-₱15.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-                    <div class="form-group">
-                        <label class="form-label" for="shop-address">Shop Location</label>
-                        <input type="text" name="shop_address" id="shop-address" class="form-control" placeholder="Enter shop location..." value="{{ $shop->shop_address }}" required>
-                    </div>
+                <!-- Batteries prices table (initially hidden) -->
+                <div id="batteriesPricesTable" class="prices-table" style="overflow-x: auto; margin-top: 15px; display: none;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="background-color: var(--hoockers-green); color: white;">
+                                <th style="padding: 12px; border: 1px solid #ddd;">Type</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Description</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Buying Price (P/UNIT)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Car Batteries (1SMF)</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Standard vehicle batteries</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱150.00-₱400.00</td>
+                            </tr>
+                            <tr style="background-color: #f2f2f2;">
+                                <td style="padding: 12px; border: 1px solid #ddd;">Small Batteries (1SNF)</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Motorcycle or small vehicle batteries</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱50.00-₱70.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-                    <div class="form-group">
-                        <label class="form-label" for="shop-image">Shop Banner Image (Optional)</label>
-                        <input type="file" name="shop_image" id="shop-image" class="form-control" accept="image/*">
-                        <small style="display: block; margin-top: 5px; color: #666;">Leave empty to keep current image</small>
-                    </div>
+                <!-- Glass prices table (initially hidden) -->
+                <div id="glassPricesTable" class="prices-table" style="overflow-x: auto; margin-top: 15px; display: none;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="background-color: var(--hoockers-green); color: white;">
+                                <th style="padding: 12px; border: 1px solid #ddd;">Type</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Description</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Buying Price (KG/PC)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Whole Glass Bottles</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Beverage containers</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱0.50-₱1.50 per pc.</td>
+                            </tr>
+                            <tr style="background-color: #f2f2f2;">
+                                <td style="padding: 12px; border: 1px solid #ddd;">Broken Glass (Bubog)</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Shards or cullets</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱0.50-₱1.00 per kg</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Colored Glass</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Tinted bottles</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱0.10-₱0.20 per pc.</td>
+                            </tr>
+                            <tr style="background-color: #f2f2f2;">
+                                <td style="padding: 12px; border: 1px solid #ddd;">White/Clear Glass</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Transparent bottles</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱0.50-₱1.00 per pc.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-                    @if($shop->image)
-                    <div class="form-group">
-                        <label class="form-label">Current Banner</label>
-                        <div style="width: 100%; max-height: 150px; overflow: hidden; border-radius: 8px;">
-                            <img src="{{ asset('storage/' . $shop->image) }}" alt="Shop Banner" style="width: 100%; object-fit: cover;">
-                        </div>
-                    </div>
-                    @endif
+                <!-- E-waste prices table (initially hidden) -->
+                <div id="ewastePricesTable" class="prices-table" style="overflow-x: auto; margin-top: 15px; display: none;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="background-color: var(--hoockers-green); color: white;">
+                                <th style="padding: 12px; border: 1px solid #ddd;">Type</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Description</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Buying Price (UNIT/KG)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Computer Motherboards</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Circuit boards from computers</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱250.00 per kg</td>
+                            </tr>
+                            <tr style="background-color: #f2f2f2;">
+                                <td style="padding: 12px; border: 1px solid #ddd;">Old Refrigerators</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Non-functional units</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱700.00 per unit</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Washing Machines</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Non-functional units</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱300.00 per unit</td>
+                            </tr>
+                            <tr style="background-color: #f2f2f2;">
+                                <td style="padding: 12px; border: 1px solid #ddd;">Electric Fans</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Non-functional units</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱80.00 per unit</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Televisions</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Non-functional units</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱120.00 per unit</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-                    <div class="form-group" style="margin-bottom: 0;">
-                        <button type="submit" class="submit-btn">Update Shop Settings</button>
-                    </div>
-                </form>
+                <div style="margin-top: 20px; font-style: italic; color: #666;">
+                    <p><small>Note: Prices are subject to change based on market conditions and quality of materials.</small></p>
+                </div>
             </div>
         </div>
     </div>
@@ -1066,681 +1200,190 @@
             });
         });
 
-        // Orders Modal Functionality
-        const ordersModal = document.getElementById('ordersModal');
-        const ordersStatCard = document.getElementById('ordersStatCard');
-        const manageOrdersBtn = document.getElementById('manageOrdersBtn');
-        const ordersCloseBtn = ordersModal.querySelector('.close');
+        // Prices Guide Modal Functionality
+        const pricesGuideModal = document.getElementById('pricesGuideModal');
+        const pricesGuideBtn = document.getElementById('pricesGuideBtn');
+        const editPricesGuideBtn = document.getElementById('editPricesGuideBtn');
+        const pricesGuideCloseBtn = pricesGuideModal.querySelector('.close');
         
-        // Pagination variables
-        let currentPage = 1;
-        const itemsPerPage = 5;
-        let totalPages = 1;
-        let statusFilter = 'all';
-        let searchQuery = '';
+        // Tab functionality for prices guide
+        const plasticTabBtn = document.getElementById('plasticTabBtn');
+        const paperTabBtn = document.getElementById('paperTabBtn');
+        const metalTabBtn = document.getElementById('metalTabBtn');
+        const batteriesTabBtn = document.getElementById('batteriesTabBtn');
+        const glassTabBtn = document.getElementById('glassTabBtn');
+        const ewasteTabBtn = document.getElementById('ewasteTabBtn');
+        const plasticPricesTable = document.getElementById('plasticPricesTable');
+        const paperPricesTable = document.getElementById('paperPricesTable');
+        const metalPricesTable = document.getElementById('metalPricesTable');
+        const batteriesPricesTable = document.getElementById('batteriesPricesTable');
+        const glassPricesTable = document.getElementById('glassPricesTable');
+        const ewastePricesTable = document.getElementById('ewastePricesTable');
         
-        // Open orders modal when Orders stat card is clicked
-        ordersStatCard.addEventListener('click', function() {
-            ordersModal.style.display = 'block';
-            loadOrders(1);
+        plasticTabBtn.addEventListener('click', function() {
+            plasticPricesTable.style.display = 'block';
+            paperPricesTable.style.display = 'none';
+            metalPricesTable.style.display = 'none';
+            batteriesPricesTable.style.display = 'none';
+            glassPricesTable.style.display = 'none';
+            ewastePricesTable.style.display = 'none';
+            
+            plasticTabBtn.classList.add('active-tab');
+            paperTabBtn.classList.remove('active-tab');
+            metalTabBtn.classList.remove('active-tab');
+            batteriesTabBtn.classList.remove('active-tab');
+            glassTabBtn.classList.remove('active-tab');
+            ewasteTabBtn.classList.remove('active-tab');
+            
+            // Add/remove indicator line
+            plasticTabBtn.innerHTML = 'Plastic <span style="position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background-color: var(--hoockers-green);"></span>';
+            paperTabBtn.innerHTML = 'Paper';
+            metalTabBtn.innerHTML = 'Metal';
+            batteriesTabBtn.innerHTML = 'Batteries';
+            glassTabBtn.innerHTML = 'Glass';
+            ewasteTabBtn.innerHTML = 'E-waste';
         });
-
-        // Open orders modal when Manage Orders button is clicked
-        manageOrdersBtn.addEventListener('click', function() {
-            ordersModal.style.display = 'block';
-            loadOrders(1);
+        
+        paperTabBtn.addEventListener('click', function() {
+            plasticPricesTable.style.display = 'none';
+            paperPricesTable.style.display = 'block';
+            metalPricesTable.style.display = 'none';
+            batteriesPricesTable.style.display = 'none';
+            glassPricesTable.style.display = 'none';
+            ewastePricesTable.style.display = 'none';
+            
+            plasticTabBtn.classList.remove('active-tab');
+            paperTabBtn.classList.add('active-tab');
+            metalTabBtn.classList.remove('active-tab');
+            batteriesTabBtn.classList.remove('active-tab');
+            glassTabBtn.classList.remove('active-tab');
+            ewasteTabBtn.classList.remove('active-tab');
+            
+            // Add/remove indicator line
+            plasticTabBtn.innerHTML = 'Plastic';
+            paperTabBtn.innerHTML = 'Paper <span style="position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background-color: var(--hoockers-green);"></span>';
+            metalTabBtn.innerHTML = 'Metal';
+            batteriesTabBtn.innerHTML = 'Batteries';
+            glassTabBtn.innerHTML = 'Glass';
+            ewasteTabBtn.innerHTML = 'E-waste';
         });
-
-        // Close orders modal when X is clicked
-        ordersCloseBtn.addEventListener('click', function() {
-            ordersModal.style.display = 'none';
+        
+        metalTabBtn.addEventListener('click', function() {
+            plasticPricesTable.style.display = 'none';
+            paperPricesTable.style.display = 'none';
+            metalPricesTable.style.display = 'block';
+            batteriesPricesTable.style.display = 'none';
+            glassPricesTable.style.display = 'none';
+            ewastePricesTable.style.display = 'none';
+            
+            plasticTabBtn.classList.remove('active-tab');
+            paperTabBtn.classList.remove('active-tab');
+            metalTabBtn.classList.add('active-tab');
+            batteriesTabBtn.classList.remove('active-tab');
+            glassTabBtn.classList.remove('active-tab');
+            ewasteTabBtn.classList.remove('active-tab');
+            
+            // Add/remove indicator line
+            plasticTabBtn.innerHTML = 'Plastic';
+            paperTabBtn.innerHTML = 'Paper';
+            metalTabBtn.innerHTML = 'Metal <span style="position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background-color: var(--hoockers-green);"></span>';
+            batteriesTabBtn.innerHTML = 'Batteries';
+            glassTabBtn.innerHTML = 'Glass';
+            ewasteTabBtn.innerHTML = 'E-waste';
         });
-
-        // Close orders modal when clicking outside
+        
+        batteriesTabBtn.addEventListener('click', function() {
+            plasticPricesTable.style.display = 'none';
+            paperPricesTable.style.display = 'none';
+            metalPricesTable.style.display = 'none';
+            batteriesPricesTable.style.display = 'block';
+            glassPricesTable.style.display = 'none';
+            ewastePricesTable.style.display = 'none';
+            
+            plasticTabBtn.classList.remove('active-tab');
+            paperTabBtn.classList.remove('active-tab');
+            metalTabBtn.classList.remove('active-tab');
+            batteriesTabBtn.classList.add('active-tab');
+            glassTabBtn.classList.remove('active-tab');
+            ewasteTabBtn.classList.remove('active-tab');
+            
+            // Add/remove indicator line
+            plasticTabBtn.innerHTML = 'Plastic';
+            paperTabBtn.innerHTML = 'Paper';
+            metalTabBtn.innerHTML = 'Metal';
+            batteriesTabBtn.innerHTML = 'Batteries <span style="position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background-color: var(--hoockers-green);"></span>';
+            glassTabBtn.innerHTML = 'Glass';
+            ewasteTabBtn.innerHTML = 'E-waste';
+        });
+        
+        glassTabBtn.addEventListener('click', function() {
+            plasticPricesTable.style.display = 'none';
+            paperPricesTable.style.display = 'none';
+            metalPricesTable.style.display = 'none';
+            batteriesPricesTable.style.display = 'none';
+            glassPricesTable.style.display = 'block';
+            ewastePricesTable.style.display = 'none';
+            
+            plasticTabBtn.classList.remove('active-tab');
+            paperTabBtn.classList.remove('active-tab');
+            metalTabBtn.classList.remove('active-tab');
+            batteriesTabBtn.classList.remove('active-tab');
+            glassTabBtn.classList.add('active-tab');
+            ewasteTabBtn.classList.remove('active-tab');
+            
+            // Add/remove indicator line
+            plasticTabBtn.innerHTML = 'Plastic';
+            paperTabBtn.innerHTML = 'Paper';
+            metalTabBtn.innerHTML = 'Metal';
+            batteriesTabBtn.innerHTML = 'Batteries';
+            glassTabBtn.innerHTML = 'Glass <span style="position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background-color: var(--hoockers-green);"></span>';
+            ewasteTabBtn.innerHTML = 'E-waste';
+        });
+        
+        ewasteTabBtn.addEventListener('click', function() {
+            plasticPricesTable.style.display = 'none';
+            paperPricesTable.style.display = 'none';
+            metalPricesTable.style.display = 'none';
+            batteriesPricesTable.style.display = 'none';
+            glassPricesTable.style.display = 'none';
+            ewastePricesTable.style.display = 'block';
+            
+            plasticTabBtn.classList.remove('active-tab');
+            paperTabBtn.classList.remove('active-tab');
+            metalTabBtn.classList.remove('active-tab');
+            batteriesTabBtn.classList.remove('active-tab');
+            glassTabBtn.classList.remove('active-tab');
+            ewasteTabBtn.classList.add('active-tab');
+            
+            // Add/remove indicator line
+            plasticTabBtn.innerHTML = 'Plastic';
+            paperTabBtn.innerHTML = 'Paper';
+            metalTabBtn.innerHTML = 'Metal';
+            batteriesTabBtn.innerHTML = 'Batteries';
+            glassTabBtn.innerHTML = 'Glass';
+            ewasteTabBtn.innerHTML = 'E-waste <span style="position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background-color: var(--hoockers-green);"></span>';
+        });
+        
+        // Open prices guide modal when any of the buttons are clicked
+        pricesGuideBtn.addEventListener('click', function() {
+            pricesGuideModal.style.display = 'block';
+        });
+        
+        editPricesGuideBtn.addEventListener('click', function() {
+            pricesGuideModal.style.display = 'block';
+        });
+        
+        // Close prices guide modal when X is clicked
+        pricesGuideCloseBtn.addEventListener('click', function() {
+            pricesGuideModal.style.display = 'none';
+        });
+        
+        // Close prices guide modal when clicking outside
         window.addEventListener('click', function(e) {
-            if (e.target === ordersModal) {
-                ordersModal.style.display = 'none';
+            if (e.target === pricesGuideModal) {
+                pricesGuideModal.style.display = 'none';
             }
         });
-
-        // Filter functionality for orders
-        const statusFilterSelect = document.getElementById('order-status-filter');
-        const searchInput = document.getElementById('order-search');
-        
-        // Pagination buttons
-        const prevPageBtn = document.getElementById('prev-page-btn');
-        const nextPageBtn = document.getElementById('next-page-btn');
-        const paginationInfo = document.getElementById('pagination-info');
-
-        statusFilterSelect.addEventListener('change', function() {
-            statusFilter = this.value;
-            currentPage = 1; // Reset to first page when filter changes
-            loadOrders(currentPage);
-        });
-        
-        searchInput.addEventListener('input', function() {
-            searchQuery = this.value;
-            currentPage = 1; // Reset to first page when search changes
-            loadOrders(currentPage);
-        });
-        
-        // Handle pagination button clicks
-        prevPageBtn.addEventListener('click', function() {
-            if (currentPage > 1) {
-                currentPage--;
-                loadOrders(currentPage);
-            }
-        });
-        
-        nextPageBtn.addEventListener('click', function() {
-            if (currentPage < totalPages) {
-                currentPage++;
-                loadOrders(currentPage);
-            }
-        });
-        
-        // Function to load orders with pagination
-        function loadOrders(page) {
-            const ordersTableBody = document.getElementById('orders-table-body');
-            
-            // Show loading state
-            ordersTableBody.innerHTML = `
-                <tr>
-                    <td colspan="7" style="text-align: center; padding: 20px;">
-                        <i class="bi bi-arrow-repeat" style="font-size: 24px; animation: spin 1s linear infinite; display: inline-block; margin-right: 10px;"></i>
-                        Loading orders...
-                    </td>
-                </tr>
-            `;
-            
-            // Fetch orders from server
-            fetch(`/shop/orders?page=${page}&status=${statusFilter}&search=${searchQuery}`, {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Network response was not ok (Status: ${response.status})`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Update pagination state
-                currentPage = data.current_page;
-                totalPages = data.last_page;
-                
-                // Update pagination UI
-                prevPageBtn.disabled = currentPage <= 1;
-                nextPageBtn.disabled = currentPage >= totalPages;
-                paginationInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-                
-                // Clear table
-                ordersTableBody.innerHTML = '';
-                
-                if (data.data.length === 0) {
-                    ordersTableBody.innerHTML = `
-                        <tr>
-                            <td colspan="7" style="text-align: center; padding: 20px;">No orders found</td>
-                        </tr>
-                    `;
-                    return;
-                }
-                
-                // Append orders to table
-                data.data.forEach(order => {
-                    const statusColor = {
-                        'pending': '#ffc107',
-                        'processing': '#17a2b8',
-                        'delivering': '#007bff',
-                        'for_pickup': '#28a745',
-                        'cancelled': '#dc3545',
-                        'completed': '#198754'
-                    };
-                    
-                    const status = order.status || 'pending';
-                    const color = statusColor[status] || '#ffc107';
-                    const textColor = status === 'pending' ? '#212529' : 'white';
-                    
-                    ordersTableBody.innerHTML += `
-                        <tr style="border-bottom: 1px solid #eee;">
-                            <td style="padding: 12px;">#ORD-${order.id}</td>
-                            <td style="padding: 12px;">${order.customer_name || 'Customer'}</td>
-                            <td style="padding: 12px;">${new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
-                            <td style="padding: 12px;">${order.product_title || 'Product'} (${order.quantity} ${order.unit || 'units'})</td>
-                            <td style="padding: 12px; text-align: right;">₱${parseFloat(order.total_amount).toFixed(2)}</td>
-                            <td style="padding: 12px; text-align: center;">
-                                <span class="status-badge" style="background-color: ${color}; color: ${textColor}; padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: 600;">
-                                    ${status.charAt(0).toUpperCase() + status.slice(1)}
-                                </span>
-                            </td>
-                            <td style="padding: 12px; text-align: center;">
-                                <button class="view-order-btn" style="background-color: var(--hoockers-green); color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer;" 
-                                    data-order-id="${order.id}"
-                                    data-customer-name="${order.customer_name || 'Customer'}">
-                                    View
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                });
-                
-                // Add event listeners to view order buttons
-                addViewOrderEventListeners();
-            })
-            .catch(error => {
-                console.error('Error loading orders:', error);
-                ordersTableBody.innerHTML = `
-                    <tr>
-                        <td colspan="7" style="text-align: center; padding: 20px; color: #dc3545;">
-                            Error loading orders. Please try again.
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-        
-        // Function to add event listeners to view order buttons
-        function addViewOrderEventListeners() {
-            document.querySelectorAll('.view-order-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    const orderId = this.getAttribute('data-order-id');
-                    const customerName = this.getAttribute('data-customer-name');
-                    
-                    // Fetch order details
-                    fetch(`/shop/orders/${orderId}`, {
-                        method: 'GET',
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(order => {
-                        // Create order details HTML
-                        const orderDetailsHTML = `
-                            <div style="text-align: left;">
-                                <p><strong>Order ID:</strong> #ORD-${order.id}</p>
-                                <p><strong>Customer:</strong> ${order.customer_name || 'Customer'}</p>
-                                <p><strong>Date:</strong> ${new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
-                                <p><strong>Items:</strong> ${order.product_title || 'Product'} (${order.quantity} ${order.unit || 'units'})</p>
-                                <p><strong>Total Amount:</strong> ₱${parseFloat(order.total_amount).toFixed(2)}</p>
-                                <p><strong>Status:</strong> ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</p>
-                                <hr>
-                                <p><strong>Shipping Address:</strong> ${order.address || 'Not available'}</p>
-                                <p><strong>Contact Number:</strong> ${order.contact || 'Not available'}</p>
-                                <p><strong>Payment Method:</strong> Cash on Delivery</p>
-                                
-                                <div style="margin-top: 20px;">
-                                    <h4 style="font-weight: 600; margin-bottom: 10px;">Update Order Status</h4>
-                                    <select id="update-status" class="form-control" style="width: 100%; padding: 8px; margin-bottom: 10px;">
-                                        <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>Processing</option>
-                                        <option value="delivering" ${order.status === 'delivering' ? 'selected' : ''}>Delivering</option>
-                                        <option value="for_pickup" ${order.status === 'for_pickup' ? 'selected' : ''}>For Pick Up</option>
-                                        <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>Completed</option>
-                                        <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
-                                    </select>
-                                    <button id="update-status-btn" data-order-id="${order.id}" class="submit-btn" style="width: 100%;">Update Status</button>
-                                </div>
-                            </div>
-                        `;
-                        
-                        // Inject HTML into the modal
-                        document.getElementById('orderDetailsContent').innerHTML = orderDetailsHTML;
-                        
-                        // Show the modal
-                        document.getElementById('orderDetailsModal').style.display = 'block';
-                        
-                        // Update Status button click
-                        document.getElementById('update-status-btn').addEventListener('click', function() {
-                            const newStatus = document.getElementById('update-status').value;
-                            const orderId = this.getAttribute('data-order-id');
-                            
-                            updateOrderStatus(orderId, newStatus);
-                        });
-                    })
-                    .catch(error => {
-                        console.error('Error fetching order details:', error);
-                        Swal.fire({
-                            title: 'Error', 
-                            text: 'Failed to load order details. Please try again.', 
-                            icon: 'error',
-                            customClass: {
-                                popup: 'bigger-modal'
-                            }
-                        });
-                    });
-                });
-            });
-        }
-        
-        // Function to update order status
-        function updateOrderStatus(orderId, newStatus) {
-            Swal.fire({
-                title: 'Update Order Status',
-                text: `Are you sure you want to change the status to ${newStatus}?`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#517A5B',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, update it',
-                customClass: {
-                    popup: 'bigger-modal'
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // AJAX call to update the order status
-                    fetch(`/orders/${orderId}/update-status`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({ status: newStatus })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // If the order status is set to completed, update the earnings display
-                            if (newStatus === 'completed' && data.orderAmount) {
-                                updateEarningsCard(data.orderAmount);
-                            }
-                            
-                            Swal.fire({
-                                title: 'Updated!',
-                                text: 'Order status has been updated.',
-                                icon: 'success',
-                                customClass: {
-                                    popup: 'bigger-modal'
-                                }
-                            }).then(() => {
-                                // Close the modal after status update
-                                document.getElementById('orderDetailsModal').style.display = 'none';
-                                // Reload orders to reflect changes
-                                loadOrders(currentPage);
-                            });
-                        } else {
-                            Swal.fire({
-                                title: 'Error', 
-                                text: data.message || 'Failed to update order status', 
-                                icon: 'error',
-                                customClass: {
-                                    popup: 'bigger-modal'
-                                }
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error updating status:', error);
-                        Swal.fire({
-                            title: 'Error', 
-                            text: 'Something went wrong. Please try again.', 
-                            icon: 'error',
-                            customClass: {
-                                popup: 'bigger-modal'
-                                }
-                            });
-                        });
-                    }
-                });
-            }
-            
-            // Function to update the earnings card in real-time when an order is completed
-            function updateEarningsCard(orderAmount) {
-                // Get the earnings stat card number element
-                const earningsElement = document.querySelector('.stat-card:nth-child(3) .stat-number');
-                if (!earningsElement) return;
-                
-                // Get the current earnings value (remove currency symbol and commas)
-                let currentValue = earningsElement.textContent.trim();
-                currentValue = parseFloat(currentValue.replace('₱', '').replace(/,/g, '')) || 0;
-                
-                // Calculate new earnings with 10% fee deducted
-                const newOrderAmount = parseFloat(orderAmount) * 0.9; // Apply 10% commission fee
-                const newTotalEarnings = currentValue + newOrderAmount;
-                
-                // Update the display with formatted number
-                earningsElement.textContent = '₱' + newTotalEarnings.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                
-                console.log(`Earnings updated: Added ₱${newOrderAmount.toFixed(2)} (after 10% fee from ₱${orderAmount})`);
-            }
-
-        // View order button handlers
-        // ...rest of the existing code...
-
-        // All Products Modal Functionality
-        const allProductsModal = document.getElementById('allProductsModal');
-        const allProductsBtn = document.getElementById('allProductsBtn');
-        const allProductsCloseBtn = allProductsModal.querySelector('.close');
-        const productsStatCard = document.getElementById('productsStatCard');
-        
-        // Open all products modal when All Products button is clicked
-        allProductsBtn.addEventListener('click', function() {
-            allProductsModal.style.display = 'block';
-            loadAllProducts();
-        });
-        
-        // Open all products modal when Products stat card is clicked
-        productsStatCard.addEventListener('click', function() {
-            allProductsModal.style.display = 'block';
-            loadAllProducts();
-        });
-        
-        // Close all products modal when X is clicked
-        allProductsCloseBtn.addEventListener('click', function() {
-            allProductsModal.style.display = 'none';
-        });
-        
-        // Close all products modal when clicking outside
-        window.addEventListener('click', function(e) {
-            if (e.target === allProductsModal) {
-                allProductsModal.style.display = 'none';
-            }
-        });
-        
-        // Load all products
-        function loadAllProducts() {
-            const productsContainer = document.getElementById('allProductsGrid');
-            
-            // Show loading spinner
-            productsContainer.innerHTML = `
-                <div class="loading-spinner" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-                    <i class="bi bi-arrow-repeat" style="font-size: 48px; animation: spin 1s linear infinite;"></i>
-                    <p>Loading products...</p>
-                </div>
-            `;
-            
-            // Fix: Use the correct route URL with error handling
-            fetch('{{ route("user.products") }}', {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Network response was not ok (Status: ${response.status})`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Clear loading spinner
-                productsContainer.innerHTML = '';
-                
-                if (data.products.length === 0) {
-                    productsContainer.innerHTML = `
-                        <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-                            <i class="bi bi-box"></i>
-                            <h3>No products yet</h3>
-                            <p>Start selling by adding your first product</p>
-                            <button id="emptyStateAddBtn" class="action-btn" style="display: inline-block; margin-top: 15px;">
-                                <i class="bi bi-plus-circle"></i> Add Product
-                            </button>
-                        </div>
-                    `;
-                    
-                    document.getElementById('emptyStateAddBtn').addEventListener('click', function() {
-                        allProductsModal.style.display = 'none';
-                        document.getElementById('addProductBtn').click();
-                    });
-                    
-                    return;
-                }
-                
-                // Create product cards
-                data.products.forEach(product => {
-                    const productCard = document.createElement('div');
-                    productCard.className = 'product-card';
-                    productCard.setAttribute('data-category', product.category);
-                    
-                    const imagePath = product.image ? "{{ asset('storage') }}/" + product.image : "{{ asset('images/placeholder.png') }}";
-                    
-                    productCard.innerHTML = `
-                        <img src="${imagePath}" alt="${product.title}">
-                        <h3>${product.title}</h3>
-                        <p>₱${parseFloat(product.price).toFixed(2)}</p>
-                        <p><span class="badge" style="background-color: var(--hoockers-green); color: white; padding: 3px 8px; border-radius: 12px; font-size: 12px;">${product.category}</span></p>
-                        <p>Stock: ${product.quantity ?? 'N/A'}</p>
-                        
-                        <div class="product-actions" style="margin-top: 15px; display: flex; justify-content: space-between;">
-                            <button class="action-btn edit-product-btn" 
-                                    style="flex: 1; margin-right: 5px; font-size: 16px; padding: 12px 10px; height: 48px;"
-                                    data-product-id="${product.id}"
-                                    data-product-title="${product.title}"
-                                    data-product-category="${product.category}"
-                                    data-product-location="${product.location}"
-                                    data-product-unit="${product.unit}"
-                                    data-product-quantity="${product.quantity}"
-                                    data-product-price="${product.price}"
-                                    data-product-description="${product.description || ''}">
-                                <i class="bi bi-pencil" style="font-size: 18px;"></i> Edit
-                            </button>
-                            <button class="action-btn delete-product-btn" 
-                                    style="flex: 1; margin-left: 5px; font-size: 16px; padding: 12px 10px; height: 48px; background-color: #dc3545;"
-                                    data-product-id="${product.id}"
-                                    data-product-title="${product.title}">
-                                <i class="bi bi-trash" style="font-size: 18px;"></i> Delete
-                            </button>
-                        </div>
-                    `;
-                    
-                    productsContainer.appendChild(productCard);
-                });
-                
-                // Add event listeners to the new buttons
-                addButtonEventListeners();
-            })
-            .catch(error => {
-                console.error('Error loading products:', error);
-                productsContainer.innerHTML = `
-                    <div class="error-state" style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #dc3545;">
-                        <i class="bi bi-exclamation-triangle" style="font-size: 48px;"></i>
-                        <h3>Error loading products</h3>
-                        <p>Something went wrong. Please try again later.</p>
-                        <p>Details: ${error.message}</p>
-                    </div>
-                `;
-            });
-        }
-        
-        // Add event listeners to edit and delete buttons
-        function addButtonEventListeners() {
-            // Add event listeners to edit buttons
-            document.querySelectorAll('#allProductsGrid .edit-product-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    const productId = this.getAttribute('data-product-id');
-                    const productTitle = this.getAttribute('data-product-title');
-                    const productCategory = this.getAttribute('data-product-category');
-                    const productLocation = this.getAttribute('data-product-location');
-                    const productUnit = this.getAttribute('data-product-unit');
-                    const productQuantity = this.getAttribute('data-product-quantity');
-                    const productPrice = this.getAttribute('data-product-price');
-                    const productDescription = this.getAttribute('data-product-description');
-                    
-                    // Close all products modal
-                    allProductsModal.style.display = 'none';
-                    
-                    // Set form action
-                    editProductForm.action = `{{ route('posts') }}/${productId}`;
-                    
-                    // Populate form fields
-                    document.getElementById('edit-title').value = productTitle;
-                    document.getElementById('edit-category').value = productCategory;
-                    document.getElementById('edit-location').value = productLocation;
-                    document.getElementById('edit-unit').value = productUnit;
-                    document.getElementById('edit-quantity').value = productQuantity;
-                    document.getElementById('edit-price').value = productPrice;
-                    document.getElementById('edit-description').value = productDescription;
-                    
-                    // Show the edit modal
-                    document.getElementById('editProductModal').style.display = 'block';
-                });
-            });
-            
-            // Add event listeners to delete buttons
-            document.querySelectorAll('#allProductsGrid .delete-product-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    const productId = this.getAttribute('data-product-id');
-                    const productTitle = this.getAttribute('data-product-title');
-                    
-                    Swal.fire({
-                        title: 'Are you sure?',
-                        text: `Do you really want to delete "${productTitle}"? This cannot be undone.`,
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#dc3545',
-                        cancelButtonColor: '#6c757d',
-                        confirmButtonText: 'Yes, delete it!',
-                        cancelButtonText: 'No, keep it',
-                        customClass: {
-                            popup: 'bigger-modal'
-                        }
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            // Create form and submit for DELETE request
-                            const form = document.createElement('form');
-                            form.method = 'POST';
-                            form.action = `{{ route('posts') }}/${productId}`;
-                            form.style.display = 'none';
-                            
-                            const csrfToken = document.createElement('input');
-                            csrfToken.type = 'hidden';
-                            csrfToken.name = '_token';
-                            csrfToken.value = '{{ csrf_token() }}';
-                            
-                            const methodField = document.createElement('input');
-                            methodField.type = 'hidden';
-                            methodField.name = '_method';
-                            methodField.value = 'DELETE';
-                            
-                            form.appendChild(csrfToken);
-                            form.appendChild(methodField);
-                            document.body.appendChild(form);
-                            
-                            form.submit();
-                        }
-                    });
-                });
-            });
-        }
-        
-        // Filter products with search input and category dropdown
-        const productSearchInput = document.getElementById('product-search');
-        const categoryFilter = document.getElementById('category-filter');
-        
-        function filterProducts() {
-            const searchTerm = productSearchInput.value.toLowerCase();
-            const categoryValue = categoryFilter.value;
-            const productCards = document.querySelectorAll('#allProductsGrid .product-card');
-            
-            productCards.forEach(card => {
-                const productTitle = card.querySelector('h3').textContent.toLowerCase();
-                const productCategory = card.getAttribute('data-category') || '';
-                
-                const matchesSearch = productTitle.includes(searchTerm);
-                const matchesCategory = categoryValue === 'all' || productCategory === categoryValue;
-                
-                if (matchesSearch && matchesCategory) {
-                    card.style.display = '';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        }
-        
-        productSearchInput.addEventListener('input', filterProducts);
-        categoryFilter.addEventListener('change', filterProducts);
-        
-        // Shop Settings Modal Functionality
-        const shopSettingsModal = document.getElementById('shopSettingsModal');
-        const shopSettingsBtn = document.getElementById('shopSettingsBtn');
-        const shopSettingsCloseBtn = shopSettingsModal.querySelector('.close');
-        const shopSettingsForm = document.getElementById('shopSettingsForm');
-        
-        // Open shop settings modal when Shop Settings button is clicked
-        shopSettingsBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            shopSettingsModal.style.display = 'block';
-        });
-        
-        // Close shop settings modal when X is clicked
-        shopSettingsCloseBtn.addEventListener('click', function() {
-            shopSettingsModal.style.display = 'none';
-        });
-        
-        // Close shop settings modal when clicking outside
-        window.addEventListener('click', function(e) {
-            if (e.target === shopSettingsModal) {
-                shopSettingsModal.style.display = 'none';
-            }
-        });
-        
-        // Handle shop settings form submission
-        shopSettingsForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Create form data object from the form
-            const formData = new FormData(shopSettingsForm);
-            
-            // Send AJAX request
-            fetch('{{ route("shop.update") }}', {
-                method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: formData
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Network response was not ok (Status: ${response.status})`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    // Close the modal
-                    shopSettingsModal.style.display = 'none';
-                    
-                    // Show success message
-                    Swal.fire({
-                        title: 'Success!',
-                        text: data.message || 'Shop settings updated successfully!',
-                        icon: 'success',
-                        confirmButtonColor: '#517A5B',
-                        customClass: {
-                            popup: 'bigger-modal'
-                        }
-                    }).then(() => {
-                        // Reload the page to reflect changes
-                        window.location.reload();
-                    });
-                } else {
-                    throw new Error(data.message || 'Failed to update shop settings');
-                }
-            })
-            .catch(error => {
-                console.error('Error updating shop settings:', error);
-                Swal.fire({
-                    title: 'Error!',
-                    text: error.message || 'Something went wrong. Please try again.',
-                    icon: 'error',
-                    confirmButtonColor: '#517A5B',
-                    customClass: {
-                        popup: 'bigger-modal'
-                    }
-                });
-            });
-        });
-        
-        // ...existing code...
     });
     </script>
 </body>

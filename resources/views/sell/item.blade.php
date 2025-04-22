@@ -299,6 +299,9 @@
                     <div class="form-group">
                         <label class="form-label" for="price">Price per unit</label>
                         <input type="text" name="price" id="price" class="form-control" placeholder="Enter price..." value="{{ old('price') }}" required>
+                        <button type="button" id="pricesGuideBtn" class="btn btn-link" style="padding: 0; margin-top: 5px; color: var(--hoockers-green); display: block; text-decoration: none; font-weight: 500;">
+                            <i class="bi bi-info-circle"></i> Prices Guide
+                        </button>
                         @error('price')
                             <p class="error-message">{{ $message }}</p>
                         @enderror
@@ -322,6 +325,286 @@
 
                     <button type="submit" class="submit-btn">Post Item for Sale</button>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prices Guide Modal -->
+    <div id="pricesGuideModal" class="modal" style="display: none; position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);">
+        <div class="modal-content" style="background-color: white; margin: 50px auto; padding: 20px; width: 90%; max-width: 900px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+                <h2 class="modal-title" style="color: var(--hoockers-green); font-size: 32px; font-weight: 600; margin: 0;">Materials Price Guide</h2>
+                <span class="close" style="color: #aaa; float: right; font-size: 36px; font-weight: bold; cursor: pointer;">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 18px; line-height: 28px; margin-bottom: 10px;">This guide provides current market prices for different types of recyclable materials.</p>
+                
+                <!-- Category tabs -->
+                <div style="display: flex; margin-bottom: 15px; border-bottom: 1px solid #dee2e6;">
+                    <button id="plasticTabBtn" class="category-tab active-tab" style="flex: 1; padding: 10px; border: none; background: none; cursor: pointer; font-size: 16px; font-weight: 600; position: relative;">
+                        Plastic
+                        <span style="position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background-color: var(--hoockers-green);"></span>
+                    </button>
+                    <button id="paperTabBtn" class="category-tab" style="flex: 1; padding: 10px; border: none; background: none; cursor: pointer; font-size: 16px; font-weight: 600; position: relative;">
+                        Paper
+                    </button>
+                    <button id="metalTabBtn" class="category-tab" style="flex: 1; padding: 10px; border: none; background: none; cursor: pointer; font-size: 16px; font-weight: 600; position: relative;">
+                        Metal
+                    </button>
+                    <button id="batteriesTabBtn" class="category-tab" style="flex: 1; padding: 10px; border: none; background: none; cursor: pointer; font-size: 16px; font-weight: 600; position: relative;">
+                        Batteries
+                    </button>
+                    <button id="glassTabBtn" class="category-tab" style="flex: 1; padding: 10px; border: none; background: none; cursor: pointer; font-size: 16px; font-weight: 600; position: relative;">
+                        Glass
+                    </button>
+                    <button id="ewasteTabBtn" class="category-tab" style="flex: 1; padding: 10px; border: none; background: none; cursor: pointer; font-size: 16px; font-weight: 600; position: relative;">
+                        E-waste
+                    </button>
+                </div>
+                
+                <!-- Plastic prices table -->
+                <div id="plasticPricesTable" class="prices-table" style="overflow-x: auto; margin-top: 15px;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="background-color: var(--hoockers-green); color: white;">
+                                <th style="padding: 12px; border: 1px solid #ddd;">Type</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Description</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Buying Price (P/KG)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">PET (e.g., water bottled)</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Common beverages containers</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱6.40-₱10.00</td>
+                            </tr>
+                            <tr style="background-color: #f2f2f2;">
+                                <td style="padding: 12px; border: 1px solid #ddd;">HDPE</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Detergent bottles, milk jugs</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱16.90</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">LDPE</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Plastic bags, film wraps</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱2.60-₱3.50</td>
+                            </tr>
+                            <tr style="background-color: #f2f2f2;">
+                                <td style="padding: 12px; border: 1px solid #ddd;">PP</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Food containers, bottle caps</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱15.22</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">PS</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Styrofoam, disposable utensils</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱10.25</td>
+                            </tr>
+                            <tr style="background-color: #f2f2f2;">
+                                <td style="padding: 12px; border: 1px solid #ddd;">Hard Plastic (Sibak)</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Toys, basins, containers</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱14.00-₱15.00</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Mixed Plastics</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Assorted plastic waste</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱5.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Paper prices table (initially hidden) -->
+                <div id="paperPricesTable" class="prices-table" style="overflow-x: auto; margin-top: 15px; display: none;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="background-color: var(--hoockers-green); color: white;">
+                                <th style="padding: 12px; border: 1px solid #ddd;">Type</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Description</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Buying Price (P/KG)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Newspaper</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Old news paper</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱7.33-₱10.00</td>
+                            </tr>
+                            <tr style="background-color: #f2f2f2;">
+                                <td style="padding: 12px; border: 1px solid #ddd;">White/Bond paper</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Office documents</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱2.50-11.00</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Cartons/Cardboard</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Packaging materials</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱3.91-₱6.00</td>
+                            </tr>
+                            <tr style="background-color: #f2f2f2;">
+                                <td style="padding: 12px; border: 1px solid #ddd;">Magazines</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Glossy paper materials</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱5.00-₱8.00</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Assorted/Mixed Papers</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Various paper types</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱1.43-₱8.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Metal prices table (initially hidden) -->
+                <div id="metalPricesTable" class="prices-table" style="overflow-x: auto; margin-top: 15px; display: none;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="background-color: var(--hoockers-green); color: white;">
+                                <th style="padding: 12px; border: 1px solid #ddd;">Type</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Description</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Buying Price (P/KG)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Copper</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Electrical wires, plumbing wires</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱70.00-₱323.81</td>
+                            </tr>
+                            <tr style="background-color: #f2f2f2;">
+                                <td style="padding: 12px; border: 1px solid #ddd;">Aluminum</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Cans, window frames</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱30.00-₱47.76</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Brass</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Fixtures, decorative items</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱30.00-₱170.94</td>
+                            </tr>
+                            <tr style="background-color: #f2f2f2;">
+                                <td style="padding: 12px; border: 1px solid #ddd;">Steel/Bakal</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Construction materials</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱11.00-₱14.79</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Tin Cans</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Food containers</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱8.00-₱11.94</td>
+                            </tr>
+                            <tr style="background-color: #f2f2f2;">
+                                <td style="padding: 12px; border: 1px solid #ddd;">GI Sheets/Yero</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Roofing materials</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱0.25-₱11.00</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Zinc</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Galvanized products</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱8.00-₱15.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Batteries prices table (initially hidden) -->
+                <div id="batteriesPricesTable" class="prices-table" style="overflow-x: auto; margin-top: 15px; display: none;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="background-color: var(--hoockers-green); color: white;">
+                                <th style="padding: 12px; border: 1px solid #ddd;">Type</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Description</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Buying Price (P/UNIT)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Car Batteries (1SMF)</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Standard vehicle batteries</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱150.00-₱400.00</td>
+                            </tr>
+                            <tr style="background-color: #f2f2f2;">
+                                <td style="padding: 12px; border: 1px solid #ddd;">Small Batteries (1SNF)</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Motorcycle or small vehicle batteries</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱50.00-₱70.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Glass prices table (initially hidden) -->
+                <div id="glassPricesTable" class="prices-table" style="overflow-x: auto; margin-top: 15px; display: none;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="background-color: var(--hoockers-green); color: white;">
+                                <th style="padding: 12px; border: 1px solid #ddd;">Type</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Description</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Buying Price (KG/PC)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Whole Glass Bottles</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Beverage containers</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱0.50-₱1.50 per pc.</td>
+                            </tr>
+                            <tr style="background-color: #f2f2f2;">
+                                <td style="padding: 12px; border: 1px solid #ddd;">Broken Glass (Bubog)</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Shards or cullets</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱0.50-₱1.00 per kg</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Colored Glass</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Tinted bottles</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱0.10-₱0.20 per pc.</td>
+                            </tr>
+                            <tr style="background-color: #f2f2f2;">
+                                <td style="padding: 12px; border: 1px solid #ddd;">White/Clear Glass</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Transparent bottles</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱0.50-₱1.00 per pc.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- E-waste prices table (initially hidden) -->
+                <div id="ewastePricesTable" class="prices-table" style="overflow-x: auto; margin-top: 15px; display: none;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="background-color: var(--hoockers-green); color: white;">
+                                <th style="padding: 12px; border: 1px solid #ddd;">Type</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Description</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Buying Price (UNIT/KG)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Computer Motherboards</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Circuit boards from computers</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱250.00 per kg</td>
+                            </tr>
+                            <tr style="background-color: #f2f2f2;">
+                                <td style="padding: 12px; border: 1px solid #ddd;">Old Refrigerators</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Non-functional units</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱700.00 per unit</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Washing Machines</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Non-functional units</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱300.00 per unit</td>
+                            </tr>
+                            <tr style="background-color: #f2f2f2;">
+                                <td style="padding: 12px; border: 1px solid #ddd;">Electric Fans</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Non-functional units</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱80.00 per unit</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Televisions</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">Non-functional units</td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">₱120.00 per unit</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="margin-top: 20px; font-style: italic; color: #666;">
+                    <p><small>Note: Prices are subject to change based on market conditions and quality of materials.</small></p>
+                </div>
             </div>
         </div>
     </div>
@@ -570,6 +853,188 @@
                 });
         }
         
+        // Prices Guide Modal Functionality
+        const pricesGuideModal = document.getElementById('pricesGuideModal');
+        const pricesGuideBtn = document.getElementById('pricesGuideBtn');
+        const pricesGuideCloseBtn = pricesGuideModal.querySelector('.close');
+        
+        // Tab functionality for prices guide
+        const plasticTabBtn = document.getElementById('plasticTabBtn');
+        const paperTabBtn = document.getElementById('paperTabBtn');
+        const metalTabBtn = document.getElementById('metalTabBtn');
+        const batteriesTabBtn = document.getElementById('batteriesTabBtn');
+        const glassTabBtn = document.getElementById('glassTabBtn');
+        const ewasteTabBtn = document.getElementById('ewasteTabBtn');
+        const plasticPricesTable = document.getElementById('plasticPricesTable');
+        const paperPricesTable = document.getElementById('paperPricesTable');
+        const metalPricesTable = document.getElementById('metalPricesTable');
+        const batteriesPricesTable = document.getElementById('batteriesPricesTable');
+        const glassPricesTable = document.getElementById('glassPricesTable');
+        const ewastePricesTable = document.getElementById('ewastePricesTable');
+        
+        plasticTabBtn.addEventListener('click', function() {
+            plasticPricesTable.style.display = 'block';
+            paperPricesTable.style.display = 'none';
+            metalPricesTable.style.display = 'none';
+            batteriesPricesTable.style.display = 'none';
+            glassPricesTable.style.display = 'none';
+            ewastePricesTable.style.display = 'none';
+            
+            plasticTabBtn.classList.add('active-tab');
+            paperTabBtn.classList.remove('active-tab');
+            metalTabBtn.classList.remove('active-tab');
+            batteriesTabBtn.classList.remove('active-tab');
+            glassTabBtn.classList.remove('active-tab');
+            ewasteTabBtn.classList.remove('active-tab');
+            
+            // Add/remove indicator line
+            plasticTabBtn.innerHTML = 'Plastic <span style="position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background-color: var(--hoockers-green);"></span>';
+            paperTabBtn.innerHTML = 'Paper';
+            metalTabBtn.innerHTML = 'Metal';
+            batteriesTabBtn.innerHTML = 'Batteries';
+            glassTabBtn.innerHTML = 'Glass';
+            ewasteTabBtn.innerHTML = 'E-waste';
+        });
+        
+        paperTabBtn.addEventListener('click', function() {
+            plasticPricesTable.style.display = 'none';
+            paperPricesTable.style.display = 'block';
+            metalPricesTable.style.display = 'none';
+            batteriesPricesTable.style.display = 'none';
+            glassPricesTable.style.display = 'none';
+            ewastePricesTable.style.display = 'none';
+            
+            plasticTabBtn.classList.remove('active-tab');
+            paperTabBtn.classList.add('active-tab');
+            metalTabBtn.classList.remove('active-tab');
+            batteriesTabBtn.classList.remove('active-tab');
+            glassTabBtn.classList.remove('active-tab');
+            ewasteTabBtn.classList.remove('active-tab');
+            
+            // Add/remove indicator line
+            plasticTabBtn.innerHTML = 'Plastic';
+            paperTabBtn.innerHTML = 'Paper <span style="position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background-color: var(--hoockers-green);"></span>';
+            metalTabBtn.innerHTML = 'Metal';
+            batteriesTabBtn.innerHTML = 'Batteries';
+            glassTabBtn.innerHTML = 'Glass';
+            ewasteTabBtn.innerHTML = 'E-waste';
+        });
+        
+        metalTabBtn.addEventListener('click', function() {
+            plasticPricesTable.style.display = 'none';
+            paperPricesTable.style.display = 'none';
+            metalPricesTable.style.display = 'block';
+            batteriesPricesTable.style.display = 'none';
+            glassPricesTable.style.display = 'none';
+            ewastePricesTable.style.display = 'none';
+            
+            plasticTabBtn.classList.remove('active-tab');
+            paperTabBtn.classList.remove('active-tab');
+            metalTabBtn.classList.add('active-tab');
+            batteriesTabBtn.classList.remove('active-tab');
+            glassTabBtn.classList.remove('active-tab');
+            ewasteTabBtn.classList.remove('active-tab');
+            
+            // Add/remove indicator line
+            plasticTabBtn.innerHTML = 'Plastic';
+            paperTabBtn.innerHTML = 'Paper';
+            metalTabBtn.innerHTML = 'Metal <span style="position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background-color: var(--hoockers-green);"></span>';
+            batteriesTabBtn.innerHTML = 'Batteries';
+            glassTabBtn.innerHTML = 'Glass';
+            ewasteTabBtn.innerHTML = 'E-waste';
+        });
+        
+        batteriesTabBtn.addEventListener('click', function() {
+            plasticPricesTable.style.display = 'none';
+            paperPricesTable.style.display = 'none';
+            metalPricesTable.style.display = 'none';
+            batteriesPricesTable.style.display = 'block';
+            glassPricesTable.style.display = 'none';
+            ewastePricesTable.style.display = 'none';
+            
+            plasticTabBtn.classList.remove('active-tab');
+            paperTabBtn.classList.remove('active-tab');
+            metalTabBtn.classList.remove('active-tab');
+            batteriesTabBtn.classList.add('active-tab');
+            glassTabBtn.classList.remove('active-tab');
+            ewasteTabBtn.classList.remove('active-tab');
+            
+            // Add/remove indicator line
+            plasticTabBtn.innerHTML = 'Plastic';
+            paperTabBtn.innerHTML = 'Paper';
+            metalTabBtn.innerHTML = 'Metal';
+            batteriesTabBtn.innerHTML = 'Batteries <span style="position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background-color: var(--hoockers-green);"></span>';
+            glassTabBtn.innerHTML = 'Glass';
+            ewasteTabBtn.innerHTML = 'E-waste';
+        });
+        
+        glassTabBtn.addEventListener('click', function() {
+            plasticPricesTable.style.display = 'none';
+            paperPricesTable.style.display = 'none';
+            metalPricesTable.style.display = 'none';
+            batteriesPricesTable.style.display = 'none';
+            glassPricesTable.style.display = 'block';
+            ewastePricesTable.style.display = 'none';
+            
+            plasticTabBtn.classList.remove('active-tab');
+            paperTabBtn.classList.remove('active-tab');
+            metalTabBtn.classList.remove('active-tab');
+            batteriesTabBtn.classList.remove('active-tab');
+            glassTabBtn.classList.add('active-tab');
+            ewasteTabBtn.classList.remove('active-tab');
+            
+            // Add/remove indicator line
+            plasticTabBtn.innerHTML = 'Plastic';
+            paperTabBtn.innerHTML = 'Paper';
+            metalTabBtn.innerHTML = 'Metal';
+            batteriesTabBtn.innerHTML = 'Batteries';
+            glassTabBtn.innerHTML = 'Glass <span style="position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background-color: var(--hoockers-green);"></span>';
+            ewasteTabBtn.innerHTML = 'E-waste';
+        });
+        
+        ewasteTabBtn.addEventListener('click', function() {
+            plasticPricesTable.style.display = 'none';
+            paperPricesTable.style.display = 'none';
+            metalPricesTable.style.display = 'none';
+            batteriesPricesTable.style.display = 'none';
+            glassPricesTable.style.display = 'none';
+            ewastePricesTable.style.display = 'block';
+            
+            plasticTabBtn.classList.remove('active-tab');
+            paperTabBtn.classList.remove('active-tab');
+            metalTabBtn.classList.remove('active-tab');
+            batteriesTabBtn.classList.remove('active-tab');
+            glassTabBtn.classList.remove('active-tab');
+            ewasteTabBtn.classList.add('active-tab');
+            
+            // Add/remove indicator line
+            plasticTabBtn.innerHTML = 'Plastic';
+            paperTabBtn.innerHTML = 'Paper';
+            metalTabBtn.innerHTML = 'Metal';
+            batteriesTabBtn.innerHTML = 'Batteries';
+            glassTabBtn.innerHTML = 'Glass';
+            ewasteTabBtn.innerHTML = 'E-waste <span style="position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background-color: var(--hoockers-green);"></span>';
+        });
+        
+        // Open prices guide modal when button is clicked
+        pricesGuideBtn.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent form submission
+            pricesGuideModal.style.display = 'block';
+            console.log('Price guide button clicked'); // Debug log
+        });
+        
+        // Close prices guide modal when X is clicked
+        pricesGuideCloseBtn.addEventListener('click', function() {
+            pricesGuideModal.style.display = 'none';
+        });
+        
+        // Close prices guide modal when clicking outside
+        window.addEventListener('click', function(e) {
+            if (e.target === pricesGuideModal) {
+                pricesGuideModal.style.display = 'none';
+            }
+        });
+
         // Initialize map when DOM is loaded
         initMap();
     });
