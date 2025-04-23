@@ -28,132 +28,196 @@ class OrderController extends Controller
                 'receipt_image' => ['required', 'image', 'max:5120'], // Max 5MB
             ]);
             
-            // Get the user's active cart
-            $cart = Cart::where('user_id', Auth::id())->where('status', 'active')->first();
-            
-            if (!$cart || $cart->items->count() === 0) {
-                Log::error('Empty cart during checkout');
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Your cart is empty.'
-                ], 422);
-            }
-            
-            // Store receipt image
-            $receiptPath = null;
-            if ($request->hasFile('receipt_image')) {
-                $receiptPath = $request->file('receipt_image')->store('receipts', 'public');
-                Log::info('Receipt image saved', ['path' => $receiptPath]);
-            }
-
-            // Use transaction to ensure all database operations succeed or fail together
-            DB::beginTransaction();
-            try {
-                // Create separate orders for each shop's products
-                $shopOrders = [];
+            // Check if this is a direct checkout
+            if ($request->has('direct_checkout') && $request->has('post_id') && $request->has('quantity')) {
+                // This is a direct product checkout
+                $post = Post::with('user')->findOrFail($request->post_id);
+                $quantity = (int)$request->quantity;
                 
-                // Get cart items with proper eager loading to avoid N+1 queries
-                $cartItems = $cart->items()->with(['product.post.user'])->get();
-                
-                // Filter out any items with incomplete data
-                $validCartItems = $cartItems->filter(function($item) {
-                    return $item->product && $item->product->post && $item->product->post->user;
-                });
-                
-                if ($validCartItems->isEmpty()) {
-                    throw new Exception("No valid products found in cart");
+                // Validate quantity
+                if ($post->quantity < $quantity) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'The requested quantity exceeds available stock.'
+                    ], 422);
                 }
                 
-                // Group by seller ID with null check
-                $groupedItems = $validCartItems->groupBy(function($item) {
-                    return $item->product->post->user->id;
-                });
+                // Store receipt image
+                $receiptPath = null;
+                if ($request->hasFile('receipt_image')) {
+                    $receiptPath = $request->file('receipt_image')->store('receipts', 'public');
+                    Log::info('Receipt image saved', ['path' => $receiptPath]);
+                }
                 
-                foreach ($groupedItems as $sellerId => $items) {
-                    $firstItem = $items->first();
-                    $sellerUser = $firstItem->product->post->user;
-                    
-                    // Calculate total amount for this seller's items
-                    $totalAmount = $items->sum(function($item) {
-                        return $item->quantity * $item->price;
-                    });
-                    
-                    // Get the first post_id to use as the main post_id for the order
-                    // This maintains compatibility with the existing database structure
-                    $primaryPostId = $firstItem->product->post->id;
-                    
-                    // Create an order for this seller
+                // Create the order
+                DB::beginTransaction();
+                try {
                     $order = Order::create([
-                        'seller_id' => $sellerId,
+                        'post_id' => $post->id,
                         'buyer_id' => Auth::id(),
-                        'post_id' => $primaryPostId, // Use the first item's post_id instead of null
-                        'quantity' => $items->sum('quantity'),
+                        'seller_id' => $post->user->id,
+                        'quantity' => $quantity,
                         'status' => 'pending',
-                        'total_amount' => $totalAmount,
+                        'total_amount' => $post->price * $quantity,
                         'receipt_image' => $receiptPath,
                     ]);
                     
-                    // Create order items for each product
-                    foreach ($items as $item) {
-                        // Get post associated with product
-                        $post = $item->product->post;
-                        
-                        // Create order item
-                        OrderItem::create([
-                            'order_id' => $order->id,
-                            'post_id' => $post->id,
-                            'quantity' => $item->quantity,
-                            'price' => $item->price,
-                        ]);
-                        
-                        // Decrease post quantity
-                        if ($post->quantity < $item->quantity) {
-                            throw new Exception("Not enough quantity available for product: {$post->title}");
-                        }
-                        
-                        $post->quantity -= $item->quantity;
-                        $post->save();
-                        
-                        // Update product stock if exists
-                        if ($item->product) {
-                            $item->product->stock -= $item->quantity;
-                            $item->product->save();
-                        }
-                    }
+                    // Create order item
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'post_id' => $post->id,
+                        'quantity' => $quantity,
+                        'price' => $post->price,
+                    ]);
                     
-                    $shopOrders[] = $order;
+                    // Decrease post quantity
+                    $post->quantity -= $quantity;
+                    $post->save();
+                    
+                    DB::commit();
+                    
+                    Log::info('Direct checkout order created successfully', [
+                        'order_id' => $order->id,
+                        'post_id' => $post->id,
+                        'quantity' => $quantity
+                    ]);
+                    
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Order request submitted successfully',
+                        'order_id' => $order->id
+                    ]);
+                } catch (Exception $e) {
+                    DB::rollBack();
+                    throw $e;
+                }
+            } else {
+                // Regular cart checkout
+                // Get the user's active cart
+                $cart = Cart::where('user_id', Auth::id())->where('status', 'active')->first();
+                
+                if (!$cart || $cart->items->count() === 0) {
+                    Log::error('Empty cart during checkout');
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Your cart is empty.'
+                    ], 422);
                 }
                 
-                // Mark cart as checked out and empty it
-                $cart->status = 'completed';
-                $cart->save();
-                
-                // Create a new active cart for the user
-                Cart::create([
-                    'user_id' => Auth::id(),
-                    'status' => 'active',
-                    'total' => 0
-                ]);
-                
-                DB::commit();
-                
-                Log::info('Orders created successfully', [
-                    'order_count' => count($shopOrders),
-                    'order_ids' => collect($shopOrders)->pluck('id')
-                ]);
-                
-                // Return success response
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Order requests submitted successfully',
-                    'order_ids' => collect($shopOrders)->pluck('id')
-                ]);
-                
-            } catch (Exception $e) {
-                DB::rollBack();
-                throw $e;
+                // Store receipt image
+                $receiptPath = null;
+                if ($request->hasFile('receipt_image')) {
+                    $receiptPath = $request->file('receipt_image')->store('receipts', 'public');
+                    Log::info('Receipt image saved', ['path' => $receiptPath]);
+                }
+
+                // Use transaction to ensure all database operations succeed or fail together
+                DB::beginTransaction();
+                try {
+                    // Create separate orders for each shop's products
+                    $shopOrders = [];
+                    
+                    // Get cart items with proper eager loading to avoid N+1 queries
+                    $cartItems = $cart->items()->with(['product.post.user'])->get();
+                    
+                    // Filter out any items with incomplete data
+                    $validCartItems = $cartItems->filter(function($item) {
+                        return $item->product && $item->product->post && $item->product->post->user;
+                    });
+                    
+                    if ($validCartItems->isEmpty()) {
+                        throw new Exception("No valid products found in cart");
+                    }
+                    
+                    // Group by seller ID with null check
+                    $groupedItems = $validCartItems->groupBy(function($item) {
+                        return $item->product->post->user->id;
+                    });
+                    
+                    foreach ($groupedItems as $sellerId => $items) {
+                        $firstItem = $items->first();
+                        $sellerUser = $firstItem->product->post->user;
+                        
+                        // Calculate total amount for this seller's items
+                        $totalAmount = $items->sum(function($item) {
+                            return $item->quantity * $item->price;
+                        });
+                        
+                        // Get the first post_id to use as the main post_id for the order
+                        // This maintains compatibility with the existing database structure
+                        $primaryPostId = $firstItem->product->post->id;
+                        
+                        // Create an order for this seller
+                        $order = Order::create([
+                            'seller_id' => $sellerId,
+                            'buyer_id' => Auth::id(),
+                            'post_id' => $primaryPostId, // Use the first item's post_id instead of null
+                            'quantity' => $items->sum('quantity'),
+                            'status' => 'pending',
+                            'total_amount' => $totalAmount,
+                            'receipt_image' => $receiptPath,
+                        ]);
+                        
+                        // Create order items for each product
+                        foreach ($items as $item) {
+                            // Get post associated with product
+                            $post = $item->product->post;
+                            
+                            // Create order item
+                            OrderItem::create([
+                                'order_id' => $order->id,
+                                'post_id' => $post->id,
+                                'quantity' => $item->quantity,
+                                'price' => $item->price,
+                            ]);
+                            
+                            // Decrease post quantity
+                            if ($post->quantity < $item->quantity) {
+                                throw new Exception("Not enough quantity available for product: {$post->title}");
+                            }
+                            
+                            $post->quantity -= $item->quantity;
+                            $post->save();
+                            
+                            // Update product stock if exists
+                            if ($item->product) {
+                                $item->product->stock -= $item->quantity;
+                                $item->product->save();
+                            }
+                        }
+                        $shopOrders[] = $order;
+                    }
+                    
+                    // Mark cart as checked out and empty it
+                    $cart->status = 'completed';
+                    $cart->save();
+                    
+                    // Create a new active cart for the user
+                    Cart::create([
+                        'user_id' => Auth::id(),
+                        'status' => 'active',
+                        'total' => 0
+                    ]);
+                    
+                    DB::commit();
+                    
+                    Log::info('Orders created successfully', [
+                        'order_count' => count($shopOrders),
+                        'order_ids' => collect($shopOrders)->pluck('id')
+                    ]);
+                    
+                    // Return success response
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Order requests submitted successfully',
+                        'order_ids' => collect($shopOrders)->pluck('id')
+                    ]);
+                         
+                } catch (Exception $e) {
+                    DB::rollBack();
+                    throw $e;
+                }
             }
-            
         } catch (Exception $e) {
             // Log the error with detailed information
             Log::error('Order creation error: ' . $e->getMessage(), [
@@ -179,9 +243,57 @@ class OrderController extends Controller
 
     public function checkout(Request $request)
     {
+        // Check if we're doing a direct checkout from product page
+        if ($request->has('direct') && $request->has('post_id') && $request->has('quantity')) {
+            try {
+                // Validate parameters
+                $validatedData = $request->validate([
+                    'post_id' => 'required|exists:posts,id',
+                    'quantity' => 'required|integer|min:1'
+                ]);
+                
+                $post_id = $request->post_id;
+                $quantity = $request->quantity;
+                
+                // Find the post
+                $post = Post::with('user')->findOrFail($post_id);
+                
+                // Check if quantity is valid
+                if ($post->quantity < $quantity) {
+                    return redirect()->route('posts.show', $post->id)
+                        ->with('error', 'The requested quantity exceeds available stock.');
+                }
+                
+                // Create a temporary cart-like structure for the view
+                $cartItem = new \stdClass();
+                $cartItem->quantity = $quantity;
+                $cartItem->price = $post->price;
+                $cartItem->product = new \stdClass();
+                $cartItem->product->post = $post;
+                
+                $cart = new \stdClass();
+                $cart->items = collect([$cartItem]);
+                $cart->is_direct_checkout = true;
+                
+                $totalPrice = $quantity * $post->price;
+                
+                return view('orders.checkout', [
+                    'cart' => $cart,
+                    'totalPrice' => $totalPrice,
+                    'post' => $post,
+                    'directCheckout' => true,
+                    'quantity' => $quantity
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('Direct checkout error: ' . $e->getMessage());
+                return redirect()->route('posts.show', $request->post_id)
+                    ->with('error', 'An error occurred while processing your checkout request.');
+            }
+        }
+        
+        // Regular cart checkout flow
         // Get the current user's active cart
         $cart = Cart::where('user_id', Auth::id())->where('status', 'active')->first();
-        
         if (!$cart || $cart->items->count() === 0) {
             return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
         }
@@ -196,7 +308,6 @@ class OrderController extends Controller
                 $validItems++;
             }
         }
-        
         if ($validItems === 0) {
             return redirect()->route('cart.index')->with('error', 'All products in your cart are no longer available.');
         }
@@ -207,7 +318,8 @@ class OrderController extends Controller
         
         return view('orders.checkout', [
             'cart' => $cart,
-            'totalPrice' => $cart->total
+            'totalPrice' => $cart->total,
+            'directCheckout' => false
         ]);
     }
 
@@ -228,7 +340,7 @@ class OrderController extends Controller
         $validStatus = $request->validate([
             'status' => 'required|in:processing,delivering,for_pickup,cancelled,completed'
         ]);
-
+                   
         $newStatus = $validStatus['status'];
         $orderAmount = null;
         
@@ -237,7 +349,6 @@ class OrderController extends Controller
             // Get all order items
             foreach ($order->items as $item) {
                 $post = Post::find($item->post_id);
-                
                 if ($post) {
                     // Restore the quantity from the order item back to the post
                     $post->quantity += $item->quantity;
@@ -262,7 +373,7 @@ class OrderController extends Controller
                 }
             }
         }
-        
+
         // If status is being changed to completed, we don't need to update quantities again
         // as we already decreased them when the order was created
         if ($newStatus === 'completed') {
@@ -289,14 +400,13 @@ class OrderController extends Controller
 
     /**
      * Cancel an order
-     * 
      * @param Order $order
      * @return \Illuminate\Http\Response
      */
     public function cancelOrder(Order $order)
     {
         $isAjax = request()->expectsJson() || request()->ajax();
-        
+
         // Verify that the authenticated user owns this order
         if ($order->buyer_id !== Auth::id()) {
             if ($isAjax) {
@@ -331,12 +441,11 @@ class OrderController extends Controller
             if ($order->items()->exists()) {
                 foreach ($order->items as $item) {
                     $post = Post::find($item->post_id);
-                    
                     if ($post) {
                         // Restore the quantity back to the post
                         $post->quantity += $item->quantity;
                         $post->save();
-                        
+
                         // Restore the associated product stock if exists
                         $product = Product::where('post_id', $post->id)->first();
                         if ($product) {
@@ -352,7 +461,7 @@ class OrderController extends Controller
                     // Restore quantity
                     $post->quantity += $order->quantity;
                     $post->save();
-                    
+
                     // Restore associated product stock if exists
                     $product = Product::where('post_id', $post->id)->first();
                     if ($product) {

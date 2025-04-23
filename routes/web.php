@@ -165,6 +165,9 @@ Route::middleware('auth')->group(function() {
     
     // Sell Item Route
     Route::get('/sell-item', [App\Http\Controllers\SellController::class, 'showItemForm'])->name('sell.item');
+    
+    // Add a dedicated route for direct product checkout
+    Route::get('/checkout', [OrderController::class, 'checkout'])->name('orders.checkout');
 });
 
 // Routes for guests users

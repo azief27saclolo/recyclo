@@ -237,7 +237,7 @@
 
     function redirectToCheckout() {
         var quantity = document.getElementById('quantity').value;
-        var url = "{{ route('checkout', ['post_id' => $post->id]) }}&quantity=" + quantity;
+        var url = "{{ route('orders.checkout') }}?post_id={{ $post->id }}&quantity=" + quantity + "&direct=1";
         window.location.href = url;
     }
 

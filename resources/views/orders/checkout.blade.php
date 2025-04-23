@@ -279,7 +279,7 @@
         })
         .then(data => {
             if (data.success) {
-                // Show the order confirmation modal
+                // Show the confirmation modal instead of immediate redirect
                 document.getElementById("orderModal").style.display = "flex";
             } else {
                 alert("Failed to place order: " + (data.message || "Unknown error"));
@@ -298,7 +298,7 @@
 
     function closeModal() {
         document.getElementById("orderModal").style.display = "none";
-        window.location.href = "{{ route('posts') }}";
+        window.location.href = "{{ route('orders.index') }}";
     }
 </script>
 @endsection
