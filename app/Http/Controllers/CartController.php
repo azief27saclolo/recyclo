@@ -256,28 +256,36 @@ class CartController extends Controller
         // Get the current user's active cart
         $cart = $this->getOrCreateCart();
         
-        // Load cart items with product details
-        $cart->load('items.product.post');
+        // Load cart items with ALL necessary related data to avoid null references
+        $cart->load('items.product.post.user');
         
         // Check if cart has items
         if ($cart->items->count() === 0) {
             return redirect()->route('cart.index')->with('error', 'Your cart is empty. Add some products before checkout.');
         }
         
-        // Check for missing products
-        $hasMissingProducts = $cart->items->contains(function($item) {
-            return $item->product === null;
+        // Check for and filter out missing or invalid products
+        $validItems = $cart->items->filter(function($item) {
+            return $item->product && $item->product->post && $item->product->post->user;
         });
         
-        if ($hasMissingProducts) {
+        if ($validItems->isEmpty()) {
             return redirect()->route('cart.index')
-                ->with('error', 'Your cart contains products that are no longer available. Please remove them before checkout.');
+                ->with('error', 'Your cart contains only unavailable products. Please remove them and add valid products before checkout.');
         }
         
-        // Return the checkout view with the cart containing all items
+        // Check if any invalid items were filtered out
+        if ($validItems->count() < $cart->items->count()) {
+            session()->flash('warning', 'Some products in your cart are no longer available and have been excluded from checkout.');
+        }
+        
+        // Return the checkout view with the cart containing all items (including invalid ones for display purposes)
+        // The blade template will filter them out when needed
         return view('orders.checkout', [
             'cart' => $cart,
-            'totalPrice' => $cart->total
+            'totalPrice' => $validItems->sum(function($item) {
+                return $item->quantity * $item->price;
+            })
         ]);
     }
 }

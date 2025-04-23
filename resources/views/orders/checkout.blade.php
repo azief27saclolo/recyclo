@@ -30,55 +30,56 @@
                     </div>
                     <div style="padding: 20px;">
                         @php 
-                            $sellerGroups = $cart->items->groupBy(function($item) {
-                                return $item->product && $item->product->post && $item->product->post->user 
-                                    ? $item->product->post->user->id 
-                                    : 0;  // Group items with missing data separately
+                            // Filter out items with missing data first
+                            $validItems = $cart->items->filter(function($item) {
+                                return $item->product && $item->product->post && $item->product->post->user;
                             });
-                            $totalItems = $cart->items->sum('quantity');
+                            
+                            // Group only valid items by seller ID
+                            $sellerGroups = $validItems->groupBy(function($item) {
+                                return $item->product->post->user->id;
+                            });
+                            
+                            $totalItems = $validItems->sum('quantity');
                         @endphp
 
                         @foreach($sellerGroups as $sellerId => $items)
-                            @if($sellerId > 0) {{-- Only process valid sellers --}}
-                                @php 
-                                    $firstItem = $items->first();
-                                    $seller = $firstItem->product->post->user;
-                                    $sellerTotal = $items->sum(function($item) { 
-                                        return $item->quantity * $item->price; 
-                                    });
-                                @endphp
+                            @php 
+                                $firstItem = $items->first();
+                                $seller = $firstItem->product->post->user;
+                                $sellerTotal = $items->sum(function($item) { 
+                                    return $item->quantity * $item->price; 
+                                });
+                            @endphp
 
-                                <div style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee;">
-                                    <div style="color: #517a5b; font-size: 16px; margin-bottom: 10px; font-weight: 600;">
-                                        <i class="bi bi-shop"></i> {{ $seller->username }}'s Shop
-                                    </div>
-
-                                    @foreach($items as $item)
-                                        @if($item->product && $item->product->post)
-                                            <div style="display: flex; gap: 20px; padding-bottom: 15px; margin-bottom: 15px; border-bottom: 1px dashed #eee;">
-                                                <!-- Product Image -->
-                                                <img src="{{ asset('storage/' . $item->product->post->image) }}" alt="{{ $item->product->post->title }}" 
-                                                    style="width: 80px; height: 80px; border-radius: 10px; object-fit: cover;">
-                                                
-                                                <!-- Product Details -->
-                                                <div style="flex: 1;">
-                                                    <h4 style="margin: 0 0 5px 0; font-size: 18px;">{{ $item->product->post->title }}</h4>
-                                                    <div style="color: #666; font-size: 16px;">₱{{ number_format($item->price, 2) }} × {{ $item->quantity }} kg</div>
-                                                    <div style="color: #517a5b; font-weight: 600; font-size: 16px; margin-top: 5px;">
-                                                        ₱{{ number_format($item->price * $item->quantity, 2) }}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
-                                    @endforeach
-                                    
-                                    <!-- Seller Subtotal -->
-                                    <div style="display: flex; justify-content: space-between; padding: 10px 15px; background: #f9f9f9; border-radius: 8px;">
-                                        <span style="font-size: 16px;">Seller Subtotal:</span>
-                                        <span style="font-size: 16px; font-weight: 600;">₱{{ number_format($sellerTotal, 2) }}</span>
-                                    </div>
+                            <div style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee;">
+                                <div style="color: #517a5b; font-size: 16px; margin-bottom: 10px; font-weight: 600;">
+                                    <i class="bi bi-shop"></i> {{ $seller->username }}'s Shop
                                 </div>
-                            @endif
+
+                                @foreach($items as $item)
+                                    <div style="display: flex; gap: 20px; padding-bottom: 15px; margin-bottom: 15px; border-bottom: 1px dashed #eee;">
+                                        <!-- Product Image -->
+                                        <img src="{{ asset('storage/' . $item->product->post->image) }}" alt="{{ $item->product->post->title }}" 
+                                            style="width: 80px; height: 80px; border-radius: 10px; object-fit: cover;">
+                                        
+                                        <!-- Product Details -->
+                                        <div style="flex: 1;">
+                                            <h4 style="margin: 0 0 5px 0; font-size: 18px;">{{ $item->product->post->title }}</h4>
+                                            <div style="color: #666; font-size: 16px;">₱{{ number_format($item->price, 2) }} × {{ $item->quantity }} kg</div>
+                                            <div style="color: #517a5b; font-weight: 600; font-size: 16px; margin-top: 5px;">
+                                                ₱{{ number_format($item->price * $item->quantity, 2) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                                
+                                <!-- Seller Subtotal -->
+                                <div style="display: flex; justify-content: space-between; padding: 10px 15px; background: #f9f9f9; border-radius: 8px;">
+                                    <span style="font-size: 16px;">Seller Subtotal:</span>
+                                    <span style="font-size: 16px; font-weight: 600;">₱{{ number_format($sellerTotal, 2) }}</span>
+                                </div>
+                            </div>
                         @endforeach
 
                         <div style="margin-top: 20px;">
@@ -139,17 +140,15 @@
                             <h4 style="color: #517a5b; margin-bottom: 15px; font-size: 20px;">Pickup Information</h4>
                             
                             @foreach($sellerGroups as $sellerId => $items)
-                                @if($sellerId > 0) {{-- Only process valid sellers --}}
-                                    @php 
-                                        $firstItem = $items->first();
-                                        $seller = $firstItem->product->post->user;
-                                        $location = $firstItem->product->post->location ?? 'Location not specified';
-                                    @endphp
-                                    <div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                                        <p style="margin-bottom: 5px; color: #333; font-size: 18px; font-weight: 600;">{{ $seller->username }}'s Shop</p>
-                                        <p style="margin-bottom: 5px; color: #333; font-size: 16px;">{{ $location }}</p>
-                                    </div>
-                                @endif
+                                @php 
+                                    $firstItem = $items->first();
+                                    $seller = $firstItem->product->post->user;
+                                    $location = $firstItem->product->post->location ?? 'Location not specified';
+                                @endphp
+                                <div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                                    <p style="margin-bottom: 5px; color: #333; font-size: 18px; font-weight: 600;">{{ $seller->username }}'s Shop</p>
+                                    <p style="margin-bottom: 5px; color: #333; font-size: 16px;">{{ $location }}</p>
+                                </div>
                             @endforeach
                             
                             <p style="color: #666; font-size: 16px; margin-top: 15px;">Please pick up your order within 3 days after your order has been approved and payment is confirmed.</p>

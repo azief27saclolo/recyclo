@@ -51,9 +51,25 @@ class OrderController extends Controller
             try {
                 // Create separate orders for each shop's products
                 $shopOrders = [];
-                $cartItems = $cart->items()->with('product.post.user')->get()->groupBy('product.post.user.id');
                 
-                foreach ($cartItems as $sellerId => $items) {
+                // Get cart items with proper eager loading to avoid N+1 queries
+                $cartItems = $cart->items()->with(['product.post.user'])->get();
+                
+                // Filter out any items with incomplete data
+                $validCartItems = $cartItems->filter(function($item) {
+                    return $item->product && $item->product->post && $item->product->post->user;
+                });
+                
+                if ($validCartItems->isEmpty()) {
+                    throw new Exception("No valid products found in cart");
+                }
+                
+                // Group by seller ID with null check
+                $groupedItems = $validCartItems->groupBy(function($item) {
+                    return $item->product->post->user->id;
+                });
+                
+                foreach ($groupedItems as $sellerId => $items) {
                     $firstItem = $items->first();
                     $sellerUser = $firstItem->product->post->user;
                     
@@ -62,11 +78,15 @@ class OrderController extends Controller
                         return $item->quantity * $item->price;
                     });
                     
+                    // Get the first post_id to use as the main post_id for the order
+                    // This maintains compatibility with the existing database structure
+                    $primaryPostId = $firstItem->product->post->id;
+                    
                     // Create an order for this seller
                     $order = Order::create([
                         'seller_id' => $sellerId,
                         'buyer_id' => Auth::id(),
-                        'post_id' => null, // We'll use order_items instead
+                        'post_id' => $primaryPostId, // Use the first item's post_id instead of null
                         'quantity' => $items->sum('quantity'),
                         'status' => 'pending',
                         'total_amount' => $totalAmount,
@@ -77,10 +97,6 @@ class OrderController extends Controller
                     foreach ($items as $item) {
                         // Get post associated with product
                         $post = $item->product->post;
-                        
-                        if (!$post) {
-                            throw new Exception("Post not found for product ID: {$item->product->id}");
-                        }
                         
                         // Create order item
                         OrderItem::create([
