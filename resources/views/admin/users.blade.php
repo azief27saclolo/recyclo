@@ -12,6 +12,13 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- Add CSRF token meta -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <!-- Add Leaflet CSS and JS for OpenStreetMap -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+          crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+          crossorigin=""></script>
     <style>
         :root {
             --hoockers-green: #517A5B;
@@ -464,6 +471,45 @@
             border: 2px solid #eee;
         }
         
+        /* Map styling for address selector */
+        #location-map {
+            height: 300px;
+            width: 100%;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            margin: 10px 0 15px 0;
+        }
+        
+        .location-search-container {
+            position: relative;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        
+        .location-search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 0 0 5px 5px;
+            z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .location-search-results div {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .location-search-results div:hover {
+            background-color: #f5f5f5;
+        }
+        
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .modal-content {
@@ -690,7 +736,12 @@
                 <div class="form-row">
                     <div class="form-group" style="flex-basis: 100%;">
                         <label for="edit_location">Location</label>
-                        <input type="text" id="edit_location" name="location">
+                        <div class="location-search-container">
+                            <input type="text" id="location_search" placeholder="Search location..." class="form-control">
+                            <div class="location-search-results" id="search_results"></div>
+                        </div>
+                        <div id="location-map"></div>
+                        <input type="text" id="edit_location" name="location" class="form-control">
                     </div>
                 </div>
                 
@@ -727,6 +778,233 @@
             }
         });
 
+        // Map variables
+        let map, marker;
+        let defaultLat = 14.5995; // Default center (Philippines)
+        let defaultLng = 120.9842;
+        let defaultZoom = 13;
+        
+        // Initialize map when modal opens
+        function initMap(lat = defaultLat, lng = defaultLng, address = '') {
+            // Create new map
+            if (map) {
+                map.remove(); // Clean up existing map if any
+            }
+            
+            map = L.map('location-map').setView([lat, lng], defaultZoom);
+            
+            // Add OpenStreetMap tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            
+            // Add a marker
+            marker = L.marker([lat, lng], {
+                draggable: true // Make marker draggable
+            }).addTo(map);
+            
+            // Set initial address if provided
+            if (address) {
+                document.getElementById('edit_location').value = address;
+                document.getElementById('location_search').value = address;
+            }
+            
+            // Update address when marker is moved
+            marker.on('dragend', function(e) {
+                const position = marker.getLatLng();
+                reverseGeocode(position.lat, position.lng);
+            });
+            
+            // Allow clicking on map to place marker
+            map.on('click', function(e) {
+                marker.setLatLng(e.latlng);
+                reverseGeocode(e.latlng.lat, e.latlng.lng);
+            });
+            
+            // Fix map rendering issues by forcing a refresh
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 100);
+        }
+        
+        // Geocode address to coordinates
+        function geocodeAddress(query) {
+            if (!query || query.length < 3) return;
+            
+            const searchUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`;
+            
+            fetch(searchUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const resultsContainer = document.getElementById('search_results');
+                    resultsContainer.innerHTML = '';
+                    resultsContainer.style.display = 'block';
+                    
+                    if (data && data.length > 0) {
+                        data.forEach(item => {
+                            const div = document.createElement('div');
+                            div.textContent = item.display_name;
+                            div.addEventListener('click', () => {
+                                const lat = parseFloat(item.lat);
+                                const lon = parseFloat(item.lon);
+                                
+                                // Set view and update marker
+                                map.setView([lat, lon], 15);
+                                marker.setLatLng([lat, lon]);
+                                
+                                // Update address field
+                                document.getElementById('edit_location').value = item.display_name;
+                                document.getElementById('location_search').value = item.display_name;
+                                
+                                // Hide search results
+                                resultsContainer.style.display = 'none';
+                            });
+                            resultsContainer.appendChild(div);
+                        });
+                    } else {
+                        const div = document.createElement('div');
+                        div.textContent = 'No results found';
+                        resultsContainer.appendChild(div);
+                    }
+                })
+                .catch(error => console.error('Error geocoding address:', error));
+        }
+        
+        // Reverse geocode coordinates to address
+        function reverseGeocode(lat, lng) {
+            const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.display_name) {
+                        document.getElementById('edit_location').value = data.display_name;
+                        document.getElementById('location_search').value = data.display_name;
+                    }
+                })
+                .catch(error => console.error('Error reverse geocoding:', error));
+        }
+        
+        // Function to open the edit user modal - Modified to initialize map
+        function openEditUserModal(userId) {
+            // Reset the form
+            document.getElementById('editUserForm').reset();
+            
+            // Set the user ID in the hidden input
+            document.getElementById('edit_user_id').value = userId;
+            
+            // Show loading state
+            Swal.fire({
+                title: 'Loading User Data...',
+                text: 'Please wait',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Fetch user details
+            $.ajax({
+                url: '/admin/users/' + userId,
+                type: 'GET',
+                success: function(response) {
+                    if (response.success) {
+                        // Close the loading dialog
+                        Swal.close();
+                        
+                        // Populate the form with user data
+                        const user = response.user;
+                        document.getElementById('edit_firstname').value = user.firstname || '';
+                        document.getElementById('edit_middlename').value = user.middlename || '';
+                        document.getElementById('edit_lastname').value = user.lastname || '';
+                        document.getElementById('edit_username').value = user.username || '';
+                        document.getElementById('edit_email').value = user.email || '';
+                        document.getElementById('edit_birthday').value = user.birthday ? user.birthday.split(' ')[0] : '';
+                        document.getElementById('edit_number').value = user.number || '';
+                        document.getElementById('edit_location').value = user.location || '';
+                        
+                        // Show current profile picture if it exists
+                        const currentPictureContainer = document.getElementById('currentPictureContainer');
+                        const currentProfilePicture = document.getElementById('currentProfilePicture');
+                        
+                        if (user.profile_picture) {
+                            currentProfilePicture.src = '/storage/' + user.profile_picture;
+                            currentPictureContainer.style.display = 'block';
+                        } else {
+                            currentPictureContainer.style.display = 'none';
+                        }
+                        
+                        // Show the modal
+                        document.getElementById('editUserModal').style.display = 'block';
+                        
+                        // Initialize map with default location
+                        // Using setTimeout to ensure the modal is fully visible before rendering the map
+                        setTimeout(() => {
+                            initMap(defaultLat, defaultLng, user.location || '');
+                            
+                            // If user has location, use geocoding to find and center the map
+                            if (user.location) {
+                                geocodeAddress(user.location);
+                            }
+                        }, 300);
+                        
+                        // Set up form submission
+                        setupEditUserForm(userId);
+                        
+                        // Set up location search
+                        setupLocationSearch();
+                    }
+                },
+                error: function(xhr) {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: xhr.responseJSON ? xhr.responseJSON.message : 'Failed to load user details',
+                        icon: 'error',
+                        confirmButtonColor: '#517A5B'
+                    });
+                }
+            });
+        }
+        
+        // Setup location search functionality
+        function setupLocationSearch() {
+            const searchInput = document.getElementById('location_search');
+            const resultsContainer = document.getElementById('search_results');
+            
+            // Hide search results when clicking outside
+            document.addEventListener('click', function(event) {
+                if (event.target !== searchInput && !resultsContainer.contains(event.target)) {
+                    resultsContainer.style.display = 'none';
+                }
+            });
+            
+            // Search for locations as user types
+            let debounceTimer;
+            searchInput.addEventListener('input', function() {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    const query = this.value.trim();
+                    if (query.length > 2) {
+                        geocodeAddress(query);
+                    } else {
+                        resultsContainer.style.display = 'none';
+                    }
+                }, 500);
+            });
+        }
+        
+        // Function to close the edit user modal - modified to clean up map
+        function closeEditUserModal() {
+            document.getElementById('editUserModal').style.display = 'none';
+            
+            // Clean up map resources
+            if (map) {
+                map.remove();
+                map = null;
+            }
+        }
+        
         // Function to update user status via AJAX
         function updateUserStatus(userId, status, actionName, confirmMessage) {
             Swal.fire({
@@ -1016,160 +1294,6 @@
                 confirmButtonColor: '#517A5B'
             });
         @endif
-
-        // Function to open the edit user modal
-        function openEditUserModal(userId) {
-            // Reset the form
-            document.getElementById('editUserForm').reset();
-            
-            // Set the user ID in the hidden input
-            document.getElementById('edit_user_id').value = userId;
-            
-            // Show loading state
-            Swal.fire({
-                title: 'Loading User Data...',
-                text: 'Please wait',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-            
-            // Fetch user details
-            $.ajax({
-                url: '/admin/users/' + userId,
-                type: 'GET',
-                success: function(response) {
-                    if (response.success) {
-                        // Close the loading dialog
-                        Swal.close();
-                        
-                        // Populate the form with user data
-                        const user = response.user;
-                        document.getElementById('edit_firstname').value = user.firstname || '';
-                        document.getElementById('edit_middlename').value = user.middlename || '';
-                        document.getElementById('edit_lastname').value = user.lastname || '';
-                        document.getElementById('edit_username').value = user.username || '';
-                        document.getElementById('edit_email').value = user.email || '';
-                        document.getElementById('edit_birthday').value = user.birthday ? user.birthday.split(' ')[0] : '';
-                        document.getElementById('edit_number').value = user.number || '';
-                        document.getElementById('edit_location').value = user.location || '';
-                        
-                        // Show current profile picture if it exists
-                        const currentPictureContainer = document.getElementById('currentPictureContainer');
-                        const currentProfilePicture = document.getElementById('currentProfilePicture');
-                        
-                        if (user.profile_picture) {
-                            currentProfilePicture.src = '/storage/' + user.profile_picture;
-                            currentPictureContainer.style.display = 'block';
-                        } else {
-                            currentPictureContainer.style.display = 'none';
-                        }
-                        
-                        // Show the modal
-                        document.getElementById('editUserModal').style.display = 'block';
-                        
-                        // Set up form submission
-                        setupEditUserForm(userId);
-                    }
-                },
-                error: function(xhr) {
-                    Swal.fire({
-                        title: 'Error!',
-                        text: xhr.responseJSON ? xhr.responseJSON.message : 'Failed to load user details',
-                        icon: 'error',
-                        confirmButtonColor: '#517A5B'
-                    });
-                }
-            });
-        }
-        
-        // Function to close the edit user modal
-        function closeEditUserModal() {
-            document.getElementById('editUserModal').style.display = 'none';
-        }
-        
-        // Function to set up the edit user form submission
-        function setupEditUserForm(userId) {
-            $('#editUserForm').off('submit').on('submit', function(e) {
-                e.preventDefault();
-                
-                // Create form data object to handle file uploads
-                const formData = new FormData(this);
-                
-                // Show loading state
-                Swal.fire({
-                    title: 'Updating User...',
-                    text: 'Please wait',
-                    allowOutsideClick: false,
-                    showConfirmButton: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-                
-                // Submit the form with AJAX
-                $.ajax({
-                    url: '/admin/users/' + userId + '/edit',
-                    type: 'POST',
-                    data: formData,
-                    contentType: false,
-                    processData: false,
-                    success: function(response) {
-                        if (response.success) {
-                            // Close the modal
-                            closeEditUserModal();
-                            
-                            // Update the user in the table
-                            const user = response.user;
-                            const userRow = document.getElementById('user-row-' + userId);
-                            
-                            if (userRow) {
-                                userRow.cells[1].textContent = user.firstname + ' ' + user.lastname;
-                                userRow.cells[2].textContent = user.username;
-                                userRow.cells[3].textContent = user.email;
-                            }
-                            
-                            // Show success message
-                            Swal.fire({
-                                title: 'Success!',
-                                text: response.message,
-                                icon: 'success',
-                                confirmButtonColor: '#517A5B'
-                            });
-                        }
-                    },
-                    error: function(xhr) {
-                        let errorMessage = 'Failed to update user';
-                        
-                        // Handle validation errors
-                        if (xhr.responseJSON && xhr.responseJSON.errors) {
-                            const errors = xhr.responseJSON.errors;
-                            const errorsList = Object.values(errors).flat();
-                            errorMessage = errorsList.join('<br>');
-                        } else if (xhr.responseJSON && xhr.responseJSON.message) {
-                            errorMessage = xhr.responseJSON.message;
-                        }
-                        
-                        Swal.fire({
-                            title: 'Error!',
-                            html: errorMessage,
-                            icon: 'error',
-                            confirmButtonColor: '#517A5B'
-                        });
-                    }
-                });
-            });
-        }
-        
-        // Close modal if user clicks outside of it
-        window.onclick = function(event) {
-            const modal = document.getElementById('editUserModal');
-            if (event.target === modal) {
-                closeEditUserModal();
-            }
-        }
     </script>
 </body>
 </html>
