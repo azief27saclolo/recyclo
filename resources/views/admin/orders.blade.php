@@ -383,6 +383,77 @@
             justify-content: flex-end;
             gap: 10px;
         }
+
+        /* Icon button styles */
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 3px;
+            padding: 0;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .icon-btn i {
+            font-size: 1rem;
+        }
+        
+        .icon-btn-view {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .icon-btn-view:hover {
+            background-color: #5a6268;
+        }
+        
+        .icon-btn-approve {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .icon-btn-approve:hover {
+            background-color: #218838;
+        }
+        
+        .icon-btn-reject {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .icon-btn-reject:hover {
+            background-color: #c82333;
+        }
+        
+        .icon-btn-update {
+            background-color: #517A5B;
+            color: white;
+        }
+        
+        .icon-btn-update:hover {
+            background-color: #446749;
+        }
+        
+        .icon-btn-delete {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .icon-btn-delete:hover {
+            background-color: #c82333;
+        }
+        
+        .action-btn-group {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
@@ -508,62 +579,64 @@
                                         </span>
                                     </td>
                                     <td>
-                                        @if($order->receipt_image)
-                                            <button type="button" class="btn view-receipt-btn" style="background-color: #6c757d; color: white; margin-bottom: 5px; width: 100%;" data-receipt="{{ asset('storage/' . $order->receipt_image) }}">
-                                                <i class="bi bi-receipt"></i> View Receipt
-                                            </button>
-                                        @endif
-                                        
-                                        @if($order->status == 'pending')
-                                            <div class="action-buttons">
-                                                <form action="{{ route('admin.orders.approve', ['orderId' => $order->id]) }}" method="POST">
+                                        <div class="action-btn-group">
+                                            @if($order->receipt_image)
+                                                <button type="button" class="icon-btn icon-btn-view view-receipt-btn" data-receipt="{{ asset('storage/' . $order->receipt_image) }}" title="View Receipt">
+                                                    <i class="bi bi-receipt"></i>
+                                                </button>
+                                            @endif
+                                            
+                                            @if($order->status == 'pending')
+                                                <form action="{{ route('admin.orders.approve', ['orderId' => $order->id]) }}" method="POST" style="display: inline;">
                                                     @csrf
-                                                    <button type="submit" class="btn btn-approve" title="Approve Order">
-                                                        <i class="bi bi-check-circle"></i> Approve
+                                                    <button type="submit" class="icon-btn icon-btn-approve" title="Approve Order">
+                                                        <i class="bi bi-check-circle"></i>
                                                     </button>
                                                 </form>
-                                                <form action="{{ route('admin.orders.reject', ['orderId' => $order->id]) }}" method="POST">
+                                                <form action="{{ route('admin.orders.reject', ['orderId' => $order->id]) }}" method="POST" style="display: inline;">
                                                     @csrf
-                                                    <button type="submit" class="btn btn-reject" title="Reject Order">
-                                                        <i class="bi bi-x-circle"></i> Reject
+                                                    <button type="submit" class="icon-btn icon-btn-reject" title="Reject Order">
+                                                        <i class="bi bi-x-circle"></i>
                                                     </button>
                                                 </form>
-                                            </div>
-                                        @else
-                                            <div class="dropdown">
-                                                <button class="btn btn-primary">Update Status</button>
-                                                <div class="dropdown-content">
-                                                    <form action="{{ url('/admin/orders/' . $order->id . '/status') }}" method="POST">
-                                                        @csrf
-                                                        @method('PUT')
-                                                        <input type="hidden" name="status" value="pending">
-                                                        <button type="submit" class="dropdown-option">Pending</button>
-                                                    </form>
-                                                    <form action="/admin/orders/{{ $order->id }}/status" method="POST">
-                                                        @csrf
-                                                        @method('PUT')
-                                                        <input type="hidden" name="status" value="approved">
-                                                        <button type="submit" class="dropdown-option">Approved</button>
-                                                    </form>
-                                                    <form action="/admin/orders/{{ $order->id }}/status" method="POST">
-                                                        @csrf
-                                                        @method('PUT')
-                                                        <input type="hidden" name="status" value="completed">
-                                                        <button type="submit" class="dropdown-option">Completed</button>
-                                                    </form>
-                                                    <form action="/admin/orders/{{ $order->id }}/status" method="POST">
-                                                        @csrf
-                                                        @method('PUT')
-                                                        <input type="hidden" name="status" value="cancelled">
-                                                        <button type="submit" class="dropdown-option">Cancelled</button>
-                                                    </form>
+                                            @else
+                                                <div class="dropdown">
+                                                    <button class="icon-btn icon-btn-update" title="Update Status">
+                                                        <i class="bi bi-arrow-repeat"></i>
+                                                    </button>
+                                                    <div class="dropdown-content">
+                                                        <form action="{{ url('/admin/orders/' . $order->id . '/status') }}" method="POST">
+                                                            @csrf
+                                                            @method('PUT')
+                                                            <input type="hidden" name="status" value="pending">
+                                                            <button type="submit" class="dropdown-option">Pending</button>
+                                                        </form>
+                                                        <form action="/admin/orders/{{ $order->id }}/status" method="POST">
+                                                            @csrf
+                                                            @method('PUT')
+                                                            <input type="hidden" name="status" value="approved">
+                                                            <button type="submit" class="dropdown-option">Approved</button>
+                                                        </form>
+                                                        <form action="/admin/orders/{{ $order->id }}/status" method="POST">
+                                                            @csrf
+                                                            @method('PUT')
+                                                            <input type="hidden" name="status" value="completed">
+                                                            <button type="submit" class="dropdown-option">Completed</button>
+                                                        </form>
+                                                        <form action="/admin/orders/{{ $order->id }}/status" method="POST">
+                                                            @csrf
+                                                            @method('PUT')
+                                                            <input type="hidden" name="status" value="cancelled">
+                                                            <button type="submit" class="dropdown-option">Cancelled</button>
+                                                        </form>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        @endif
-                                        
-                                        <button onclick="confirmDeleteOrder({{ $order->id }})" class="btn btn-danger" style="margin-top: 5px; width: 100%;">
-                                            <i class="bi bi-trash"></i> Delete
-                                        </button>
+                                            @endif
+                                            
+                                            <button onclick="confirmDeleteOrder({{ $order->id }})" class="icon-btn icon-btn-delete" title="Delete Order">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                                 @endforeach
