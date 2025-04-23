@@ -389,6 +389,23 @@
             border: 1px solid #ddd;
             border-radius: 5px;
         }
+
+        /* Action buttons styling */
+        .action-buttons .btn {
+            padding: 0.25rem 0.5rem;
+            margin: 0 2px;
+        }
+        
+        .action-buttons form {
+            display: inline-block;
+            margin: 0;
+        }
+
+        /* Make tooltip text more readable */
+        .tooltip-inner {
+            font-size: 0.85rem;
+            padding: 5px 10px;
+        }
     </style>
 </head>
 <body>
@@ -548,19 +565,21 @@
                                     </td>
                                     <td>{{ $product->created_at->format('M d, Y') }}</td>
                                     <td>
-                                        <button class="btn btn-primary btn-sm view-product" data-id="{{ $product->id }}">
-                                            <i class="bi bi-eye"></i> View
-                                        </button>
-                                        <button class="btn btn-warning btn-sm edit-product" data-id="{{ $product->id }}">
-                                            <i class="bi bi-pencil"></i> Edit
-                                        </button>
-                                        <form action="{{ route('admin.products.delete', $product->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this product?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm">
-                                                <i class="bi bi-trash"></i> Delete
+                                        <div class="action-buttons">
+                                            <button class="btn btn-sm btn-primary view-product" data-id="{{ $product->id }}" data-toggle="tooltip" title="View details">
+                                                <i class="bi bi-eye"></i>
                                             </button>
-                                        </form>
+                                            <button class="btn btn-sm btn-warning edit-product" data-id="{{ $product->id }}" data-toggle="tooltip" title="Edit product">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <form action="{{ route('admin.products.delete', $product->id) }}" method="POST" style="display:inline;">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this product?')" data-toggle="tooltip" title="Delete product">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                                 @endforeach
@@ -750,15 +769,30 @@
             filterProducts(document.getElementById('productSearch').value.toLowerCase(), categoryTerm);
         });
 
+        // Initialize tooltips
+        document.addEventListener('DOMContentLoaded', function() {
+            // Enable tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-toggle="tooltip"]'));
+            tooltipTriggerList.forEach(function(tooltipTriggerEl) {
+                tooltipTriggerEl.title = tooltipTriggerEl.getAttribute('title');
+                tooltipTriggerEl.setAttribute('data-bs-toggle', 'tooltip');
+                tooltipTriggerEl.setAttribute('data-bs-placement', 'top');
+            });
+            // Initialize Bootstrap tooltips if Bootstrap 5
+            if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+                tooltipTriggerList.map(function(tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+            }
+        });
+
         function filterProducts(searchTerm, categoryTerm) {
             const tableRows = document.querySelectorAll('.table tbody tr');
-            
             tableRows.forEach(row => {
                 const text = row.textContent.toLowerCase();
                 const categoryCell = row.children[3].textContent.trim();
                 const matchesSearch = text.includes(searchTerm);
                 const matchesCategory = categoryTerm === '' || categoryCell === categoryTerm;
-                
                 if (matchesSearch && matchesCategory) {
                     row.style.display = '';
                 } else {
@@ -766,465 +800,6 @@
                 }
             });
         }
-
-        // View product details modal
-        const modal = document.getElementById('productModal');
-        const closeBtn = document.querySelector('.close');
-        const viewButtons = document.querySelectorAll('.view-product');
-
-        // Click event for view buttons
-        viewButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const productId = this.getAttribute('data-id');
-                fetchProductDetails(productId);
-            });
-        });
-
-        // Close modal when clicking X button
-        closeBtn.addEventListener('click', function() {
-            modal.style.display = 'none';
-        });
-
-        // Close modal when clicking outside
-        window.addEventListener('click', function(event) {
-            if (event.target == modal) {
-                modal.style.display = 'none';
-            }
-        });
-
-        // Function to fetch product details via AJAX
-        function fetchProductDetails(productId) {
-            fetch(`/admin/products/${productId}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const product = data.product;
-                        
-                        // Update modal content
-                        document.getElementById('modalProductTitle').textContent = product.title;
-                        document.getElementById('modalProductCategory').textContent = product.category.name || product.category;
-                        document.getElementById('modalProductPrice').textContent = `₱${parseFloat(product.price).toFixed(2)} / ${product.unit}`;
-                        document.getElementById('modalProductQuantity').textContent = `${product.quantity} ${product.unit}`;
-                        document.getElementById('modalProductSeller').textContent = product.user ? `${product.user.firstname} ${product.user.lastname}` : 'Unknown';
-                        document.getElementById('modalProductLocation').textContent = product.location || 'Not specified';
-                        document.getElementById('modalProductAddress').textContent = product.address || 'Not specified';
-                        document.getElementById('modalProductDate').textContent = new Date(product.created_at).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                        });
-                        document.getElementById('modalProductDescription').textContent = product.description || 'No description provided';
-                        
-                        // Set image or placeholder
-                        if (product.image) {
-                            document.getElementById('modalProductImage').src = `/storage/${product.image}`;
-                            document.getElementById('modalProductImage').style.display = 'block';
-                        } else {
-                            document.getElementById('modalProductImage').style.display = 'none';
-                        }
-                        
-                        // Show modal
-                        modal.style.display = 'block';
-                    } else {
-                        alert('Error loading product details');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error loading product details');
-                });
-        }
-
-        // Edit product functionality
-        const editModal = document.getElementById('editProductModal');
-        const editButtons = document.querySelectorAll('.edit-product');
-        const closeEditBtn = document.getElementById('closeEditModal');
-        const cancelEditBtn = document.getElementById('cancelEditBtn');
-        const editForm = document.getElementById('editProductForm');
-
-        // Click event for edit buttons
-        editButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const productId = this.getAttribute('data-id');
-                fetchProductForEdit(productId);
-            });
-        });
-
-        // Close edit modal when clicking X button
-        closeEditBtn.addEventListener('click', function() {
-            editModal.style.display = 'none';
-        });
-
-        // Close edit modal when clicking Cancel button
-        cancelEditBtn.addEventListener('click', function() {
-            editModal.style.display = 'none';
-        });
-
-        // Close edit modal when clicking outside
-        window.addEventListener('click', function(event) {
-            if (event.target == editModal) {
-                editModal.style.display = 'none';
-            }
-        });
-
-        // Function to fetch product details for editing
-        function fetchProductForEdit(productId) {
-            fetch(`/admin/products/${productId}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const product = data.product;
-                        
-                        // Set form action
-                        editForm.action = `/admin/products/${productId}/update`;
-                        
-                        // Populate form fields
-                        document.getElementById('edit_title').value = product.title;
-                        document.getElementById('edit_category_id').value = product.category_id || '';
-                        document.getElementById('edit_price').value = product.price;
-                        document.getElementById('edit_unit').value = product.unit;
-                        document.getElementById('edit_quantity').value = product.quantity;
-                        document.getElementById('edit_location').value = product.location;
-                        document.getElementById('edit_address').value = product.address;
-                        document.getElementById('edit_description').value = product.description;
-                        
-                        // Display current image
-                        const currentImage = document.getElementById('currentImage');
-                        if (product.image) {
-                            currentImage.src = `/storage/${product.image}`;
-                            document.getElementById('currentImageContainer').style.display = 'block';
-                        } else {
-                            document.getElementById('currentImageContainer').style.display = 'none';
-                        }
-                        
-                        // Show modal
-                        editModal.style.display = 'block';
-                    } else {
-                        alert('Error loading product details');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error loading product details');
-                });
-        }
-
-        // Function to confirm logout with SweetAlert2
-        function confirmLogout() {
-            Swal.fire({
-                title: 'Confirm Logout',
-                text: "Are you sure you want to logout from the admin panel?",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#517A5B',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, Logout',
-                cancelButtonText: 'Cancel'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = "{{ route('admin.logout') }}";
-                }
-            });
-        }
-
-        // Category Management
-        const categoryModal = document.getElementById('categoryModal');
-        const manageCategoriesBtn = document.getElementById('manageCategoriesBtn');
-        const closeCategoryModal = document.getElementById('closeCategoryModal');
-        const categoriesList = document.getElementById('categoriesList');
-        const newCategoryInput = document.getElementById('newCategoryName');
-        const addCategoryBtn = document.getElementById('addCategoryBtn');
-        const categoryToRemove = document.getElementById('categoryToRemove');
-        const replacementCategory = document.getElementById('replacementCategory');
-        const removeCategoryBtn = document.getElementById('removeCategoryBtn');
-
-        // Open category management modal
-        manageCategoriesBtn.addEventListener('click', function() {
-            loadCategories();
-            categoryModal.style.display = 'block';
-        });
-
-        // Close category modal
-        closeCategoryModal.addEventListener('click', function() {
-            categoryModal.style.display = 'none';
-        });
-
-        // Close category modal when clicking outside
-        window.addEventListener('click', function(e) {
-            if (e.target === categoryModal) {
-                categoryModal.style.display = 'none';
-            }
-        });
-
-        // Load categories from server - improved to display more details
-        function loadCategories() {
-            fetch('{{ route("admin.categories") }}')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Populate categories list
-                        categoriesList.innerHTML = '';
-                        
-                        // Populate dropdowns
-                        categoryToRemove.innerHTML = '<option value="">Select a category</option>';
-                        replacementCategory.innerHTML = '<option value="">Select a category</option>';
-
-                        // Sort categories - active first, then by name
-                        const sortedCategories = data.categories.sort((a, b) => {
-                            if (a.is_active !== b.is_active) {
-                                return b.is_active - a.is_active; // Active categories first
-                            }
-                            return a.name.localeCompare(b.name); // Then alphabetically
-                        });
-
-                        sortedCategories.forEach(category => {
-                            // Add to visual list
-                            const badge = document.createElement('span');
-                            badge.className = 'category-badge';
-                            badge.style.backgroundColor = category.color || '#f0f0f0';
-                            badge.style.color = getContrastColor(category.color || '#f0f0f0');
-                            if (!category.is_active) {
-                                badge.style.opacity = '0.5';
-                                badge.style.textDecoration = 'line-through';
-                                badge.title = 'Inactive: ' + (category.description || '');
-                                badge.innerHTML = `${category.name} <small>(inactive)</small>`;
-                            } else {
-                                badge.title = category.description || '';
-                                badge.textContent = category.name;
-                                
-                                // Only add active categories to the removal dropdown
-                                const option1 = document.createElement('option');
-                                option1.value = category.id;
-                                option1.textContent = category.name;
-                                option1.style.backgroundColor = category.color + '20';
-                                categoryToRemove.appendChild(option1);
-
-                                // Only add active categories to the replacement dropdown
-                                const option2 = document.createElement('option');
-                                option2.value = category.id;
-                                option2.textContent = category.name;
-                                option2.style.backgroundColor = category.color + '20';
-                                replacementCategory.appendChild(option2);
-                            }
-                            categoriesList.appendChild(badge);
-                        });
-
-                        // Also update the filter dropdown in the main page
-                        const categoryFilter = document.getElementById('categoryFilter');
-                        categoryFilter.innerHTML = '<option value="">All Categories</option>';
-
-                        // Only active categories for the filter
-                        sortedCategories.filter(cat => cat.is_active).forEach(category => {
-                            const option = document.createElement('option');
-                            option.value = category.id;
-                            option.textContent = category.name;
-                            option.style.backgroundColor = category.color + '20';
-                            categoryFilter.appendChild(option);
-                        });
-                    } else {
-                        Swal.fire({
-                            title: 'Error!',
-                            text: data.message || 'Failed to load categories',
-                            icon: 'error',
-                            confirmButtonColor: '#517A5B'
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    Swal.fire({
-                        title: 'Error!',
-                        text: 'An unexpected error occurred while loading categories',
-                        icon: 'error',
-                        confirmButtonColor: '#517A5B'
-                    });
-                });
-        }
-
-        // Helper function to determine text color based on background color
-        function getContrastColor(hexColor) {
-            if (!hexColor) return '#000000';
-            
-            // Remove # if present
-            hexColor = hexColor.replace('#', '');
-            
-            // Handle invalid hex values
-            if (hexColor.length !== 6) return '#000000';
-
-            // Convert to RGB
-            const r = parseInt(hexColor.substr(0, 2), 16);
-            const g = parseInt(hexColor.substr(2, 2), 16);
-            const b = parseInt(hexColor.substr(4, 2), 16);
-            
-            // Handle invalid RGB values
-            if (isNaN(r) || isNaN(g) || isNaN(b)) return '#000000';
-
-            // Calculate luminance
-            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-            
-            // Return black for light colors, white for dark colors
-            return luminance > 0.5 ? '#000000' : '#ffffff';
-        }
-
-        // Add new category
-        addCategoryBtn.addEventListener('click', function() {
-            const newCategoryName = document.getElementById('newCategoryName').value.trim();
-            const newCategoryDescription = document.getElementById('newCategoryDescription').value.trim();
-            const newCategoryColor = document.getElementById('newCategoryColor').value;
-
-            if (!newCategoryName) {
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'Please enter a category name',
-                    icon: 'error',
-                    confirmButtonColor: '#517A5B'
-                });
-                return;
-            }
-            
-            fetch('{{ route("admin.categories.add") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    name: newCategoryName,
-                    description: newCategoryDescription,
-                    color: newCategoryColor
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire({
-                        title: 'Success!',
-                        text: data.message || 'Category added successfully',
-                        icon: 'success',
-                        confirmButtonColor: '#517A5B'
-                    });
-                    
-                    // Clear inputs
-                    document.getElementById('newCategoryName').value = '';
-                    document.getElementById('newCategoryDescription').value = '';
-                    document.getElementById('newCategoryColor').value = '#517A5B';
-
-                    // Reload categories
-                    loadCategories();
-                } else {
-                    Swal.fire({
-                        title: 'Error!',
-                        text: data.message || 'Failed to add category',
-                        icon: 'error',
-                        confirmButtonColor: '#517A5B'
-                    });
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'An unexpected error occurred',
-                    icon: 'error',
-                    confirmButtonColor: '#517A5B'
-                });
-            });
-        });
-        
-        // Remove a category
-        removeCategoryBtn.addEventListener('click', function() {
-            const categoryId = categoryToRemove.value;
-            const replacementCategoryId = replacementCategory.value;
-
-            if (!categoryId) {
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'Please select a category to remove',
-                    icon: 'error',
-                    confirmButtonColor: '#517A5B'
-                });
-                return;
-            }
-            
-            if (!replacementCategoryId) {
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'Please select a replacement category',
-                    icon: 'error',
-                    confirmButtonColor: '#517A5B'
-                });
-                return;
-            }
-            
-            if (categoryId === replacementCategoryId) {
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'The category to remove and replacement category cannot be the same',
-                    icon: 'error',
-                    confirmButtonColor: '#517A5B'
-                });
-                return;
-            }
-            
-            // Confirm before removing
-            Swal.fire({
-                title: 'Are you sure?',
-                text: `This will remove the selected category and move all its products to the replacement category.`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc3545',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, remove it'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    fetch('{{ route("admin.categories.remove") }}', {
-                        method: 'DELETE',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            category_id: categoryId,
-                            replacement_category_id: replacementCategoryId
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            Swal.fire({
-                                title: 'Deleted!',
-                                text: data.message || 'Category removed successfully',
-                                icon: 'success',
-                                confirmButtonColor: '#517A5B',
-                            });
-                            
-                            // Reset selects
-                            categoryToRemove.value = '';
-                            replacementCategory.value = '';
-                            
-                            // Reload categories
-                            loadCategories();
-                        } else {
-                            Swal.fire({
-                                title: 'Error!',
-                                text: data.message || 'Failed to remove category',
-                                icon: 'error',
-                                confirmButtonColor: '#517A5B'
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        Swal.fire({
-                            title: 'Error!',
-                            text: 'An unexpected error occurred',
-                            icon: 'error',
-                            confirmButtonColor: '#517A5B'
-                        });
-                    });
-                }
-            });
-        });
     </script>
 </body>
 </html>
