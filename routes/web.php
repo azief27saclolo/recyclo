@@ -98,6 +98,9 @@ Route::group(['prefix' => 'admin', 'middleware' => [AdminMiddleware::class]], fu
     Route::delete('/categories/remove', [AdminController::class, 'removeCategory'])->name('admin.categories.remove');
     
     Route::get('/logout', [AdminController::class, 'logout'])->name('admin.logout');
+
+    // Add correctly defined delete order route
+    Route::get('/orders/{orderId}/delete', [AdminController::class, 'deleteOrder'])->name('admin.orders.delete');
 });
 
 // Product Routes

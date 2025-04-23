@@ -419,7 +419,6 @@
                 <a href="{{ route('admin.reports') }}" class="nav-link">
                     <i class="bi bi-file-earmark-text"></i> Reports
                 </a>
-                <!-- Change to use SweetAlert2 for logout -->
                 <a href="javascript:void(0)" class="nav-link" onclick="confirmLogout()">
                     <i class="bi bi-box-arrow-right"></i> Logout
                 </a>
@@ -433,7 +432,6 @@
                     <h1><i class="bi bi-cart"></i> Orders Management</h1>
                 </div>
 
-                <!-- Order Requests Awaiting Approval -->
                 @php
                     $pendingOrders = $orders->where('status', 'pending')->count();
                 @endphp
@@ -445,7 +443,6 @@
                 </div>
                 @endif
                 
-                <!-- Tabs for filtering orders -->
                 <div class="tab-container">
                     <div class="tab-buttons">
                         <button class="tab-btn active" data-tab="all">All Orders</button>
@@ -511,7 +508,6 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <!-- Add View Receipt Button -->
                                         @if($order->receipt_image)
                                             <button type="button" class="btn view-receipt-btn" style="background-color: #6c757d; color: white; margin-bottom: 5px; width: 100%;" data-receipt="{{ asset('storage/' . $order->receipt_image) }}">
                                                 <i class="bi bi-receipt"></i> View Receipt
@@ -520,7 +516,6 @@
                                         
                                         @if($order->status == 'pending')
                                             <div class="action-buttons">
-                                                <!-- Fix the approve order form action path -->
                                                 <form action="{{ route('admin.orders.approve', ['orderId' => $order->id]) }}" method="POST">
                                                     @csrf
                                                     <button type="submit" class="btn btn-approve" title="Approve Order">
@@ -565,6 +560,10 @@
                                                 </div>
                                             </div>
                                         @endif
+                                        
+                                        <button onclick="confirmDeleteOrder({{ $order->id }})" class="btn btn-danger" style="margin-top: 5px; width: 100%;">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </button>
                                     </td>
                                 </tr>
                                 @endforeach
@@ -580,7 +579,6 @@
         </div>
     </div>
 
-    <!-- Receipt View Modal -->
     <div id="receiptModal" class="modal">
         <div class="modal-content" style="width: 80%; max-width: 800px;">
             <div class="modal-header">
@@ -597,9 +595,7 @@
     </div>
 
     <script>
-        // Simple tab functionality for filtering orders
         document.addEventListener('DOMContentLoaded', function() {
-            // Show SweetAlert for session messages
             @if (session('success'))
                 Swal.fire({
                     title: 'Success!',
@@ -620,7 +616,6 @@
                 });
             @endif
 
-            // Handle view receipt functionality
             const receiptModal = document.getElementById('receiptModal');
             const receiptImage = document.getElementById('receiptImage');
             const closeReceiptModal = document.getElementById('closeReceiptModal');
@@ -643,14 +638,12 @@
                 receiptModal.style.display = 'none';
             });
             
-            // Close receipt modal when clicking outside
             window.addEventListener('click', function(event) {
                 if (event.target == receiptModal) {
                     receiptModal.style.display = 'none';
                 }
             });
 
-            // Handle form submissions with SweetAlert confirmations
             document.querySelectorAll('.action-buttons form').forEach(form => {
                 form.addEventListener('submit', function(e) {
                     e.preventDefault();
@@ -677,7 +670,6 @@
                 });
             });
 
-            // Handle status update dropdown actions with confirmation
             document.querySelectorAll('.dropdown-content form').forEach(form => {
                 form.addEventListener('submit', function(e) {
                     e.preventDefault();
@@ -701,22 +693,14 @@
                 });
             });
 
-            // Existing tab functionality
             const tabButtons = document.querySelectorAll('.tab-btn');
             const orderRows = document.querySelectorAll('.order-row');
             
             tabButtons.forEach(button => {
                 button.addEventListener('click', function() {
-                    // Remove active class from all buttons
                     tabButtons.forEach(btn => btn.classList.remove('active'));
-                    
-                    // Add active class to clicked button
                     this.classList.add('active');
-                    
-                    // Get the tab value
                     const tabValue = this.getAttribute('data-tab');
-                    
-                    // Show/hide rows based on selected tab
                     orderRows.forEach(row => {
                         if (tabValue === 'all') {
                             row.style.display = 'table-row';
@@ -732,7 +716,6 @@
             });
         });
 
-        // New confirmLogout function using SweetAlert2
         function confirmLogout() {
             Swal.fire({
                 title: 'Confirm Logout',
@@ -750,11 +733,21 @@
             });
         }
         
-        // Remove the old logout modal functions since we're using SweetAlert2 now
-        
-        // Close modal when clicking outside of it
-        window.onclick = function(event) {
-            // ...existing code for other modals if needed...
+        function confirmDeleteOrder(orderId) {
+            Swal.fire({
+                title: 'Delete Order',
+                text: "Are you sure you want to delete this order? This action cannot be undone.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = `/admin/orders/${orderId}/delete`;
+                }
+            });
         }
     </script>
 </body>

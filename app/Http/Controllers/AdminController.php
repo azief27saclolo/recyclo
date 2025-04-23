@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
@@ -105,6 +106,81 @@ class AdminController extends Controller
             return redirect()->back()->with('success', 'Order #' . $orderId . ' has been rejected successfully.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to reject order: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Delete an order
+     *
+     * @param int $orderId
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function deleteOrder($orderId)
+    {
+        try {
+            // Find the order
+            $order = Order::findOrFail($orderId);
+            
+            // Store the order ID for the success message
+            $orderIdForMessage = $order->id;
+            
+            // Begin transaction
+            DB::beginTransaction();
+            
+            // If order has receipt image, delete it from storage
+            if ($order->receipt_image && Storage::disk('public')->exists($order->receipt_image)) {
+                Storage::disk('public')->delete($order->receipt_image);
+            }
+            
+            // If order has items (order_items relationship), delete them first
+            if (Schema::hasTable('order_items')) {
+                $order->items()->delete();
+            }
+            
+            // If the order status was not 'completed' or 'cancelled', restore product quantities
+            if (!in_array($order->status, ['completed', 'cancelled'])) {
+                // If using order_items
+                if (Schema::hasTable('order_items') && $order->items()->exists()) {
+                    foreach ($order->items as $item) {
+                        $post = Post::find($item->post_id);
+                        if ($post) {
+                            // Restore the quantity back to the post
+                            $post->quantity += $item->quantity;
+                            $post->save();
+                        }
+                    }
+                } else {
+                    // If using direct post_id on orders (legacy behavior)
+                    $post = Post::find($order->post_id);
+                    if ($post) {
+                        // Restore quantity
+                        $post->quantity += $order->quantity;
+                        $post->save();
+                    }
+                }
+            }
+            
+            // Delete the order
+            $order->delete();
+            
+            // Commit the transaction
+            DB::commit();
+            
+            return redirect()->route('admin.orders')
+                ->with('success', "Order #$orderIdForMessage has been deleted successfully.");
+                
+        } catch (\Exception $e) {
+            // Rollback the transaction in case of error
+            DB::rollBack();
+            
+            \Log::error('Failed to delete order', [
+                'order_id' => $orderId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return redirect()->route('admin.orders')
+                ->with('error', 'Failed to delete order: ' . $e->getMessage());
         }
     }
 
