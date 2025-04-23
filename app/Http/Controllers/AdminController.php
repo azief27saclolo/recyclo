@@ -196,16 +196,180 @@ class AdminController extends Controller
     
     public function updateUserStatus(Request $request, User $user)
     {
-        $validated = $request->validate([
-            'status' => 'required|in:active,suspended,inactive'
-        ]);
-        
-        // Update user status
-        $user->status = $validated['status'];
-        $user->save();
-        
-        return redirect()->route('admin.users')
-            ->with('success', "User {$user->username}'s status updated to {$validated['status']}");
+        try {
+            $validated = $request->validate([
+                'status' => 'required|in:active,suspended,inactive'
+            ]);
+            
+            // Update user status
+            $user->status = $validated['status'];
+            $user->save();
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "User {$user->username}'s status updated to {$validated['status']}",
+                    'user' => $user
+                ]);
+            }
+            
+            return redirect()->route('admin.users')
+                ->with('success', "User {$user->username}'s status updated to {$validated['status']}");
+        } catch (\Exception $e) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to update user status: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->route('admin.users')
+                ->with('error', 'Failed to update user status: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get user details for editing
+     * 
+     * @param User $user
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getUser(User $user)
+    {
+        try {
+            // Return the user with shop relationship
+            $user->load('shop');
+            
+            return response()->json([
+                'success' => true,
+                'user' => $user
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get user details: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update user information
+     *
+     * @param Request $request
+     * @param User $user
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+     */
+    public function updateUser(Request $request, User $user)
+    {
+        try {
+            $validated = $request->validate([
+                'firstname' => 'required|string|max:255',
+                'middlename' => 'nullable|string|max:255',
+                'lastname' => 'required|string|max:255',
+                'email' => [
+                    'required', 
+                    'email', 
+                    'max:255',
+                    \Illuminate\Validation\Rule::unique('users')->ignore($user->id)
+                ],
+                'username' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    \Illuminate\Validation\Rule::unique('users')->ignore($user->id)
+                ],
+                'birthday' => 'required|date',
+                'number' => 'nullable|string|max:20',
+                'location' => 'nullable|string|max:255',
+                'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+            
+            // Handle profile picture upload if provided
+            if ($request->hasFile('profile_picture')) {
+                // Delete old profile picture if it exists
+                if ($user->profile_picture && Storage::disk('public')->exists($user->profile_picture)) {
+                    Storage::disk('public')->delete($user->profile_picture);
+                }
+                
+                // Store the new profile picture
+                $validated['profile_picture'] = $request->file('profile_picture')->store('profile_pictures', 'public');
+            }
+            
+            // Update user information
+            $user->update($validated);
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "User {$user->username}'s information has been updated successfully",
+                    'user' => $user
+                ]);
+            }
+            
+            return redirect()->route('admin.users')
+                ->with('success', "User {$user->username}'s information has been updated successfully");
+        } catch (\Exception $e) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to update user: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->route('admin.users')
+                ->with('error', 'Failed to update user: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Delete a user
+     *
+     * @param User $user
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+     */
+    public function deleteUser(User $user)
+    {
+        try {
+            // Store user information for the success message
+            $username = $user->username;
+            
+            // Begin transaction
+            DB::beginTransaction();
+            
+            // Delete user's profile picture if exists
+            if ($user->profile_picture && Storage::disk('public')->exists($user->profile_picture)) {
+                Storage::disk('public')->delete($user->profile_picture);
+            }
+            
+            // Delete the user
+            $user->delete();
+            
+            // Commit the transaction
+            DB::commit();
+            
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "User {$username} has been deleted successfully"
+                ]);
+            }
+            
+            return redirect()->route('admin.users')
+                ->with('success', "User {$username} has been deleted successfully");
+        } catch (\Exception $e) {
+            // Rollback in case of error
+            DB::rollBack();
+            
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to delete user: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->route('admin.users')
+                ->with('error', 'Failed to delete user: ' . $e->getMessage());
+        }
     }
 
     public function shops()

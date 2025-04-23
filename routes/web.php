@@ -67,6 +67,10 @@ Route::group(['prefix' => 'admin', 'middleware' => [AdminMiddleware::class]], fu
     
     Route::get('/users', [AdminController::class, 'users'])->name('admin.users');
     Route::put('/users/{user}/status', [AdminController::class, 'updateUserStatus'])->name('admin.users.update-status');
+    Route::delete('/users/{user}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
+    Route::get('/users/{user}', [AdminController::class, 'getUser'])->name('admin.users.get'); // Add this line for getting user details
+    Route::put('/users/{user}/edit', [AdminController::class, 'updateUser'])->name('admin.users.update'); // Add this line for updating user
+    
     Route::get('/shops', [AdminController::class, 'shops'])->name('admin.shops');
     Route::put('/shops/{shop}/status', [AdminController::class, 'updateShopStatus'])->name('admin.shops.update-status');
     
