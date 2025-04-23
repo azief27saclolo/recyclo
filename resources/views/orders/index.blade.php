@@ -97,7 +97,11 @@
                                             style="background: #517a5b; color: white; border: none; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;">
                                         <ion-icon name="location-outline"></ion-icon> Track Location
                                     </button>
-                                    <button class="btn btn-secondary" style="background: white; border: 1px solid #517a5b; color: #517a5b; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer;">Cancel Order</button>
+                                    <button class="btn btn-secondary cancel-order-btn" 
+                                            data-order-id="{{ $order->id }}" 
+                                            style="background: white; border: 1px solid #517a5b; color: #517a5b; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer;">
+                                        Cancel Order
+                                    </button>
                                 </div>
                             </div>
                         @endforeach
@@ -106,183 +110,6 @@
                             <ion-icon name="hourglass-outline" style="font-size: 60px; color: #ccc;"></ion-icon>
                             <p style="font-size: 18px; color: #666; margin-top: 10px;">No pending orders</p>
                             <a href="{{ route('posts') }}" style="background: #517a5b; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; display: inline-block; margin-top: 15px;">Start Shopping</a>
-                        </div>
-                    @endif
-                </div>
-
-                <!-- Processing Orders Tab Content (previously "New Orders") -->
-                <div class="order-cards" id="new-orders" style="display: none; flex-direction: column; gap: 20px;">
-                    @if($orders->where('status', 'processing')->count() > 0)
-                        @foreach($orders->where('status', 'processing') as $order)
-                            <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
-                                <div class="order-header" style="padding: 15px;">
-                                    <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
-                                    <div class="order-details">
-                                        <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
-                                        <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
-                                        <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
-                                        <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
-                                        <p style="margin: 5px 0; color: #666;">Price: ₱{{ $order->post->price }}.00 per kg</p>
-                                        <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
-                                        <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
-                                    </div>
-                                    <div class="order-status" style="margin-top: 10px;">
-                                        <span class="status-badge processing" style="background: #17a2b8; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Processing</span>
-                                    </div>
-                                </div>
-                                <div class="order-footer" style="background: #f8f9fa; padding: 15px; display: flex; gap: 10px;">
-                                    <button class="btn btn-primary track-location-btn" 
-                                            data-location="{{ $order->seller->location ?? 'Zamboanga City' }}" 
-                                            style="background: #517a5b; color: white; border: none; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;">
-                                        <ion-icon name="location-outline"></ion-icon> Track Location
-                                    </button>
-                                </div>
-                            </div>
-                        @endforeach
-                    @else
-                        <div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
-                            <ion-icon name="file-tray-outline" style="font-size: 60px; color: #ccc;"></ion-icon>
-                            <p style="font-size: 18px; color: #666; margin-top: 10px;">No processing orders</p>
-                            <a href="{{ route('posts') }}" style="background: #517a5b; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; display: inline-block; margin-top: 15px;">Start Shopping</a>
-                        </div>
-                    @endif
-                </div>
-
-                <!-- Delivering Orders Tab Content -->
-                <div class="order-cards" id="to-ship-orders" style="display: none; flex-direction: column; gap: 20px;">
-                    @if($orders->where('status', 'delivering')->count() > 0)
-                        @foreach($orders->where('status', 'delivering') as $order)
-                            <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
-                                <div class="order-header" style="padding: 15px;">
-                                    <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
-                                    <div class="order-details">
-                                        <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
-                                        <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
-                                        <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
-                                        <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
-                                        <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
-                                    </div>
-                                    <div class="order-status" style="margin-top: 10px;">
-                                        <span class="status-badge in-transit" style="background: #17a2b8; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Delivering</span>
-                                    </div>
-                                </div>
-                                <div class="order-footer" style="background: #f8f9fa; padding: 15px; display: flex; gap: 10px;">
-                                    <button class="btn btn-primary track-location-btn" 
-                                            data-location="{{ $order->seller->location ?? 'Zamboanga City' }}" 
-                                            style="background: #517a5b; color: white; border: none; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;">
-                                        <ion-icon name="location-outline"></ion-icon> Track Location
-                                    </button>
-                                </div>
-                            </div>
-                        @endforeach
-                    @else
-                        <div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
-                            <ion-icon name="airplane-outline" style="font-size: 60px; color: #ccc;"></ion-icon>
-                            <p style="font-size: 18px; color: #666; margin-top: 10px;">No orders being delivered</p>
-                        </div>
-                    @endif
-                </div>
-
-                <!-- For Pick Up Orders Tab Content (previously Delivered) -->
-                <div class="order-cards" id="to-receive-orders" style="display: none; flex-direction: column; gap: 20px;">
-                    @if($orders->where('status', 'for_pickup')->count() > 0)
-                        @foreach($orders->where('status', 'for_pickup') as $order)
-                            <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
-                                <div class="order-header" style="padding: 15px;">
-                                    <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
-                                    <div class="order-details">
-                                        <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
-                                        <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
-                                        <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
-                                        <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
-                                        <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
-                                    </div>
-                                    <div class="order-status" style="margin-top: 10px;">
-                                        <span class="status-badge to-deliver" style="background: #28a745; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">For Pick Up</span>
-                                    </div>
-                                </div>
-                                <div class="order-footer" style="background: #f8f9fa; padding: 15px; display: flex; gap: 10px;">
-                                    <button class="btn btn-primary track-location-btn" 
-                                            data-location="{{ $order->seller->location ?? 'Zamboanga City' }}" 
-                                            style="background: #517a5b; color: white; border: none; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;">
-                                        <ion-icon name="location-outline"></ion-icon> Track Location
-                                    </button>
-                                </div>
-                            </div>
-                        @endforeach
-                    @else
-                        <div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
-                            <ion-icon name="checkbox-outline" style="font-size: 60px; color: #ccc;"></ion-icon>
-                            <p style="font-size: 18px; color: #666; margin-top: 10px;">No delivered orders</p>
-                        </div>
-                    @endif
-                </div>
-
-                <!-- Completed Orders Tab Content -->
-                <div class="order-cards" id="completed-orders" style="display: none; flex-direction: column; gap: 20px;">
-                    @if($orders->where('status', 'completed')->count() > 0)
-                        @foreach($orders->where('status', 'completed') as $order)
-                            <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
-                                <div class="order-header" style="padding: 15px;">
-                                    <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
-                                    <div class="order-details">
-                                        <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
-                                        <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
-                                        <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
-                                        <p style="margin: 5px 0; color: #666;">Delivery Date: {{ $order->updated_at->format('M d, Y') }}</p>
-                                        <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
-                                        <p style="margin: 5px 0; color: #666;">Price: ₱{{ $order->post->price }}.00 per kg</p>
-                                        <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
-                                        <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
-                                    </div>
-                                    <div class="order-status" style="margin-top: 10px;">
-                                        <span class="status-badge completed" style="background: #28a745; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Completed</span>
-                                    </div>
-                                </div>
-                                <div class="order-footer" style="background: #f8f9fa; padding: 15px; display: flex; gap: 10px;">
-                                    <button class="btn btn-primary" style="background: #517a5b; color: white; border: none; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer;" onclick="location.href='{{ route('posts') }}'">Buy Again</button>
-                                    <button class="btn btn-secondary" style="background: white; border: 1px solid #517a5b; color: #517a5b; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer;">Review</button>
-                                </div>
-                            </div>
-                        @endforeach
-                    @else
-                        <div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
-                            <ion-icon name="checkmark-done-outline" style="font-size: 60px; color: #ccc;"></ion-icon>
-                            <p style="font-size: 18px; color: #666; margin-top: 10px;">No completed orders</p>
-                        </div>
-                    @endif
-                </div>
-
-                <!-- Cancelled Orders Tab Content -->
-                <div class="order-cards" id="cancelled-orders" style="display: none; flex-direction: column; gap: 20px;">
-                    @if($orders->where('status', 'cancelled')->count() > 0)
-                        @foreach($orders->where('status', 'cancelled') as $order)
-                            <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
-                                <div class="order-header" style="padding: 15px;">
-                                    <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
-                                    <div class="order-details">
-                                        <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
-                                        <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
-                                        <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
-                                        <p style="margin: 5px 0; color: #666;">Cancelled Date: {{ $order->updated_at->format('M d, Y') }}</p>
-                                        <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
-                                        <p style="margin: 5px 0; color: #666;">Price: ₱{{ $order->post->price }}.00 per kg</p>
-                                        <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
-                                        <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
-                                    </div>
-                                    <div class="order-status" style="margin-top: 10px;">
-                                        <span class="status-badge cancelled" style="background: #dc3545; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Cancelled</span>
-                                    </div>
-                                </div>
-                                <div class="order-footer" style="background: #f8f9fa; padding: 15px; display: flex; gap: 10px;">
-                                    <button class="btn btn-primary" style="background: #517a5b; color: white; border: none; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer;" onclick="location.href='{{ route('posts') }}'">Buy Again</button>
-                                </div>
-                            </div>
-                        @endforeach
-                    @else
-                        <div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
-                            <ion-icon name="close-circle-outline" style="font-size: 60px; color: #ccc;"></ion-icon>
-                            <p style="font-size: 18px; color: #666; margin-top: 10px;">No cancelled orders</p>
                         </div>
                     @endif
                 </div>
@@ -305,6 +132,53 @@
             </div>
         </div>
     </div>
+
+    <!-- Include SweetAlert2 CSS and JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
+
+    <!-- Add custom SweetAlert2 styles -->
+    <style>
+        .larger-swal {
+            font-size: 1.4rem !important;  /* Increased from 1.2rem */
+        }
+        
+        .larger-swal .swal2-title {
+            font-size: 2.2rem !important;  /* Increased from 1.8rem */
+            margin-bottom: 0.6em !important;
+        }
+        
+        .larger-swal .swal2-content, 
+        .larger-swal .swal2-html-container {
+            font-size: 1.6rem !important;  /* Increased from 1.3rem */
+            margin-bottom: 1em !important;
+        }
+        
+        .larger-swal .swal2-confirm,
+        .larger-swal .swal2-cancel {
+            font-size: 1.4rem !important;  /* Increased from 1.2rem */
+            padding: 15px 30px !important; /* Increased padding */
+            border-radius: 8px !important;
+        }
+        
+        /* Increase the width of the modal for better readability */
+        .larger-swal.swal2-popup {
+            width: 40em !important;        /* Increased from 32em */
+            padding: 2.5em !important;     /* Increased from 2em */
+            max-width: 90vw !important;    /* Ensure it doesn't overflow on mobile */
+        }
+        
+        /* Make the icon bigger too */
+        .larger-swal .swal2-icon {
+            height: 5em !important;
+            width: 5em !important;
+            margin-bottom: 1em !important;
+        }
+        
+        .larger-swal .swal2-icon .swal2-icon-content {
+            font-size: 3.25em !important;
+        }
+    </style>
 
     <script>
         // Tab switching functionality
@@ -422,6 +296,139 @@
                         locationDetails.textContent = `Error finding location: ${error.message}`;
                     });
             }
+
+            // Replace old cancellation modal with SweetAlert2
+            document.querySelectorAll('.cancel-order-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const orderId = this.getAttribute('data-order-id');
+                    
+                    Swal.fire({
+                        title: 'Cancel Order?',
+                        text: 'Are you sure you want to cancel this order? This action cannot be undone.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, Cancel Order',
+                        cancelButtonText: 'No, Keep Order',
+                        customClass: {
+                            popup: 'larger-swal',
+                            title: 'larger-swal',
+                            htmlContainer: 'larger-swal',
+                            actions: 'larger-swal',
+                            confirmButton: 'larger-swal',
+                            cancelButton: 'larger-swal'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Show loading state
+                            Swal.fire({
+                                title: 'Cancelling Order...',
+                                text: 'Please wait while we process your request.',
+                                allowOutsideClick: false,
+                                customClass: {
+                                    popup: 'larger-swal',
+                                    title: 'larger-swal',
+                                    htmlContainer: 'larger-swal'
+                                },
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                            
+                            // Send AJAX request to cancel the order
+                            fetch(`/orders/${orderId}/cancel`, {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Accept': 'application/json'
+                                }
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire({
+                                        title: 'Order Cancelled!',
+                                        text: data.message,
+                                        icon: 'success',
+                                        confirmButtonColor: '#517a5b',
+                                        customClass: {
+                                            popup: 'larger-swal',
+                                            title: 'larger-swal',
+                                            htmlContainer: 'larger-swal',
+                                            confirmButton: 'larger-swal'
+                                        }
+                                    }).then(() => {
+                                        // Reload the page to show updated order status
+                                        location.reload();
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        title: 'Error!',
+                                        text: data.message || 'Failed to cancel order. Please try again.',
+                                        icon: 'error',
+                                        confirmButtonColor: '#517a5b',
+                                        customClass: {
+                                            popup: 'larger-swal',
+                                            title: 'larger-swal',
+                                            htmlContainer: 'larger-swal',
+                                            confirmButton: 'larger-swal'
+                                        }
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: 'An unexpected error occurred. Please try again.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#517a5b',
+                                    customClass: {
+                                        popup: 'larger-swal',
+                                        title: 'larger-swal',
+                                        htmlContainer: 'larger-swal',
+                                        confirmButton: 'larger-swal'
+                                    }
+                                });
+                            });
+                        }
+                    });
+                });
+            });
+            
+            // Display success message if set in session
+            @if(session('success'))
+                Swal.fire({
+                    title: 'Success!',
+                    text: '{{ session('success') }}',
+                    icon: 'success',
+                    confirmButtonColor: '#517a5b',
+                    customClass: {
+                        popup: 'larger-swal',
+                        title: 'larger-swal',
+                        htmlContainer: 'larger-swal',
+                        confirmButton: 'larger-swal'
+                    }
+                });
+            @endif
+
+            // Display error message if set in session
+            @if(session('error'))
+                Swal.fire({
+                    title: 'Error!',
+                    text: '{{ session('error') }}',
+                    icon: 'error',
+                    confirmButtonColor: '#517a5b',
+                    customClass: {
+                        popup: 'larger-swal',
+                        title: 'larger-swal',
+                        htmlContainer: 'larger-swal',
+                        confirmButton: 'larger-swal'
+                    }
+                });
+            @endif
         });
     </script>
 

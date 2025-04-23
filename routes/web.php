@@ -123,6 +123,8 @@ Route::middleware('auth')->group(function() {
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/checkout', [OrderController::class, 'checkout'])->name('checkout');
+    // Add new route for cancelling orders
+    Route::put('/orders/{order}/cancel', [OrderController::class, 'cancelOrder'])->name('orders.cancel');
 
     Route::get('/profile', [DashboardController::class, 'profile'])->name('profile');
     Route::put('/profile', [DashboardController::class, 'updateProfile'])->name('profile.update');

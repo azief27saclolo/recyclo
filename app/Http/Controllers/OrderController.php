@@ -286,4 +286,115 @@ class OrderController extends Controller
             'orderAmount' => $orderAmount
         ]);
     }
+
+    /**
+     * Cancel an order
+     * 
+     * @param Order $order
+     * @return \Illuminate\Http\Response
+     */
+    public function cancelOrder(Order $order)
+    {
+        $isAjax = request()->expectsJson() || request()->ajax();
+        
+        // Verify that the authenticated user owns this order
+        if ($order->buyer_id !== Auth::id()) {
+            if ($isAjax) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You are not authorized to cancel this order.'
+                ], 403);
+            }
+            return redirect()->route('orders.index')->with('error', 'You are not authorized to cancel this order.');
+        }
+
+        // Only allow cancelling orders that are in 'pending' status
+        if ($order->status !== 'pending') {
+            if ($isAjax) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Only pending orders can be cancelled.'
+                ], 400);
+            }
+            return redirect()->route('orders.index')->with('error', 'Only pending orders can be cancelled.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Update order status to cancelled
+            $order->status = 'cancelled';
+            $order->save();
+
+            // Restore quantities for post and product
+            // Get all order items (if using order items)
+            if ($order->items()->exists()) {
+                foreach ($order->items as $item) {
+                    $post = Post::find($item->post_id);
+                    
+                    if ($post) {
+                        // Restore the quantity back to the post
+                        $post->quantity += $item->quantity;
+                        $post->save();
+                        
+                        // Restore the associated product stock if exists
+                        $product = Product::where('post_id', $post->id)->first();
+                        if ($product) {
+                            $product->stock += $item->quantity;
+                            $product->save();
+                        }
+                    }
+                }
+            } else {
+                // If using direct post_id on orders (legacy behavior)
+                $post = Post::find($order->post_id);
+                if ($post) {
+                    // Restore quantity
+                    $post->quantity += $order->quantity;
+                    $post->save();
+                    
+                    // Restore associated product stock if exists
+                    $product = Product::where('post_id', $post->id)->first();
+                    if ($product) {
+                        $product->stock += $order->quantity;
+                        $product->save();
+                    }
+                }
+            }
+
+            DB::commit();
+
+            Log::info('Order cancelled successfully', [
+                'order_id' => $order->id,
+                'user_id' => Auth::id()
+            ]);
+
+            if ($isAjax) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Your order has been cancelled successfully.',
+                    'order_id' => $order->id
+                ]);
+            }
+            return redirect()->route('orders.index')->with('success', 'Your order has been cancelled successfully.');
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Error cancelling order: ' . $e->getMessage(), [
+                'order_id' => $order->id,
+                'user_id' => Auth::id(),
+                'error' => $e->getMessage()
+            ]);
+            
+            if ($isAjax) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An error occurred while cancelling your order. Please try again.',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
+            return redirect()->route('orders.index')->with('error', 'An error occurred while cancelling your order. Please try again.');
+        }
+    }
 }
