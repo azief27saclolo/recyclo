@@ -265,6 +265,33 @@
             color: #ddd;
             margin-bottom: 20px;
         }
+        
+        /* Icon button styles */
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            background: transparent;
+            border: none;
+            transition: transform 0.2s;
+        }
+        
+        .btn-sm:hover {
+            transform: scale(1.15);
+            background: transparent;
+        }
+        
+        .btn-sm:focus {
+            box-shadow: none;
+            background: transparent;
+        }
+        
+        /* Actions container */
+        .d-flex {
+            display: flex;
+        }
+        
+        .gap-2 {
+            gap: 0.5rem;
+        }
     </style>
 </head>
 <body>
@@ -410,15 +437,17 @@
                                 </td>
                                 <td>{{ $post->created_at->format('M d, Y') }}</td>
                                 <td>
-                                    <button class="btn btn-primary btn-sm view-product" data-id="{{ $post->id }}">
-                                        <i class="bi bi-eye"></i> View
-                                    </button>
-                                    <button class="btn btn-success btn-sm approve-post" data-id="{{ $post->id }}" data-title="{{ $post->title }}">
-                                        <i class="bi bi-check-circle"></i> Approve
-                                    </button>
-                                    <button class="btn btn-danger btn-sm reject-post" data-id="{{ $post->id }}" data-title="{{ $post->title }}">
-                                        <i class="bi bi-x-circle"></i> Reject
-                                    </button>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-sm view-product" data-id="{{ $post->id }}" title="View Details">
+                                            <i class="bi bi-eye-fill" style="color: var(--hoockers-green); font-size: 1.2rem;"></i>
+                                        </button>
+                                        <button class="btn btn-sm approve-post" data-id="{{ $post->id }}" data-title="{{ $post->title }}" title="Approve Post">
+                                            <i class="bi bi-check-circle-fill" style="color: #28a745; font-size: 1.2rem;"></i>
+                                        </button>
+                                        <button class="btn btn-sm reject-post" data-id="{{ $post->id }}" data-title="{{ $post->title }}" title="Reject Post">
+                                            <i class="bi bi-x-circle-fill" style="color: #dc3545; font-size: 1.2rem;"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                             @endforeach
@@ -464,12 +493,12 @@
                             <form id="approveForm" method="POST" style="display: inline;">
                                 @csrf
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-check-circle"></i> Approve Post
+                                    <i class="bi bi-check-circle-fill" style="margin-right: 5px;"></i> Approve Post
                                 </button>
                             </form>
                             
                             <button type="button" class="btn btn-danger" id="rejectBtn">
-                                <i class="bi bi-x-circle"></i> Reject Post
+                                <i class="bi bi-x-circle-fill" style="margin-right: 5px;"></i> Reject Post
                             </button>
                         </div>
                     </div>
