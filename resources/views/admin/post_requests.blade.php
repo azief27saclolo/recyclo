@@ -457,15 +457,6 @@
                             <p><strong>Address:</strong> <span id="modalPostAddress"></span></p>
                             <p><strong>Submitted on:</strong> <span id="modalPostDate"></span></p>
                             
-                            <!-- Add request information section -->
-                            <div class="request-info" style="background-color: #f8f9fa; padding: 15px; border-radius: 10px; margin-top: 15px; border-left: 4px solid var(--hoockers-green);">
-                                <h4 style="color: var(--hoockers-green); margin-top: 0;">Request Information</h4>
-                                <p><strong>Request ID:</strong> <span id="modalRequestId"></span></p>
-                                <p><strong>User Agent:</strong> <span id="modalUserAgent"></span></p>
-                                <p><strong>IP Address:</strong> <span id="modalIpAddress"></span></p>
-                                <p><strong>Submission Method:</strong> <span id="modalSubmissionMethod">Web Form</span></p>
-                            </div>
-                            
                             <p><strong>Description:</strong></p>
                             <p id="modalPostDescription" style="background-color: #f8f9fa; padding: 10px; border-radius: 5px;"></p>
                         </div>
@@ -507,13 +498,24 @@
 
         // Function to fetch post details
         function fetchPostDetails(postId) {
-            fetch(`/admin/products/${postId}`)
-                .then(response => response.json())
+            console.log('Fetching details for post ID:', postId); // Add debugging
+            
+            // Make sure we use the correct URL with leading slash
+            fetch(`/admin/post-request/${postId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        console.error('Response not OK:', response.status);
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('Received data:', data); // Add debugging
+                    
                     if (data.success) {
                         const post = data.product;
-                        const requestInfo = data.request_info || {};
-                        
+                        const modal = document.getElementById('postModal');
+                           
                         // Update modal content
                         document.getElementById('modalPostTitle').textContent = post.title;
                         document.getElementById('modalPostCategory').textContent = post.category.name || post.category;
@@ -531,11 +533,6 @@
                             minute: '2-digit'
                         });
                         
-                        // Update request information
-                        document.getElementById('modalRequestId').textContent = requestInfo.id || 'N/A';
-                        document.getElementById('modalUserAgent').textContent = requestInfo.user_agent || 'Not available';
-                        document.getElementById('modalIpAddress').textContent = requestInfo.ip_address || 'Not available';
-                        
                         // Set image or placeholder
                         if (post.image) {
                             document.getElementById('modalPostImage').src = `/storage/${post.image}`;
@@ -548,9 +545,46 @@
                         document.getElementById('approveForm').action = `{{ url('admin/post-requests') }}/${postId}/approve`;
                         document.getElementById('rejectBtn').onclick = function() {
                             modal.style.display = 'none';
-                            currentPostId = postId;
-                            document.getElementById('rejectForm').action = `{{ url('admin/post-requests') }}/${postId}/reject`;
-                            rejectModal.style.display = 'block';
+                            
+                            // Use SweetAlert2 for rejection
+                            Swal.fire({
+                                title: 'Reject Post?',
+                                text: `Are you sure you want to reject this post?`,
+                                input: 'text',
+                                inputPlaceholder: 'Enter reason for rejection (optional)',
+                                inputAttributes: {
+                                    autocapitalize: 'off'
+                                },
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonColor: '#dc3545',
+                                cancelButtonColor: '#6c757d',
+                                confirmButtonText: 'Yes, reject it!',
+                                cancelButtonText: 'Cancel'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    // Create and submit form for rejection
+                                    const form = document.createElement('form');
+                                    form.method = 'POST';
+                                    form.action = `{{ url('admin/post-requests') }}/${postId}/reject`;
+                                    form.style.display = 'none';
+                                    
+                                    const csrfToken = document.createElement('input');
+                                    csrfToken.type = 'hidden';
+                                    csrfToken.name = '_token';
+                                    csrfToken.value = '{{ csrf_token() }}';
+                                    
+                                    const remarks = document.createElement('input');
+                                    remarks.type = 'hidden';
+                                    remarks.name = 'remarks';
+                                    remarks.value = result.value || 'Post rejected by admin';
+                                    
+                                    form.appendChild(csrfToken);
+                                    form.appendChild(remarks);
+                                    document.body.appendChild(form);
+                                    form.submit();
+                                }
+                            });
                         };
                         
                         // Show modal
@@ -558,14 +592,14 @@
                     } else {
                         Swal.fire({
                             title: 'Error',
-                            text: 'Failed to load post details',
+                            text: data.message || 'Failed to load post details',
                             icon: 'error',
                             confirmButtonColor: '#517A5B'
                         });
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
+                    console.error('Error details:', error); // Enhanced error logging
                     Swal.fire({
                         title: 'Error',
                         text: 'An error occurred while loading post details',
@@ -588,7 +622,7 @@
                     timerProgressBar: true
                 });
             @endif
-            
+               
             @if(session('success') && str_contains(session('success'), 'rejected'))
                 Swal.fire({
                     title: 'Post Rejected',
@@ -613,7 +647,7 @@
                     e.preventDefault();
                     const postId = this.getAttribute('data-id');
                     const postTitle = this.getAttribute('data-title');
-                    
+                      
                     // Show SweetAlert2 confirmation
                     Swal.fire({
                         title: 'Approve Post?',
@@ -704,26 +738,6 @@
                             form.submit();
                         }
                     });
-                });
-            });
-
-            // Fix for approve button in the modal
-            document.getElementById('approveForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                Swal.fire({
-                    title: 'Approve Post?',
-                    text: `Are you sure you want to approve this post?`,
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#28a745',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Yes, approve it!',
-                    cancelButtonText: 'Cancel'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        this.submit();
-                    }
                 });
             });
 

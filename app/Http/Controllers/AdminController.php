@@ -770,9 +770,71 @@ class AdminController extends Controller
                 'request_info' => $requestInfo
             ]);
         } catch (\Exception $e) {
+            \Log::error('Error fetching product details', [
+                'id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Product not found'
+                'message' => 'Product not found',
+                'error' => $e->getMessage()
+            ], 404);
+        }
+    }
+
+    /**
+     * Get post request details for the modal (specifically for pending posts)
+     * 
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getPostRequestDetails($id)
+    {
+        try {
+            \Log::info('Fetching post request details', ['post_id' => $id]);
+            
+            // Explicitly find the post without using with() first to ensure it exists
+            $post = Post::findOrFail($id);
+            
+            // Now load the relationships
+            $post->load(['user', 'category']);
+            
+            // Ensure category is properly handled
+            $category = $post->category;
+            $categoryName = is_object($category) ? $category->name : $post->category;
+            
+            // Get request information
+            $requestInfo = [
+                'id' => $id,
+                'user_agent' => request()->header('User-Agent'),
+                'ip_address' => request()->ip(),
+                'timestamp' => now()->format('Y-m-d H:i:s'),
+            ];
+            
+            \Log::info('Post request details found', [
+                'post_id' => $id, 
+                'title' => $post->title,
+                'category' => $categoryName
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'product' => $post, // Use 'product' key for consistency with frontend
+                'request_info' => $requestInfo
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching post request details', [
+                'id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Post request not found: ' . $e->getMessage(),
+                'error' => $e->getMessage()
             ], 404);
         }
     }

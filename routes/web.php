@@ -81,12 +81,19 @@ Route::group(['prefix' => 'admin', 'middleware' => [AdminMiddleware::class]], fu
     Route::get('/reports/seller/{id}', [AdminController::class, 'getSellerDetails']);
     Route::get('/reports/transaction/{id}', [AdminController::class, 'getTransactionDetails']);
     
+    // Ensure the post-request endpoint is correctly defined 
+    // and placed BEFORE the more generic products/{id} route to avoid route conflicts
+    Route::get('/post-request/{id}', [AdminController::class, 'getPostRequestDetails'])->name('admin.post.request.details');
+    
     // Products routes
     Route::get('/products', [AdminController::class, 'products'])->name('admin.products');
     Route::get('/post-requests', [AdminController::class, 'postRequests'])->name('admin.post.requests');
     Route::get('/products/{id}', [AdminController::class, 'getProductDetails']);
     Route::delete('/products/{id}', [AdminController::class, 'deleteProduct'])->name('admin.products.delete');
     Route::put('/products/{id}/update', [AdminController::class, 'updateProduct'])->name('admin.products.update');
+    
+    // Fix: Add explicit route for fetching pending post details with a different name to avoid conflicts
+    Route::get('/post-request/{id}', [AdminController::class, 'getPostRequestDetails'])->name('admin.post.request.details');
     
     // Add post request management routes
     Route::post('/post-requests/{id}/approve', [AdminController::class, 'approvePost'])->name('admin.post.approve');
