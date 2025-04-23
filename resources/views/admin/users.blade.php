@@ -354,7 +354,7 @@
             align-items: center;
         }
 
-        /* Edit user modal styling */
+        /* Edit user modal styling - updated to fix overlapping */
         .modal {
             display: none;
             position: fixed;
@@ -372,10 +372,12 @@
             margin: 50px auto;
             padding: 30px;
             border: 1px solid #ddd;
-            width: 70%;
+            width: 80%;
             max-width: 800px;
             border-radius: 10px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            max-height: 80vh;
+            overflow-y: auto;
         }
         
         .modal-header {
@@ -385,6 +387,10 @@
             padding-bottom: 15px;
             border-bottom: 1px solid #ddd;
             margin-bottom: 20px;
+            position: sticky;
+            top: 0;
+            background-color: #fefefe;
+            z-index: 10;
         }
         
         .modal-header h2 {
@@ -403,14 +409,17 @@
             color: #333;
         }
         
+        /* Fix for overlapping form layout */
         .form-row {
             display: flex;
             gap: 15px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap; /* Allow wrapping on small screens */
         }
         
         .form-group {
             flex: 1;
+            min-width: 200px; /* Minimum width to prevent squeezing */
         }
         
         .form-group label {
@@ -426,6 +435,7 @@
             border: 1px solid #ddd;
             border-radius: 5px;
             font-family: 'Urbanist', sans-serif;
+            box-sizing: border-box; /* Include padding in width calculation */
         }
         
         .form-actions {
@@ -433,15 +443,43 @@
             border-top: 1px solid #ddd;
             margin-top: 20px;
             text-align: right;
+            position: sticky;
+            bottom: 0;
+            background-color: #fefefe;
+            padding-bottom: 10px;
         }
         
-        /* Add edit button style */
-        .action-btn.edit {
-            color: #0d6efd;
+        /* Profile picture container */
+        #currentPictureContainer {
+            margin: 15px 0;
+            text-align: center;
         }
         
-        .action-btn.edit:hover {
-            color: #0a58ca;
+        #currentProfilePicture {
+            display: block;
+            max-width: 100px;
+            max-height: 100px;
+            border-radius: 50%;
+            margin: 10px auto;
+            border: 2px solid #eee;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95%;
+                padding: 15px;
+                margin: 20px auto;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .form-group {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -591,7 +629,7 @@
         </div>
     </div>
 
-    <!-- Edit User Modal -->
+    <!-- Edit User Modal - Updated layout -->
     <div id="editUserModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -602,6 +640,9 @@
                 @csrf
                 @method('PUT')
                 <input type="hidden" id="edit_user_id">
+                
+                <!-- Personal Information Section -->
+                <h4 style="color: var(--hoockers-green); margin-top: 0;">Personal Information</h4>
                 
                 <div class="form-row">
                     <div class="form-group">
@@ -618,6 +659,9 @@
                     </div>
                 </div>
                 
+                <!-- Account Information Section -->
+                <h4 style="color: var(--hoockers-green);">Account Information</h4>
+                
                 <div class="form-row">
                     <div class="form-group">
                         <label for="edit_username">Username</label>
@@ -628,6 +672,9 @@
                         <input type="email" id="edit_email" name="email" required>
                     </div>
                 </div>
+                
+                <!-- Contact Information Section -->
+                <h4 style="color: var(--hoockers-green);">Contact Information</h4>
                 
                 <div class="form-row">
                     <div class="form-group">
@@ -641,28 +688,31 @@
                 </div>
                 
                 <div class="form-row">
-                    <div class="form-group">
+                    <div class="form-group" style="flex-basis: 100%;">
                         <label for="edit_location">Location</label>
                         <input type="text" id="edit_location" name="location">
                     </div>
                 </div>
                 
+                <!-- Profile Picture Section -->
+                <h4 style="color: var(--hoockers-green);">Profile Picture</h4>
+                
                 <div class="form-row">
-                    <div class="form-group">
-                        <label for="edit_profile_picture">Profile Picture</label>
+                    <div class="form-group" style="flex-basis: 100%;">
+                        <label for="edit_profile_picture">Upload New Profile Picture</label>
                         <input type="file" id="edit_profile_picture" name="profile_picture" accept="image/*">
                     </div>
                 </div>
                 
                 <div class="form-row" id="currentPictureContainer" style="display: none;">
-                    <div class="form-group">
+                    <div class="form-group" style="flex-basis: 100%;">
                         <label>Current Profile Picture</label>
-                        <img id="currentProfilePicture" src="" alt="Profile Picture" style="max-width: 100px; max-height: 100px; border-radius: 50%;">
+                        <img id="currentProfilePicture" src="" alt="Profile Picture">
                     </div>
                 </div>
                 
                 <div class="form-actions">
-                    <button type="button" class="btn" style="background-color: #6c757d; color: white;" onclick="closeEditUserModal()">Cancel</button>
+                    <button type="button" class="btn" style="background-color: #6c757d; color: white; margin-right: 10px;" onclick="closeEditUserModal()">Cancel</button>
                     <button type="submit" class="btn btn-primary">Save Changes</button>
                 </div>
             </form>
