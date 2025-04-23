@@ -572,8 +572,8 @@
                                     <td>{{ $user->username }}</td>
                                     <td>{{ $user->email }}</td>
                                     <td>
-                                        @if($user->shop)
-                                            {{ $user->shop->name }}
+                                        @if($user->shop && $user->shop->shop_name)
+                                            {{ $user->shop->shop_name }}
                                         @else
                                             N/A
                                         @endif
