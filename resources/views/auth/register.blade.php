@@ -4,7 +4,7 @@
 <div class="container">
     
     <div class=" flex justify-center items-center h-screen px-4 bg-gray-50">
-        <form action="{{ route('register') }}" method="post" x-data="formSubmit" @submit.prevent="submit" class="w-full max-w-md bg-white shadow-lg rounded-lg p-6">
+        <form action="{{ route('register') }}" method="POST" x-data="formSubmit" @submit.prevent="submit" class="w-full max-w-md bg-white shadow-lg rounded-lg p-6">
             @csrf
 
             <!-- Logo -->

@@ -56,27 +56,39 @@ class AuthController extends Controller
         
         // Redirect directly to posts page
         return redirect('/posts')->with('message', 'Account created successfully! Welcome to Recyclo.');
+=======
+        // Login - Fix: Use Auth facade directly instead of helper function
+        Auth::login($user);
+        
+        // Redirect directly to verification notice page
+        return redirect()->route('verification.notice');
+>>>>>>> Stashed changes
     }
 
-    // Verify Email Notice Handler - Modified to redirect to dashboard
+    // Verify Email Notice Handler
     public function verifyEmailNotice()
     {
-        // Bypass verification by redirecting to dashboard
-        return redirect('/dashboard');
+        // Always show the verification page after signup
+        return view('auth.verify-email');
     }
 
-    // Email Verification Handler - kept for future use if needed
+    // Email Verification Handler
     public function verifyEmailHandler(EmailVerificationRequest $request)
     {
         $request->fulfill();
 
-        return redirect()->route('dashboard');
+        // Redirect to landing page after verification instead of dashboard
+        return redirect()->route('landingpage')->with('verified', true);
     }
 
-    // Resending the Verification Email Handler - kept for future use if needed
+    // Resending the Verification Email Handler
     public function verifyEmailResend(Request $request)
     {
-        $request->user()->sendEmailVerificationNotification();
+        // Fix: Use Auth facade instead of request->user()
+        if (Auth::user()) {
+            // Manual verification email sending - proper implementation depends on your User model setup
+            event(new Registered(Auth::user()));
+        }
 
         return back()->with('message', 'Verification link sent!');
     }
@@ -105,6 +117,16 @@ class AuthController extends Controller
 
             // Check if user has completed their profile setup
             $user = auth()->user();
+=======
+            
+            // Check if email is verified - fix the method call
+            if (Auth::user() && Auth::user()->email_verified_at === null) {
+                return redirect()->route('verification.notice');
+            }
+
+            // Check if user has completed their profile setup
+            $user = Auth::user();
+>>>>>>> Stashed changes
             $profileIncomplete = false;
             
             // Check for empty or null values in important profile fields
