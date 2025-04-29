@@ -49,6 +49,9 @@ Route::get('/products', [App\Http\Controllers\PostController::class, 'index'])->
 // Routes for authenticated users
 Route::middleware(['auth', 'verified'])->group(function() {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -58,10 +61,13 @@ Route::middleware(['auth', 'verified'])->group(function() {
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     Route::resource('posts', PostController::class);
 
     Route::get('/posts', [PostController::class, 'index'])->name('posts');
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
@@ -145,6 +151,9 @@ Route::middleware('auth')->group(function() {
         ->middleware('throttle:6,1')
         ->name('verification.send');
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -153,9 +162,12 @@ Route::middleware('auth')->group(function() {
 Route::middleware('guest')->group(function() {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     Route::view('/register', 'auth.register')->name('register');
     Route::post('/register', [AuthController::class, 'register']);
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     // Add this route if it's missing - for displaying the registration form

@@ -56,9 +56,12 @@ class AuthController extends Controller
         
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         // Redirect directly to posts page
         return redirect('/posts')->with('message', 'Account created successfully! Welcome to Recyclo.');
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         // Login - Fix: Use Auth facade directly instead of helper function
@@ -67,6 +70,9 @@ class AuthController extends Controller
         // Redirect directly to verification notice page
         return redirect()->route('verification.notice');
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -123,10 +129,13 @@ class AuthController extends Controller
             $request->session()->regenerate();
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
             // Check if user has completed their profile setup
             $user = auth()->user();
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             
@@ -138,6 +147,9 @@ class AuthController extends Controller
             // Check if user has completed their profile setup
             $user = Auth::user();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

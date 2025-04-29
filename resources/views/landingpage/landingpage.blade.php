@@ -69,6 +69,7 @@
 <div class="container">
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     <!-- Profile Setup Notification Modal - Enhanced Design with Larger Fonts -->
     @auth
         @if(session('profile_incomplete'))
@@ -83,6 +84,8 @@
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     <!-- Profile Setup Notification Modal - Improved Design -->
     @auth
         @if(session('profile_incomplete'))
@@ -95,6 +98,9 @@
                 <button id="closeProfileModal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors duration-200 focus:outline-none bg-gray-100 hover:bg-gray-200 rounded-full p-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -103,6 +109,7 @@
                 </button>
                 
                 <!-- Content area -->
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
                 <div class="px-12 pt-12 pb-10">
@@ -117,6 +124,8 @@
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 <div class="px-8 pt-8 pb-6">
                     <div class="text-center">
                         <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-50 mb-6 animate-pulse-slow">
@@ -127,6 +136,9 @@
                         <h3 class="text-2xl font-bold text-gray-800 mb-2">Complete Your Profile</h3>
                         <p class="text-gray-600 mb-6 leading-relaxed">
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -136,6 +148,7 @@
                     
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     <div class="space-y-6 mb-10">
                         <div class="flex items-center p-7 bg-green-50 rounded-2xl transition-transform hover:translate-x-2 hover:shadow-lg">
                             <div class="flex-shrink-0 mr-6">
@@ -143,11 +156,16 @@
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                     <div class="space-y-5 mb-8">
                         <div class="flex items-center p-4 bg-green-50 rounded-xl transition-transform hover:translate-x-1">
                             <div class="flex-shrink-0 mr-4">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#517A5B" class="bi bi-geo-alt" viewBox="0 0 16 16">
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -156,6 +174,7 @@
                                 </svg>
                             </div>
                             <div>
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
                                 <h4 class="font-semibold text-gray-800 text-2xl mb-2">Set Your Location</h4>
@@ -169,6 +188,8 @@
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                                 <h4 class="font-semibold text-gray-800">Set Your Location</h4>
                                 <p class="text-sm text-gray-600">Connect with local buyers and sellers</p>
                             </div>
@@ -178,6 +199,9 @@
                             <div class="flex-shrink-0 mr-4">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#517A5B" class="bi bi-telephone" viewBox="0 0 16 16">
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -185,6 +209,7 @@
                                 </svg>
                             </div>
                             <div>
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
                                 <h4 class="font-semibold text-gray-800 text-2xl mb-2">Add Contact Number</h4>
@@ -197,10 +222,15 @@
                                 <h4 class="font-semibold text-gray-800">Add Contact Number</h4>
                                 <p class="text-sm text-gray-600">Enable faster communication for trades</p>
 >>>>>>> Stashed changes
+=======
+                                <h4 class="font-semibold text-gray-800">Add Contact Number</h4>
+                                <p class="text-sm text-gray-600">Enable faster communication for trades</p>
+>>>>>>> Stashed changes
                             </div>
                         </div>
                     </div>
                     
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
                     <div class="flex gap-6 mb-6">
@@ -211,12 +241,17 @@
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                     <div class="flex gap-3">
                         <button id="remindLaterBtn" class="flex-1 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-gray-200">
                             Remind Later
                         </button>
                         <a href="{{ route('profile') }}" class="flex-1 py-3 px-4 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-green-500 text-center">
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -226,7 +261,11 @@
                     
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     <div class="text-base text-center text-gray-500 mt-6">
+=======
+                    <div class="text-xs text-center text-gray-500 mt-4">
+>>>>>>> Stashed changes
 =======
                     <div class="text-xs text-center text-gray-500 mt-4">
 >>>>>>> Stashed changes
@@ -597,7 +636,11 @@
 document.addEventListener('DOMContentLoaded', function() {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     // Profile setup notification - Enhanced animation
+=======
+    // Profile setup notification - Improved animation
+>>>>>>> Stashed changes
 =======
     // Profile setup notification - Improved animation
 >>>>>>> Stashed changes
@@ -675,9 +718,13 @@ document.addEventListener('DOMContentLoaded', function() {
     transform: scale(0.95) translateY(-10px);
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
     max-width: 700px; /* Wider modal for better text display */
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+=======
+    transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+>>>>>>> Stashed changes
 =======
     transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
 >>>>>>> Stashed changes
@@ -699,9 +746,15 @@ document.addEventListener('DOMContentLoaded', function() {
 .modal-backdrop-visible {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     background-color: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(8px);
     transition: all 0.4s ease-out;
+=======
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease-out;
+>>>>>>> Stashed changes
 =======
     background-color: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(5px);
@@ -719,7 +772,11 @@ document.addEventListener('DOMContentLoaded', function() {
     backdrop-filter: blur(0px);
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     transition: all 0.4s ease-in;
+=======
+    transition: all 0.3s ease-in;
+>>>>>>> Stashed changes
 =======
     transition: all 0.3s ease-in;
 >>>>>>> Stashed changes
@@ -732,7 +789,11 @@ document.addEventListener('DOMContentLoaded', function() {
 .animate-pulse-slow {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+=======
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+>>>>>>> Stashed changes
 =======
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 >>>>>>> Stashed changes
@@ -747,6 +808,7 @@ document.addEventListener('DOMContentLoaded', function() {
         transform: scale(1);
     }
     50% {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
         opacity: 0.85;
@@ -788,6 +850,8 @@ document.addEventListener('DOMContentLoaded', function() {
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         opacity: 0.8;
         transform: scale(1.05);
     }
@@ -813,6 +877,9 @@ document.addEventListener('DOMContentLoaded', function() {
 #profileSetupModal .bg-green-50 {
     background-color: rgba(81, 122, 91, 0.1);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -824,7 +891,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 #profileSetupModal .bg-green-700:hover {
@@ -832,6 +902,9 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -843,6 +916,7 @@ document.addEventListener('DOMContentLoaded', function() {
     --tw-ring-color: rgba(81, 122, 91, 0.5);
 }
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 /* Enhanced hover effects with larger transform */
@@ -880,6 +954,8 @@ document.addEventListener('DOMContentLoaded', function() {
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 #profileSetupModal h3 {
     color: #517A5B;
 }
@@ -893,6 +969,10 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 </style>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+@endsection
+>>>>>>> Stashed changes
+=======
 @endsection
 >>>>>>> Stashed changes
 =======
