@@ -708,9 +708,11 @@
         
         // Check for success message in session and show popup
         @if(session('success'))
+        (function() {
+            const successMessage = @json(session('success'));
             Swal.fire({
                 title: 'Success!',
-                text: "{{ session('success') }}",
+                text: successMessage,
                 icon: 'success',
                 confirmButtonColor: '#517A5B',
                 confirmButtonText: 'OK',
@@ -718,6 +720,7 @@
                     popup: 'bigger-modal'
                 }
             });
+        })();
         @endif
         
         showEditFormBtn.addEventListener('click', function() {

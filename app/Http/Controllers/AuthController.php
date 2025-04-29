@@ -54,28 +54,11 @@ class AuthController extends Controller
         // Trigger verification email
         event(new Registered($user));
         
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-        // Redirect directly to posts page
-        return redirect('/posts')->with('message', 'Account created successfully! Welcome to Recyclo.');
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
         // Login - Fix: Use Auth facade directly instead of helper function
         Auth::login($user);
         
         // Redirect directly to verification notice page
         return redirect()->route('verification.notice');
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
     }
 
     // Verify Email Notice Handler
@@ -127,17 +110,6 @@ class AuthController extends Controller
         // Regular user authentication
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-
-            // Check if user has completed their profile setup
-            $user = auth()->user();
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
             
             // Check if email is verified - fix the method call
             if (Auth::user() && Auth::user()->email_verified_at === null) {
@@ -146,13 +118,6 @@ class AuthController extends Controller
 
             // Check if user has completed their profile setup
             $user = Auth::user();
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
             $profileIncomplete = false;
             
             // Check for empty or null values in important profile fields
