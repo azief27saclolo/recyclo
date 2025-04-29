@@ -81,6 +81,8 @@
                 <button id="closeProfileModal" class="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors duration-200 focus:outline-none bg-gray-100 hover:bg-gray-200 rounded-full p-3">
                     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
 =======
+=======
+>>>>>>> Stashed changes
     <!-- Profile Setup Notification Modal - Improved Design -->
     @auth
         @if(session('profile_incomplete'))

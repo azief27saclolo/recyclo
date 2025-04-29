@@ -48,6 +48,9 @@ Route::get('/products', [App\Http\Controllers\PostController::class, 'index'])->
 
 // Routes for authenticated users
 Route::middleware(['auth', 'verified'])->group(function() {
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     

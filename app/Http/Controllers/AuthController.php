@@ -55,6 +55,7 @@ class AuthController extends Controller
         event(new Registered($user));
         
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         // Redirect directly to posts page
         return redirect('/posts')->with('message', 'Account created successfully! Welcome to Recyclo.');
 =======
@@ -65,6 +66,7 @@ class AuthController extends Controller
         
         // Redirect directly to verification notice page
         return redirect()->route('verification.notice');
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
