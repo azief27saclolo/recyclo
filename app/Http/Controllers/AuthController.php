@@ -51,9 +51,10 @@ class AuthController extends Controller
         // Create User
         $user = User::create($userData);
         
-        // Login
-        auth()->login($user);
+        // Trigger verification email
+        event(new Registered($user));
         
+<<<<<<< Updated upstream
         // Redirect directly to posts page
         return redirect('/posts')->with('message', 'Account created successfully! Welcome to Recyclo.');
 =======
@@ -112,8 +113,9 @@ class AuthController extends Controller
         }
         
         // Regular user authentication
-        if (Auth::attempt($credentials)) {
+        if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
+<<<<<<< Updated upstream
 
             // Check if user has completed their profile setup
             $user = auth()->user();

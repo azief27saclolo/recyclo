@@ -18,6 +18,7 @@ class LandingPageController extends Controller
         // Get recent posts for the landing page
         $posts = Post::with('user')->latest()->take(6)->get();
         
+<<<<<<< Updated upstream
         // Get shops for the landing page
         $shops = Shop::with('user')->take(6)->get();
         

@@ -67,6 +67,7 @@
 =======
 @section('content')
 <div class="container">
+<<<<<<< Updated upstream
     <!-- Profile Setup Notification Modal - Enhanced Design with Larger Fonts -->
     @auth
         @if(session('profile_incomplete'))
@@ -78,11 +79,25 @@
                 <!-- Close button -->
                 <button id="closeProfileModal" class="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors duration-200 focus:outline-none bg-gray-100 hover:bg-gray-200 rounded-full p-3">
                     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+=======
+    <!-- Profile Setup Notification Modal - Improved Design -->
+    @auth
+        @if(session('profile_incomplete'))
+        <div id="profileSetupModal" class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto" style="display: none; backdrop-filter: blur(5px);">
+            <div class="bg-white rounded-2xl shadow-2xl p-0 max-w-md w-full transform transition-all relative modal-container">
+                <!-- Top accent bar -->
+                <div class="h-2 bg-gradient-to-r from-green-500 to-green-600 rounded-t-2xl"></div>
+                
+                <!-- Close button -->
+                <button id="closeProfileModal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors duration-200 focus:outline-none bg-gray-100 hover:bg-gray-200 rounded-full p-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+>>>>>>> Stashed changes
                         <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
                     </svg>
                 </button>
                 
                 <!-- Content area -->
+<<<<<<< Updated upstream
                 <div class="px-12 pt-12 pb-10">
                     <div class="text-center">
                         <div class="inline-flex items-center justify-center w-36 h-36 rounded-full bg-green-50 mb-8 animate-pulse-slow">
@@ -92,19 +107,38 @@
                         </div>
                         <h3 class="text-4xl font-bold text-gray-800 mb-5">Complete Your Profile</h3>
                         <p class="text-xl text-gray-600 mb-8 leading-relaxed max-w-2xl mx-auto">
+=======
+                <div class="px-8 pt-8 pb-6">
+                    <div class="text-center">
+                        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-50 mb-6 animate-pulse-slow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="#517A5B" class="bi bi-person-gear" viewBox="0 0 16 16">
+                                <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0M8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m.256 7a4.474 4.474 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.484 10.68 5.711 10 8 10c.26 0 .507.009.74.025.226-.341.496-.65.804-.918C9.077 9.038 8.564 9 8 9c-5 0-6 3-6 4s1 1 1 1zm3.63-4.54c.18-.613 1.048-.613 1.229 0l.043.148a.64.64 0 0 0 .921.382l.136-.074c.561-.306 1.175.308.87.869l-.075.136a.64.64 0 0 0 .382.92l.149.045c.612.18.612 1.048 0 1.229l-.15.043a.64.64 0 0 0-.38.921l.074.136c.305.561-.309 1.175-.87.87l-.136-.075a.64.64 0 0 0-.92.382l-.045.149c-.18.612-1.048.612-1.229 0l-.043-.15a.64.64 0 0 0-.921-.38l-.136.074c-.561.305-1.175-.309-.87-.87l.075-.136a.64.64 0 0 0-.382-.92l-.148-.045c-.613-.18-.613-1.048 0-1.229l.148-.043a.64.64 0 0 0 .382-.921l-.074-.136c-.306-.561.308-1.175.869-.87l.136.075a.64.64 0 0 0 .92-.382l.045-.148zM14 12.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">Complete Your Profile</h3>
+                        <p class="text-gray-600 mb-6 leading-relaxed">
+>>>>>>> Stashed changes
                             Add your location and contact details to get the most out of Recyclo. This helps connect you with nearby opportunities and simplifies transactions.
                         </p>
                     </div>
                     
+<<<<<<< Updated upstream
                     <div class="space-y-6 mb-10">
                         <div class="flex items-center p-7 bg-green-50 rounded-2xl transition-transform hover:translate-x-2 hover:shadow-lg">
                             <div class="flex-shrink-0 mr-6">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="#517A5B" class="bi bi-geo-alt" viewBox="0 0 16 16">
+=======
+                    <div class="space-y-5 mb-8">
+                        <div class="flex items-center p-4 bg-green-50 rounded-xl transition-transform hover:translate-x-1">
+                            <div class="flex-shrink-0 mr-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#517A5B" class="bi bi-geo-alt" viewBox="0 0 16 16">
+>>>>>>> Stashed changes
                                     <path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A31.493 31.493 0 0 1 8 14.58a31.481 31.481 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94zM8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10z"/>
                                     <path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
                                 </svg>
                             </div>
                             <div>
+<<<<<<< Updated upstream
                                 <h4 class="font-semibold text-gray-800 text-2xl mb-2">Set Your Location</h4>
                                 <p class="text-lg text-gray-600">Connect with local buyers and sellers easily in your area</p>
                             </div>
@@ -113,26 +147,53 @@
                         <div class="flex items-center p-7 bg-green-50 rounded-2xl transition-transform hover:translate-x-2 hover:shadow-lg">
                             <div class="flex-shrink-0 mr-6">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="#517A5B" class="bi bi-telephone" viewBox="0 0 16 16">
+=======
+                                <h4 class="font-semibold text-gray-800">Set Your Location</h4>
+                                <p class="text-sm text-gray-600">Connect with local buyers and sellers</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center p-4 bg-green-50 rounded-xl transition-transform hover:translate-x-1">
+                            <div class="flex-shrink-0 mr-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#517A5B" class="bi bi-telephone" viewBox="0 0 16 16">
+>>>>>>> Stashed changes
                                     <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.568 17.568 0 0 0 4.168 6.608 17.569 17.569 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.678.678 0 0 0-.58-.122l-2.19.547a1.745 1.745 0 0 1-1.657-.459L5.482 8.062a1.745 1.745 0 0 1-.46-1.657l.548-2.19a.678.678 0 0 0-.122-.58L3.654 1.328zM1.884.511a1.745 1.745 0 0 1 2.612.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z"/>
                                 </svg>
                             </div>
                             <div>
+<<<<<<< Updated upstream
                                 <h4 class="font-semibold text-gray-800 text-2xl mb-2">Add Contact Number</h4>
                                 <p class="text-lg text-gray-600">Enable faster communication for trades and transactions</p>
+=======
+                                <h4 class="font-semibold text-gray-800">Add Contact Number</h4>
+                                <p class="text-sm text-gray-600">Enable faster communication for trades</p>
+>>>>>>> Stashed changes
                             </div>
                         </div>
                     </div>
                     
+<<<<<<< Updated upstream
                     <div class="flex gap-6 mb-6">
                         <button id="remindLaterBtn" class="flex-1 py-4 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200 font-bold focus:outline-none focus:ring-2 focus:ring-gray-200 text-lg">
                             Remind Later
                         </button>
                         <a href="{{ route('profile') }}" class="flex-1 py-4 px-5 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all duration-200 font-bold focus:outline-none focus:ring-2 focus:ring-green-500 text-center text-lg">
+=======
+                    <div class="flex gap-3">
+                        <button id="remindLaterBtn" class="flex-1 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-gray-200">
+                            Remind Later
+                        </button>
+                        <a href="{{ route('profile') }}" class="flex-1 py-3 px-4 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-green-500 text-center">
+>>>>>>> Stashed changes
                             Complete Now
                         </a>
                     </div>
                     
+<<<<<<< Updated upstream
                     <div class="text-base text-center text-gray-500 mt-6">
+=======
+                    <div class="text-xs text-center text-gray-500 mt-4">
+>>>>>>> Stashed changes
                         This information helps improve your Recyclo experience
                     </div>
                 </div>
@@ -495,7 +556,11 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+<<<<<<< Updated upstream
     // Profile setup notification - Enhanced animation
+=======
+    // Profile setup notification - Improved animation
+>>>>>>> Stashed changes
     const profileModal = document.getElementById('profileSetupModal');
     if (profileModal) {
         // Show modal with staggered animation after page loads
@@ -565,9 +630,13 @@ document.addEventListener('DOMContentLoaded', function() {
 .modal-container {
     opacity: 0;
     transform: scale(0.95) translateY(-10px);
+<<<<<<< Updated upstream
     transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
     max-width: 700px; /* Wider modal for better text display */
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+=======
+    transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+>>>>>>> Stashed changes
 }
 
 .modal-content-visible {
@@ -581,20 +650,34 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .modal-backdrop-visible {
+<<<<<<< Updated upstream
     background-color: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(8px);
     transition: all 0.4s ease-out;
+=======
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease-out;
+>>>>>>> Stashed changes
 }
 
 .modal-backdrop-hidden {
     background-color: rgba(0, 0, 0, 0);
     backdrop-filter: blur(0px);
+<<<<<<< Updated upstream
     transition: all 0.4s ease-in;
+=======
+    transition: all 0.3s ease-in;
+>>>>>>> Stashed changes
 }
 
 /* Animation for the icon */
 .animate-pulse-slow {
+<<<<<<< Updated upstream
     animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+=======
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+>>>>>>> Stashed changes
 }
 
 @keyframes pulse {
@@ -603,6 +686,7 @@ document.addEventListener('DOMContentLoaded', function() {
         transform: scale(1);
     }
     50% {
+<<<<<<< Updated upstream
         opacity: 0.85;
         transform: scale(1.08);
     }
@@ -639,12 +723,45 @@ document.addEventListener('DOMContentLoaded', function() {
 /* Enhanced modal styling with larger elements */
 #profileSetupModal .bg-green-50 {
     background-color: rgba(81, 122, 91, 0.08);
+=======
+        opacity: 0.8;
+        transform: scale(1.05);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .modal-container {
+        width: 90% !important;
+        margin: 0 auto;
+    }
+    
+    .flex {
+        flex-direction: column;
+    }
+    
+    .space-y-5 > div {
+        padding: 12px !important;
+    }
+}
+
+/* Make buttons match the site's color scheme */
+#profileSetupModal .bg-green-50 {
+    background-color: rgba(81, 122, 91, 0.1);
+>>>>>>> Stashed changes
 }
 
 #profileSetupModal .bg-green-600 {
     background-color: #517A5B;
 }
 
+<<<<<<< Updated upstream
+=======
+#profileSetupModal .bg-green-700:hover {
+    background-color: #3c5c44;
+}
+
+>>>>>>> Stashed changes
 #profileSetupModal .hover\:bg-green-700:hover {
     background-color: #3c5c44;
 }
@@ -653,6 +770,7 @@ document.addEventListener('DOMContentLoaded', function() {
     --tw-ring-color: rgba(81, 122, 91, 0.5);
 }
 
+<<<<<<< Updated upstream
 /* Enhanced hover effects with larger transform */
 #profileSetupModal .hover\:shadow-lg:hover {
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -681,6 +799,21 @@ document.addEventListener('DOMContentLoaded', function() {
 #profileSetupModal h4 {
     letter-spacing: -0.01em;
     color: #517A5B;
+}
+</style>
+@endsection
+>>>>>>> Stashed changes
+=======
+#profileSetupModal h3 {
+    color: #517A5B;
+}
+
+#profileSetupModal .from-green-500 {
+    --tw-gradient-from: #517A5B;
+}
+
+#profileSetupModal .to-green-600 {
+    --tw-gradient-to: #3c5c44;
 }
 </style>
 @endsection
