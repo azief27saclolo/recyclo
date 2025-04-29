@@ -54,10 +54,13 @@ Route::middleware(['auth', 'verified'])->group(function() {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     Route::resource('posts', PostController::class);
 
     Route::get('/posts', [PostController::class, 'index'])->name('posts');
 =======
+=======
+>>>>>>> Stashed changes
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/checkout', [OrderController::class, 'checkout'])->name('checkout');
@@ -138,14 +141,20 @@ Route::middleware('auth')->group(function() {
     Route::post('/email/verification-notification', [AuthController::class, 'verifyEmailResend'])
         ->middleware('throttle:6,1')
         ->name('verification.send');
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 });
 
 Route::middleware('guest')->group(function() {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     Route::view('/register', 'auth.register')->name('register');
     Route::post('/register', [AuthController::class, 'register']);
 =======
+=======
+>>>>>>> Stashed changes
     // Add this route if it's missing - for displaying the registration form
     Route::get('/register', function () {
         return view('auth.register');

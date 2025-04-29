@@ -9,6 +9,9 @@ use Illuminate\Http\Request;
 =======
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 class LandingPageController extends Controller
