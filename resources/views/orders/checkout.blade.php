@@ -261,12 +261,16 @@
         formData.append('receipt_image', receiptInput.files[0]);
         formData.append('_token', "{{ csrf_token() }}");
         
+        // Add direct checkout data if this is a direct checkout
+        @if(isset($directCheckout) && $directCheckout)
+        formData.append('direct_checkout', 'true');
+        formData.append('post_id', '{{ $post->id }}');
+        formData.append('quantity', '{{ $quantity }}');
+        @endif
+        
         // Use fetch with FormData to send the file
         fetch("{{ route('orders.store') }}", {
             method: "POST",
-            headers: {
-                "X-CSRF-TOKEN": "{{ csrf_token() }}"
-            },
             body: formData
         })
         .then(response => {

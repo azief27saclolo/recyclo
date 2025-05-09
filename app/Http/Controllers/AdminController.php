@@ -51,7 +51,14 @@ class AdminController extends Controller
     public function updateOrderStatus(Request $request, $orderId)
     {
         $order = Order::findOrFail($orderId);
-        $order->status = $request->status;
+        
+        // Use 'processing' status instead of 'approved' for consistency with UI
+        if ($request->status === 'approved') {
+            $order->status = 'processing';
+        } else {
+            $order->status = $request->status;
+        }
+        
         $order->save();
         
         return redirect()->back()->with('success', 'Order status updated successfully');
@@ -71,10 +78,10 @@ class AdminController extends Controller
             
             $order = Order::findOrFail($orderId);
             
-            // Force update of status attribute directly in database
+            // Update to 'processing' status for consistency with UI
             DB::table('orders')
                 ->where('id', $orderId)
-                ->update(['status' => 'approved']);
+                ->update(['status' => 'processing']);
             
             \Log::info('Order approved successfully', ['order_id' => $orderId]);
             
@@ -90,31 +97,136 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * Reject an order
-     *
-     * @param int $orderId
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function rejectOrder($orderId)
     {
         try {
             $order = Order::findOrFail($orderId);
-            $order->status = 'cancelled';
-            $order->save();
             
-            return redirect()->back()->with('success', 'Order #' . $orderId . ' has been rejected successfully.');
+            // Begin transaction for atomicity
+            DB::beginTransaction();
+            
+            try {
+                // Update order status
+                $order->status = 'cancelled';
+                
+                // Restore product quantity if the post exists
+                if ($order->post) {
+                    $post = $order->post;
+                    $post->quantity += $order->quantity;
+                    $post->save();
+                }
+                
+                $order->save();
+                
+                // Commit the transaction
+                DB::commit();
+                
+                \Log::info('Order rejected successfully', ['order_id' => $orderId]);
+                
+                return redirect()->back()->with('success', 'Order #' . $orderId . ' has been rejected successfully.');
+            } catch (\Exception $e) {
+                // Rollback the transaction in case of error
+                DB::rollBack();
+                
+                \Log::error('Failed to reject order', [
+                    'order_id' => $orderId,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                
+                return redirect()->back()->with('error', 'Failed to reject order: ' . $e->getMessage());
+            }
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to reject order: ' . $e->getMessage());
         }
     }
 
     /**
-     * Delete an order
+     * Cancel an order by the user
      *
      * @param int $orderId
-     * @return \Illuminate\Http\RedirectResponse
+     * @return \Illuminate\Http\JsonResponse
      */
+    public function cancelUserOrder($orderId)
+    {
+        try {
+            // Find the order
+            $order = Order::findOrFail($orderId);
+            
+            // Verify the order belongs to the authenticated user
+            // Check both buyer_id and user_id for backward compatibility
+            if ($order->buyer_id != auth()->id() && $order->user_id != auth()->id()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You are not authorized to cancel this order'
+                ], 403);
+            }
+            
+            // Only allow cancellation of pending or processing orders
+            if (!in_array($order->status, ['pending', 'processing', 'approved'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This order cannot be cancelled in its current status: ' . ucfirst($order->status)
+                ], 400);
+            }
+            
+            // Begin transaction for atomicity
+            DB::beginTransaction();
+            
+            try {
+                // Update order status
+                $order->status = 'cancelled';
+                
+                // Restore product quantity if the post exists
+                if ($order->post) {
+                    $post = $order->post;
+                    $post->quantity += $order->quantity;
+                    $post->save();
+                }
+                
+                $order->save();
+                
+                // Commit the transaction
+                DB::commit();
+                
+                \Log::info('Order cancelled by user', [
+                    'order_id' => $orderId,
+                    'user_id' => auth()->id()
+                ]);
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Order #' . $orderId . ' has been cancelled successfully'
+                ]);
+            } catch (\Exception $e) {
+                // Rollback the transaction in case of error
+                DB::rollBack();
+                
+                \Log::error('Failed to cancel order', [
+                    'order_id' => $orderId,
+                    'user_id' => auth()->id(),
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to cancel order: ' . $e->getMessage()
+                ], 500);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to find order for cancellation', [
+                'order_id' => $orderId,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Order not found: ' . $e->getMessage()
+            ], 404);
+        }
+    }
+
     public function deleteOrder($orderId)
     {
         try {
@@ -144,7 +256,7 @@ class AdminController extends Controller
                     foreach ($order->items as $item) {
                         $post = Post::find($item->post_id);
                         if ($post) {
-                            // Restore the quantity back to the post
+                            // Restore the quantity back to the post (legacy behavior)
                             $post->quantity += $item->quantity;
                             $post->save();
                         }
@@ -168,7 +280,6 @@ class AdminController extends Controller
             
             return redirect()->route('admin.orders')
                 ->with('success', "Order #$orderIdForMessage has been deleted successfully.");
-                
         } catch (\Exception $e) {
             // Rollback the transaction in case of error
             DB::rollBack();
@@ -193,18 +304,17 @@ class AdminController extends Controller
             
         return view('admin.users', compact('users'));
     }
-    
+
     public function updateUserStatus(Request $request, User $user)
     {
         try {
             $validated = $request->validate([
                 'status' => 'required|in:active,suspended,inactive'
             ]);
-            
             // Update user status
             $user->status = $validated['status'];
             $user->save();
-            
+
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
@@ -212,7 +322,7 @@ class AdminController extends Controller
                     'user' => $user
                 ]);
             }
-            
+
             return redirect()->route('admin.users')
                 ->with('success', "User {$user->username}'s status updated to {$validated['status']}");
         } catch (\Exception $e) {
@@ -222,24 +332,17 @@ class AdminController extends Controller
                     'message' => 'Failed to update user status: ' . $e->getMessage()
                 ], 500);
             }
-            
+
             return redirect()->route('admin.users')
                 ->with('error', 'Failed to update user status: ' . $e->getMessage());
         }
     }
 
-    /**
-     * Get user details for editing
-     * 
-     * @param User $user
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function getUser(User $user)
     {
         try {
             // Return the user with shop relationship
             $user->load('shop');
-            
             return response()->json([
                 'success' => true,
                 'user' => $user
@@ -252,13 +355,6 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * Update user information
-     *
-     * @param Request $request
-     * @param User $user
-     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
-     */
     public function updateUser(Request $request, User $user)
     {
         try {
@@ -267,8 +363,8 @@ class AdminController extends Controller
                 'middlename' => 'nullable|string|max:255',
                 'lastname' => 'required|string|max:255',
                 'email' => [
-                    'required', 
-                    'email', 
+                    'required',
+                    'email',
                     'max:255',
                     \Illuminate\Validation\Rule::unique('users')->ignore($user->id)
                 ],
@@ -283,21 +379,19 @@ class AdminController extends Controller
                 'location' => 'nullable|string|max:255',
                 'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
-            
+
             // Handle profile picture upload if provided
             if ($request->hasFile('profile_picture')) {
                 // Delete old profile picture if it exists
                 if ($user->profile_picture && Storage::disk('public')->exists($user->profile_picture)) {
                     Storage::disk('public')->delete($user->profile_picture);
                 }
-                
-                // Store the new profile picture
                 $validated['profile_picture'] = $request->file('profile_picture')->store('profile_pictures', 'public');
             }
-            
+
             // Update user information
             $user->update($validated);
-            
+
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
@@ -305,7 +399,7 @@ class AdminController extends Controller
                     'user' => $user
                 ]);
             }
-            
+
             return redirect()->route('admin.users')
                 ->with('success', "User {$user->username}'s information has been updated successfully");
         } catch (\Exception $e) {
@@ -315,58 +409,43 @@ class AdminController extends Controller
                     'message' => 'Failed to update user: ' . $e->getMessage()
                 ], 500);
             }
-            
+
             return redirect()->route('admin.users')
                 ->with('error', 'Failed to update user: ' . $e->getMessage());
         }
     }
 
-    /**
-     * Delete a user
-     *
-     * @param User $user
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
-     */
     public function deleteUser(User $user)
     {
         try {
             // Store user information for the success message
             $username = $user->username;
-            
-            // Begin transaction
-            DB::beginTransaction();
-            
+
             // Delete user's profile picture if exists
             if ($user->profile_picture && Storage::disk('public')->exists($user->profile_picture)) {
                 Storage::disk('public')->delete($user->profile_picture);
             }
-            
+
             // Delete the user
             $user->delete();
-            
-            // Commit the transaction
-            DB::commit();
-            
+
             if (request()->ajax()) {
                 return response()->json([
                     'success' => true,
                     'message' => "User {$username} has been deleted successfully"
                 ]);
             }
-            
+
             return redirect()->route('admin.users')
                 ->with('success', "User {$username} has been deleted successfully");
         } catch (\Exception $e) {
-            // Rollback in case of error
-            DB::rollBack();
-            
             if (request()->ajax()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Failed to delete user: ' . $e->getMessage()
                 ], 500);
             }
-            
+
             return redirect()->route('admin.users')
                 ->with('error', 'Failed to delete user: ' . $e->getMessage());
         }
@@ -379,7 +458,7 @@ class AdminController extends Controller
             ->orderByRaw("FIELD(status, 'pending', 'approved', 'rejected')")
             ->orderBy('created_at', 'desc')
             ->get();
-        
+
         // Get counts for each status
         $pendingCount = $shops->where('status', 'pending')->count();
         $approvedCount = $shops->where('status', 'approved')->count();
@@ -394,10 +473,9 @@ class AdminController extends Controller
             'status' => 'required|in:pending,approved,rejected',
             'remarks' => 'nullable|string|max:255',
         ]);
-        
+
         $shop->status = $validated['status'];
-        $originalStatus = $shop->getOriginal('status');
-        
+
         // Handle remarks field
         if ($validated['status'] == 'rejected') {
             $shop->remarks = $validated['remarks'] ?? 'Application rejected by admin';
@@ -407,11 +485,11 @@ class AdminController extends Controller
         } else {
             // For pending, keep existing remarks or use new ones if provided
             $shop->remarks = $validated['remarks'] ?? $shop->remarks;
-        }
+        };
         
         // Save the changes
         $shop->save();
-        
+
         // Prepare SweetAlert2 message
         $title = '';
         $text = '';
@@ -431,7 +509,7 @@ class AdminController extends Controller
                 $text = "Shop '{$shop->shop_name}' has been set to pending status.";
                 break;
         }
-        
+
         // Flash SweetAlert2 message to session
         session()->flash('swalSuccess', [
             'title' => $title,
@@ -442,17 +520,10 @@ class AdminController extends Controller
         return redirect()->route('admin.shops');
     }
 
-    /**
-     * Get shop details for editing
-     *
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function getShopDetails($id)
     {
         try {
             $shop = Shop::findOrFail($id);
-            
             return response()->json([
                 'success' => true,
                 'shop' => $shop
@@ -465,13 +536,6 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * Update shop details
-     *
-     * @param Request $request
-     * @param int $id
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function editShop(Request $request, $id)
     {
         try {
@@ -497,22 +561,21 @@ class AdminController extends Controller
             } else {
                 $shop->remarks = $validated['remarks'];
             }
-            
+
             // Handle new valid ID if uploaded
             if ($request->hasFile('valid_id')) {
                 // Delete old ID file if exists
                 if ($shop->valid_id_path && \Storage::disk('public')->exists($shop->valid_id_path)) {
                     \Storage::disk('public')->delete($shop->valid_id_path);
                 }
-                
                 // Store the new ID
                 $validIdPath = $request->file('valid_id')->store('shop_documents', 'public');
                 $shop->valid_id_path = $validIdPath;
             }
-            
+
             // Save changes
             $shop->save();
-            
+
             return redirect()->route('admin.shops')
                 ->with('success', "Shop '{$shop->shop_name}' updated successfully");
         } catch (\Exception $e) {
@@ -521,28 +584,22 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * Delete a shop
-     *
-     * @param int $id
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
-     */
     public function deleteShop($id)
     {
         try {
             $shop = Shop::findOrFail($id);
-            
+
             // Store shop information for message
             $shopName = $shop->shop_name;
-            
+
             // Delete valid ID file from storage if it exists
             if ($shop->valid_id_path && \Storage::disk('public')->exists($shop->valid_id_path)) {
                 \Storage::disk('public')->delete($shop->valid_id_path);
             }
-            
+
             // Delete the shop record
             $shop->delete();
-            
+
             // Check if the request is Ajax
             if (request()->ajax()) {
                 return response()->json([
@@ -550,14 +607,14 @@ class AdminController extends Controller
                     'message' => "Shop '{$shopName}' has been deleted successfully. The owner can now register a new shop."
                 ]);
             }
-            
+
             // Flash a message to the session for SweetAlert2
             session()->flash('swalSuccess', [
                 'title' => 'Shop Deleted',
                 'text' => "Shop '{$shopName}' has been deleted successfully. The owner can now register a new shop.",
                 'icon' => 'success'
             ]);
-            
+
             return redirect()->route('admin.shops');
         } catch (\Exception $e) {
             if (request()->ajax()) {
@@ -566,7 +623,7 @@ class AdminController extends Controller
                     'message' => 'Failed to delete shop: ' . $e->getMessage()
                 ], 500);
             }
-            
+
             return redirect()->route('admin.shops')
                 ->with('error', 'Failed to delete shop: ' . $e->getMessage());
         }
@@ -580,12 +637,6 @@ class AdminController extends Controller
         return redirect('/login');
     }
 
-    /**
-     * Display transaction reports and analytics
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\Response
-     */
     public function reports(Request $request)
     {
         // Get filters from request
@@ -593,7 +644,7 @@ class AdminController extends Controller
         $toDate = $request->input('to_date');
         $status = $request->input('status', 'all');
         $search = $request->input('search');
-        
+
         // Build transaction query
         $query = Order::with(['buyer', 'seller', 'post', 'user']);
         
@@ -605,12 +656,12 @@ class AdminController extends Controller
         if ($toDate) {
             $query->whereDate('created_at', '<=', $toDate);
         }
-        
+
         // Apply status filter if not 'all'
         if ($status !== 'all') {
             $query->where('status', $status);
         }
-        
+
         // Apply search if provided
         if ($search) {
             $query->where(function($q) use ($search) {
@@ -635,7 +686,7 @@ class AdminController extends Controller
         $totalTransactions = $query->count();
         $totalRevenue = $query->sum('total_amount');
         $averageOrderValue = $totalTransactions > 0 ? $totalRevenue / $totalTransactions : 0;
-        
+
         // Get sellers with their stats
         $sellers = User::whereHas('posts')
             ->withCount('posts')
@@ -659,12 +710,6 @@ class AdminController extends Controller
         ));
     }
 
-    /**
-     * Get detailed seller information for modal
-     *
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function getSellerDetails($id)
     {
         $seller = User::with(['shop', 'posts.orders'])
@@ -673,21 +718,21 @@ class AdminController extends Controller
                 $query->where('orders.status', 'completed');  // Also fix this query for consistency
             }], 'total_amount')
             ->findOrFail($id);
-        
+
         // Get seller transactions
         $transactions = Order::where('seller_id', $id)
             ->with(['buyer', 'post'])
             ->latest()
             ->take(10)
             ->get();
-            
+
         // Get seller products
         $products = Post::where('user_id', $id)
             ->withCount('orders')
             ->latest()
             ->take(6)
             ->get();
-            
+
         // Render the seller details HTML
         $html = View::make('admin.partials.seller_details', [
             'seller' => $seller,
@@ -701,17 +746,11 @@ class AdminController extends Controller
         ]);
     }
 
-    /**
-     * Get detailed transaction information for modal
-     *
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function getTransactionDetails($id)
     {
         $transaction = Order::with(['buyer', 'seller', 'post'])
             ->findOrFail($id);
-            
+
         // Render the transaction details HTML
         $html = View::make('admin.partials.transaction_details', [
             'transaction' => $transaction
@@ -722,13 +761,7 @@ class AdminController extends Controller
             'html' => $html
         ]);
     }
-    
-    /**
-     * Export reports to CSV
-     *
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
-     */
+
     public function exportReports(Request $request)
     {
         // Get filters from request
@@ -736,7 +769,7 @@ class AdminController extends Controller
         $toDate = $request->input('to_date');
         $status = $request->input('status', 'all');
         $search = $request->input('search');
-        
+
         // Build transaction query with the same filters as the report page
         $query = Order::with(['buyer', 'seller', 'post']);
         
@@ -748,12 +781,12 @@ class AdminController extends Controller
         if ($toDate) {
             $query->whereDate('created_at', '<=', $toDate);
         }
-        
+
         // Apply status filter if not 'all'
         if ($status !== 'all') {
             $query->where('status', $status);
         }
-        
+
         // Apply search if provided
         if ($search) {
             $query->where(function($q) use ($search) {
@@ -770,13 +803,13 @@ class AdminController extends Controller
                 });
             });
         }
-        
+
         // Get all records for export
         $transactions = $query->latest()->get();
-        
+
         // Create a filename
         $filename = 'recyclo_transactions_report_' . Carbon::now()->format('Y-m-d') . '.csv';
-        
+
         // Create a temporary file
         $handle = fopen('php://temp', 'w+');
         
@@ -807,14 +840,14 @@ class AdminController extends Controller
                 ucfirst($transaction->status)
             ]);
         }
-        
+
         // Reset file pointer to the beginning
         rewind($handle);
-        
+
         // Get all content from the file
         $content = stream_get_contents($handle);
         fclose($handle);
-        
+
         // Create response with CSV content
         $response = response($content)
             ->withHeaders([
@@ -825,11 +858,6 @@ class AdminController extends Controller
         return $response;
     }
 
-    /**
-     * Display all products
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function products()
     {
         // Get all products with their user information
@@ -843,12 +871,7 @@ class AdminController extends Controller
             
         return view('admin.products', compact('products', 'pendingPostsCount'));
     }
-    
-    /**
-     * Display pending post requests
-     *
-     * @return \Illuminate\Http\Response
-     */
+
     public function postRequests()
     {
         $pendingPosts = Post::where('status', Post::STATUS_PENDING)
@@ -858,13 +881,7 @@ class AdminController extends Controller
             
         return view('admin.post_requests', compact('pendingPosts'));
     }
-    
-    /**
-     * Approve a post request
-     *
-     * @param int $id
-     * @return \Illuminate\Http\RedirectResponse
-     */
+
     public function approvePost($id)
     {
         try {
@@ -872,25 +889,17 @@ class AdminController extends Controller
             $post->status = Post::STATUS_APPROVED;
             $post->admin_remarks = null; // Clear any previous remarks
             $post->save();
-            
+
             return redirect()->back()->with('success', "Post '{$post->title}' has been approved successfully.");
         } catch (\Exception $e) {
             \Log::error('Failed to approve post', [
                 'post_id' => $id,
                 'error' => $e->getMessage()
             ]);
-            
             return redirect()->back()->with('error', 'Failed to approve post: ' . $e->getMessage());
         }
     }
-    
-    /**
-     * Reject a post request
-     *
-     * @param Request $request
-     * @param int $id
-     * @return \Illuminate\Http\RedirectResponse
-     */
+
     public function rejectPost(Request $request, $id)
     {
         try {
@@ -898,29 +907,22 @@ class AdminController extends Controller
             $post->status = Post::STATUS_REJECTED;
             $post->admin_remarks = $request->input('remarks', 'Post rejected by admin');
             $post->save();
-            
+
             return redirect()->back()->with('success', "Post '{$post->title}' has been rejected.");
         } catch (\Exception $e) {
             \Log::error('Failed to reject post', [
                 'post_id' => $id,
                 'error' => $e->getMessage()
             ]);
-            
             return redirect()->back()->with('error', 'Failed to reject post: ' . $e->getMessage());
         }
     }
-    
-    /**
-     * Get product details for the modal
-     *
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
-     */
+
     public function getProductDetails($id)
     {
         try {
             $product = Post::with(['user', 'category'])->findOrFail($id);
-            
+
             // Get stored request information if available
             $requestInfo = [
                 'id' => $id,
@@ -939,7 +941,6 @@ class AdminController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
             return response()->json([
                 'success' => false,
                 'message' => 'Product not found',
@@ -948,12 +949,6 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * Get post request details for the modal (specifically for pending posts)
-     * 
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function getPostRequestDetails($id)
     {
         try {
@@ -961,14 +956,13 @@ class AdminController extends Controller
             
             // Explicitly find the post without using with() first to ensure it exists
             $post = Post::findOrFail($id);
-            
             // Now load the relationships
             $post->load(['user', 'category']);
             
             // Ensure category is properly handled
             $category = $post->category;
             $categoryName = is_object($category) ? $category->name : $post->category;
-            
+
             // Get request information
             $requestInfo = [
                 'id' => $id,
@@ -994,7 +988,6 @@ class AdminController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
             return response()->json([
                 'success' => false,
                 'message' => 'Post request not found: ' . $e->getMessage(),
@@ -1002,14 +995,7 @@ class AdminController extends Controller
             ], 404);
         }
     }
-    
-    /**
-     * Update a product
-     *
-     * @param Request $request
-     * @param int $id
-     * @return \Illuminate\Http\RedirectResponse
-     */
+
     public function updateProduct(Request $request, $id)
     {
         try {
@@ -1027,7 +1013,7 @@ class AdminController extends Controller
                 'description' => 'required|string',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3000',
             ]);
-            
+
             // Handle image upload
             if ($request->hasFile('image')) {
                 // Delete old image if it exists
@@ -1039,10 +1025,10 @@ class AdminController extends Controller
                 $path = \Storage::disk('public')->put('posts_images', $request->file('image'));
                 $validatedData['image'] = $path;
             }
-            
+
             // Update the product
             $product->update($validatedData);
-            
+
             return redirect()->route('admin.products')
                 ->with('success', 'Product updated successfully');
         } catch (\Exception $e) {
@@ -1050,25 +1036,19 @@ class AdminController extends Controller
                 ->with('error', 'Failed to update product: ' . $e->getMessage());
         }
     }
-    
-    /**
-     * Delete a product
-     *
-     * @param int $id
-     * @return \Illuminate\Http\RedirectResponse
-     */
+
     public function deleteProduct($id)
     {
         try {
             $product = Post::findOrFail($id);
-            
+
             // If product has an image, delete it from storage
             if ($product->image && \Storage::exists('public/' . $product->image)) {
                 \Storage::delete('public/' . $product->image);
             }
             
             $product->delete();
-            
+
             return redirect()->route('admin.products')
                 ->with('success', 'Product deleted successfully');
         } catch (\Exception $e) {
@@ -1077,16 +1057,10 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * Get all categories
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function getCategories()
     {
         try {
             $categories = Category::orderBy('name')->get();
-            
             return response()->json([
                 'success' => true,
                 'categories' => $categories
@@ -1099,12 +1073,6 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * Add a new category
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function addCategory(Request $request)
     {
         try {
@@ -1117,7 +1085,6 @@ class AdminController extends Controller
             
             // Check if a category with this name already exists but is inactive
             $existingCategory = Category::where('name', $validatedData['name'])->first();
-            
             if ($existingCategory) {
                 // If it exists but is inactive, reactivate it
                 if (!$existingCategory->is_active) {
@@ -1139,7 +1106,7 @@ class AdminController extends Controller
                     ], 422);
                 }
             }
-            
+
             // Create a new category if it doesn't exist
             $category = Category::create([
                 'name' => $validatedData['name'],
@@ -1162,12 +1129,6 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * Remove a category (Migration of products to replacement category)
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function removeCategory(Request $request)
     {
         try {
@@ -1175,13 +1136,13 @@ class AdminController extends Controller
                 'category_id' => 'required|exists:categories,id',
                 'replacement_category_id' => 'required|exists:categories,id|different:category_id'
             ]);
-            
+
             $category = Category::findOrFail($validatedData['category_id']);
             $replacementCategory = Category::findOrFail($validatedData['replacement_category_id']);
             
             // Count products in this category
             $productCount = Post::where('category_id', $category->id)->count();
-            
+
             // Update all products in this category to the replacement category
             Post::where('category_id', $category->id)
                 ->update([
@@ -1192,7 +1153,7 @@ class AdminController extends Controller
             // Mark the category as inactive
             $category->is_active = false;
             $category->save();
-            
+
             return response()->json([
                 'success' => true,
                 'message' => "Category \"{$category->name}\" removed successfully. {$productCount} products moved to \"{$replacementCategory->name}\" category.",

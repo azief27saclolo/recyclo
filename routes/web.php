@@ -114,6 +114,11 @@ Route::group(['prefix' => 'admin', 'middleware' => [AdminMiddleware::class]], fu
     Route::get('/orders/{orderId}/delete', [AdminController::class, 'deleteOrder'])->name('admin.orders.delete');
 });
 
+// Define the cancel user order route outside the admin group but still with the admin controller
+Route::post('/orders/{orderId}/cancel-user-order', [AdminController::class, 'cancelUserOrder'])
+    ->name('admin.orders.cancel-user')
+    ->middleware('web');
+
 // Product Routes
 Route::get('/products', [App\Http\Controllers\PostController::class, 'index'])->name('products.index');
 
