@@ -2,35 +2,49 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Post;
 use App\Models\Shop;
-use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class LandingPageController extends Controller
 {
-    public function index() {
-        // Fetch only approved posts with pagination and ensure we get at least 6
-        $posts = Post::where('status', Post::STATUS_APPROVED)
-                     ->latest()
-                     ->take(6)
-                     ->get();
-        
-        // If we don't have enough approved posts, get any posts to fill the slider
-        if ($posts->count() < 6) {
-            $posts = Post::latest()->take(6)->get();
-        }
-        
-        // Fetch approved shops to display in "Shops For You" section
-        $shops = Shop::where('status', 'approved')
+    public function index()
+    {
+        try {
+            // Get recent posts for the landing page
+            $posts = Post::with('user')->latest()->take(6)->get();
+            
+            // Fetch approved shops to display in "Shops For You" section
+            $shops = Shop::where('status', 'approved')
                       ->with('user')
                       ->latest()
                       ->take(6)
                       ->get();
-
-        return view('landingpage.landingpage', [
-            'posts' => $posts,
-            'shops' => $shops
-        ]);
+            
+            // Check profile completion status for authenticated users
+            if (Auth::check()) {
+                $user = Auth::user();
+                
+                // Check if user has completed their profile
+                if (empty($user->location) || empty($user->number)) {
+                    session(['profile_incomplete' => true]);
+                }
+            }
+            
+            return view('landingpage.landingpage', [
+                'posts' => $posts,
+                'shops' => $shops
+            ]);
+        } catch (\Exception $e) {
+            // Log any errors
+            Log::error('Landing page error: ' . $e->getMessage());
+            
+            // Return the view with empty collections to avoid breaking the page
+            return view('landingpage.landingpage', [
+                'posts' => collect([]),
+                'shops' => collect([])
+            ]);
+        }
     }
 }
