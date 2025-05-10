@@ -57,6 +57,17 @@
             font-weight: 700;
         }
         
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .form-column {
+            display: flex;
+            flex-direction: column;
+        }
+
         .form-group {
             margin-bottom: 24px;
             width: 100%;
@@ -197,6 +208,131 @@
             animation: spin 1s linear infinite;
             margin-left: 10px;
         }
+
+        /* Enhanced form controls */
+        .form-control.enhanced:focus {
+            border-color: var(--hoockers-green);
+            box-shadow: 0 0 0 3px rgba(81, 122, 91, 0.1);
+            outline: none;
+        }
+
+        /* Image upload hover effect */
+        .image-upload-container:hover {
+            border-color: var(--hoockers-green);
+            background-color: rgba(81, 122, 91, 0.02);
+        }
+
+        /* Button hover effects */
+        .submit-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            background-color: var(--hoockers-green_80);
+        }
+
+        /* Form group hover effect */
+        .form-group:hover .form-label {
+            color: var(--hoockers-green);
+        }
+
+        /* Search results styling */
+        .search-results {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            margin-top: 5px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .search-result-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            transition: all 0.3s ease;
+        }
+
+        .search-result-item:hover {
+            background-color: #f8f9fa;
+            color: var(--hoockers-green);
+        }
+
+        /* Products Modal Styles */
+        .products-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .products-table th,
+        .products-table td {
+            border-bottom: 1px solid #eee;
+        }
+
+        .products-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .product-status {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-sold {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .edit-btn {
+            background-color: var(--hoockers-green);
+            color: white;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .pagination-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .pagination-btn:not(:disabled):hover {
+            background-color: var(--hoockers-green_80);
+        }
     </style>
 </head>
 <body>
@@ -211,119 +347,178 @@
                 
                 <form action="{{ route('posts.store') }}" method="post" enctype="multipart/form-data">
                     @csrf
-                    <div class="form-group">
-                        <label class="form-label" for="title">Product Title</label>
-                        <input type="text" name="title" id="title" class="form-control" placeholder="Enter product title..." value="{{ old('title') }}" required>
-                        @error('title')
-                            <p class="error-message">{{ $message }}</p>
-                        @enderror
-                    </div>
+                    <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                        <!-- Left Column -->
+                        <div class="form-column">
+                            <div class="form-group">
+                                <label class="form-label" for="title" style="display: flex; align-items: center; gap: 8px;">
+                                    <i class="bi bi-tag" style="color: var(--hoockers-green);"></i> Product Title
+                                </label>
+                                <input type="text" name="title" id="title" class="form-control enhanced" 
+                                    style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; transition: all 0.3s ease;"
+                                    placeholder="Enter product title..." value="{{ old('title') }}" required>
+                                @error('title')
+                                    <p class="error-message">{{ $message }}</p>
+                                @enderror
+                            </div>
 
-                    <div class="form-group">
-                        <label class="form-label" for="category_id">Category</label>
-                        <select name="category_id" id="category_id" class="form-control" required>
-                            <option value="">--Select--</option>
-                            @foreach(\App\Models\Category::where('is_active', true)->orderBy('name')->get() as $category)
-                                <option value="{{ $category->id }}" 
-                                    {{ old('category_id') == $category->id ? 'selected' : '' }}
-                                    style="background-color: {{ $category->color }}20;"
-                                >
-                                    {{ $category->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('category_id')
-                            <p class="error-message">{{ $message }}</p>
-                        @enderror
-                    </div>
+                            <!-- Category Selection -->
+                            <div class="form-group">
+                                <label class="form-label" for="category_id" style="display: flex; align-items: center; gap: 8px;">
+                                    <i class="bi bi-grid" style="color: var(--hoockers-green);"></i> Category
+                                </label>
+                                <select name="category_id" id="category_id" class="form-control enhanced" 
+                                    style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; transition: all 0.3s ease;"
+                                    required>
+                                    <option value="">--Select Category--</option>
+                                    @foreach($categories as $category)
+                                        <option value="{{ $category->id }}" 
+                                            {{ old('category_id') == $category->id ? 'selected' : '' }}
+                                            data-color="{{ $category->color }}"
+                                            style="background-color: {{ $category->color }}20;">
+                                            {{ $category->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('category_id')
+                                    <p class="error-message">{{ $message }}</p>
+                                @enderror
+                            </div>
 
-                    <div class="form-group">
-                        <label class="form-label" for="location">City/Area</label>
-                        <input type="text" name="location" id="location" class="form-control" placeholder="Enter city or area..." value="{{ old('location', 'Zamboanga City') }}" required>
-                        @error('location')
-                            <p class="error-message">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label" for="address">Full Address</label>
-                        <div class="search-container">
-                            <input type="text" id="address-search" placeholder="Search for your address..." 
-                                   class="form-control" value="{{ old('address', auth()->user()->location ?? '') }}">
-                            <div class="loader" id="search-loader"></div>
-                            <div class="search-results" id="search-results"></div>
+                            <div class="form-group">
+                                <label class="form-label" for="location" style="display: flex; align-items: center; gap: 8px;">
+                                    <i class="bi bi-geo-alt" style="color: var(--hoockers-green);"></i> City/Area
+                                </label>
+                                <input type="text" name="location" id="location" class="form-control enhanced" 
+                                    style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; transition: all 0.3s ease;"
+                                    placeholder="Enter city or area..." value="{{ old('location', 'Zamboanga City') }}" required>
+                                @error('location')
+                                    <p class="error-message">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="address" style="display: flex; align-items: center; gap: 8px;">
+                                    <i class="bi bi-pin-map" style="color: var(--hoockers-green);"></i> Full Address
+                                </label>
+                                <div class="search-container">
+                                    <input type="text" id="address-search" placeholder="Search for your address..." 
+                                           class="form-control enhanced" value="{{ old('address', auth()->user()->location ?? '') }}"
+                                           style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; transition: all 0.3s ease;">
+                                    <div class="loader" id="search-loader"></div>
+                                    <div class="search-results" id="search-results"></div>
+                                </div>
+                                <div id="map-container" style="margin-top: 15px; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"></div>
+                                <div class="selected-location" id="selected-location" style="margin-top: 15px; padding: 15px; background-color: #f8f9fa; border-radius: 10px; border-left: 4px solid var(--hoockers-green);">
+                                    <strong>Selected address:</strong> <span id="address-display">{{ old('address', auth()->user()->location ?? 'No address selected') }}</span>
+                                </div>
+                                <input type="hidden" name="address" id="address-input" value="{{ old('address', auth()->user()->location ?? '') }}">
+                                @error('address')
+                                    <p class="error-message">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
-                        <div id="map-container"></div>
-                        <div class="selected-location" id="selected-location">
-                            <strong>Selected address:</strong> <span id="address-display">{{ old('address', auth()->user()->location ?? 'No address selected') }}</span>
+
+                        <!-- Right Column -->
+                        <div class="form-column">
+                            <div class="form-group">
+                                <label class="form-label" for="unit" style="display: flex; align-items: center; gap: 8px;">
+                                    <i class="bi bi-rulers" style="color: var(--hoockers-green);"></i> Unit
+                                </label>
+                                <select name="unit" id="unit" class="form-control enhanced" 
+                                    style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; transition: all 0.3s ease;"
+                                    required>
+                                    <option value="">--Select Unit--</option>
+                                    <option value="kg" {{ old('unit') == 'kg' ? 'selected' : '' }}>Kilogram (kg)</option>
+                                    <option value="g" {{ old('unit') == 'g' ? 'selected' : '' }}>Gram (g)</option>
+                                    <option value="lb" {{ old('unit') == 'lb' ? 'selected' : '' }}>Pound (lb)</option>
+                                    <option value="L" {{ old('unit') == 'L' ? 'selected' : '' }}>Liter (L)</option>
+                                    <option value="m3" {{ old('unit') == 'm3' ? 'selected' : '' }}>Cubic Meter (m3)</option>
+                                    <option value="gal" {{ old('unit') == 'gal' ? 'selected' : '' }}>Gallon (gal)</option>
+                                    <option value="pc" {{ old('unit') == 'pc' ? 'selected' : '' }}>Per Piece (pc)</option>
+                                    <option value="dz" {{ old('unit') == 'dz' ? 'selected' : '' }}>Per Dozen (dz)</option>
+                                    <option value="bndl" {{ old('unit') == 'bndl' ? 'selected' : '' }}>Per Bundle (bndl)</option>
+                                    <option value="sack" {{ old('unit') == 'sack' ? 'selected' : '' }}>Per Sack (sack)</option>
+                                    <option value="bale" {{ old('unit') == 'bale' ? 'selected' : '' }}>Per Bale (bale)</option>
+                                    <option value="roll" {{ old('unit') == 'roll' ? 'selected' : '' }}>Per Roll (roll)</option>
+                                    <option value="drum" {{ old('unit') == 'drum' ? 'selected' : '' }}>Per Drum (drum)</option>
+                                    <option value="box" {{ old('unit') == 'box' ? 'selected' : '' }}>Per Box (box)</option>
+                                    <option value="pallet" {{ old('unit') == 'pallet' ? 'selected' : '' }}>Per Pallet (pallet)</option>
+                                </select>
+                                @error('unit')
+                                    <p class="error-message">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="quantity" style="display: flex; align-items: center; gap: 8px;">
+                                    <i class="bi bi-box-seam" style="color: var(--hoockers-green);"></i> Quantity
+                                </label>
+                                <input type="number" name="quantity" id="quantity" class="form-control enhanced" 
+                                    style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; transition: all 0.3s ease;"
+                                    placeholder="Enter quantity..." value="{{ old('quantity') }}" required>
+                                @error('quantity')
+                                    <p class="error-message">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="price" style="display: flex; align-items: center; gap: 8px;">
+                                    <i class="bi bi-currency-peso" style="color: var(--hoockers-green);"></i> Price per unit
+                                </label>
+                                <input type="text" name="price" id="price" class="form-control enhanced" 
+                                    style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; transition: all 0.3s ease;"
+                                    placeholder="Enter price..." value="{{ old('price') }}" required>
+                                <button type="button" id="pricesGuideBtn" class="btn btn-link" 
+                                    style="padding: 8px 12px; margin-top: 10px; color: white; background-color: var(--hoockers-green); display: inline-block; text-decoration: none; font-weight: 500; border-radius: 6px; width: auto; text-align: center; transition: all 0.3s ease;">
+                                    <i class="bi bi-info-circle"></i> Prices Guide
+                                </button>
+                                @error('price')
+                                    <p class="error-message">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="description" style="display: flex; align-items: center; gap: 8px;">
+                                    <i class="bi bi-text-paragraph" style="color: var(--hoockers-green);"></i> Description
+                                </label>
+                                <textarea name="description" id="description" class="form-control enhanced" 
+                                    style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; transition: all 0.3s ease; min-height: 120px; resize: vertical;"
+                                    placeholder="Enter description...">{{ old('description') }}</textarea>
+                                @error('description')
+                                    <p class="error-message">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="image" style="display: flex; align-items: center; gap: 8px;">
+                                    <i class="bi bi-image" style="color: var(--hoockers-green);"></i> Photo
+                                </label>
+                                <div class="image-upload-container" style="border: 2px dashed #e0e0e0; border-radius: 10px; padding: 20px; text-align: center; transition: all 0.3s ease;">
+                                    <input type="file" name="image" id="image" class="image-upload-input" 
+                                        style="display: none;" accept="image/*" onchange="previewImage(this, 'imagePreview')">
+                                    <label for="image" class="image-upload-label" 
+                                        style="cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                                        <i class="bi bi-cloud-upload" style="font-size: 32px; color: var(--hoockers-green);"></i>
+                                        <span style="font-size: 15px; color: #666;">Click to upload image</span>
+                                        <small style="color: #999;">or drag and drop</small>
+                                    </label>
+                                    <div id="imagePreview" class="image-preview" style="margin-top: 15px;">
+                                        <span class="placeholder-text" style="color: #999;">No image selected</span>
+                                    </div>
+                                </div>
+                                @error('image')
+                                    <p class="error-message">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
-                        <input type="hidden" name="address" id="address-input" value="{{ old('address', auth()->user()->location ?? '') }}">
-                        @error('address')
-                            <p class="error-message">{{ $message }}</p>
-                        @enderror
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label" for="unit">Unit</label>
-                        <select name="unit" id="unit" class="form-control" required>
-                            <option value="">--Select--</option>
-                            <option value="kg" {{ old('unit') == 'kg' ? 'selected' : '' }}>Kilogram (kg)</option>
-                            <option value="g" {{ old('unit') == 'g' ? 'selected' : '' }}>Gram (g)</option>
-                            <option value="lb" {{ old('unit') == 'lb' ? 'selected' : '' }}>Pound (lb)</option>
-                            <option value="L" {{ old('unit') == 'L' ? 'selected' : '' }}>Liter (L)</option>
-                            <option value="m3" {{ old('unit') == 'm3' ? 'selected' : '' }}>Cubic Meter (m3)</option>
-                            <option value="gal" {{ old('unit') == 'gal' ? 'selected' : '' }}>Gallon (gal)</option>
-                            <option value="pc" {{ old('unit') == 'pc' ? 'selected' : '' }}>Per Piece (pc)</option>
-                            <option value="dz" {{ old('unit') == 'dz' ? 'selected' : '' }}>Per Dozen (dz)</option>
-                            <option value="bndl" {{ old('unit') == 'bndl' ? 'selected' : '' }}>Per Bundle (bndl)</option>
-                            <option value="sack" {{ old('unit') == 'sack' ? 'selected' : '' }}>Per Sack (sack)</option>
-                            <option value="bale" {{ old('unit') == 'bale' ? 'selected' : '' }}>Per Bale (bale)</option>
-                            <option value="roll" {{ old('unit') == 'roll' ? 'selected' : '' }}>Per Roll (roll)</option>
-                            <option value="drum" {{ old('unit') == 'drum' ? 'selected' : '' }}>Per Drum (drum)</option>
-                            <option value="box" {{ old('unit') == 'box' ? 'selected' : '' }}>Per Box (box)</option>
-                            <option value="pallet" {{ old('unit') == 'pallet' ? 'selected' : '' }}>Per Pallet (pallet)</option>
-                        </select>
-                        @error('unit')
-                            <p class="error-message">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="quantity">Quantity</label>
-                        <input type="number" name="quantity" id="quantity" class="form-control" placeholder="Enter quantity..." value="{{ old('quantity') }}" required>
-                        @error('quantity')
-                            <p class="error-message">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="price">Price per unit</label>
-                        <input type="text" name="price" id="price" class="form-control" placeholder="Enter price..." value="{{ old('price') }}" required>
-                        <button type="button" id="pricesGuideBtn" class="btn btn-link" style="padding: 8px 12px; margin-top: 10px; color: white; background-color: var(--hoockers-green); display: inline-block; text-decoration: none; font-weight: 500; border-radius: 6px; width: auto; text-align: center;">
-                            <i class="bi bi-info-circle"></i> Prices Guide
+                    <div class="form-actions" style="display: flex; justify-content: flex-end; gap: 15px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                        <button type="submit" class="submit-btn" style="padding: 12px 25px; border: none; border-radius: 8px; font-size: 15px; font-weight: 500; color: white; background-color: var(--hoockers-green); cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px;">
+                            <i class="bi bi-plus-circle"></i> Post Item for Sale
                         </button>
-                        @error('price')
-                            <p class="error-message">{{ $message }}</p>
-                        @enderror
                     </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="description">Description</label>
-                        <textarea name="description" id="description" class="form-control" rows="4" placeholder="Enter description...">{{ old('description') }}</textarea>
-                        @error('description')
-                            <p class="error-message">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="image">Photo</label>
-                        <input type="file" name="image" id="image" class="form-control" accept="image/*" required>
-                        @error('image')
-                            <p class="error-message">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <button type="submit" class="submit-btn">Post Item for Sale</button>
                 </form>
             </div>
         </div>
@@ -604,6 +799,72 @@
 
                 <div style="margin-top: 20px; font-style: italic; color: #666;">
                     <p><small>Note: Prices are subject to change based on market conditions and quality of materials.</small></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Modal -->
+    <div id="productsModal" class="modal" style="display: none; position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);">
+        <div class="modal-content" style="background-color: white; margin: 50px auto; padding: 20px; width: 90%; max-width: 900px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+                <h2 class="modal-title" style="color: var(--hoockers-green); font-size: 32px; font-weight: 600; margin: 0;">My Products</h2>
+                <span class="close" style="color: #aaa; float: right; font-size: 36px; font-weight: bold; cursor: pointer;">&times;</span>
+            </div>
+            <div class="modal-body">
+                <!-- Filters -->
+                <div class="filters" style="display: flex; gap: 15px; margin-bottom: 20px;">
+                    <div class="category-filter" style="flex: 1;">
+                        <select id="category-filter" class="form-control enhanced" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px;">
+                            <option value="all">All Categories</option>
+                            @foreach($categories as $category)
+                                <option value="{{ $category->id }}">{{ $category->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="search-box" style="flex: 2;">
+                        <input type="text" id="product-search" class="form-control enhanced" 
+                            style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px;"
+                            placeholder="Search products...">
+                    </div>
+                </div>
+
+                <!-- Products Table -->
+                <div class="products-table-container" style="max-height: 500px; overflow-y: auto; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <table class="products-table" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background-color: var(--hoockers-green); color: white; position: sticky; top: 0; z-index: 10;">
+                                <th style="padding: 15px; text-align: left;">Image</th>
+                                <th style="padding: 15px; text-align: left;">Title</th>
+                                <th style="padding: 15px; text-align: center;">Category</th>
+                                <th style="padding: 15px; text-align: right;">Price</th>
+                                <th style="padding: 15px; text-align: center;">Stock</th>
+                                <th style="padding: 15px; text-align: center;">Status</th>
+                                <th style="padding: 15px; text-align: center;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="products-table-body">
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 30px;">
+                                    <div style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
+                                        <i class="bi bi-arrow-repeat" style="font-size: 48px; animation: spin 1s linear infinite;"></i>
+                                        <p>Loading products...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination" style="display: flex; justify-content: center; margin-top: 20px; gap: 10px;">
+                    <button id="prev-page" class="pagination-btn" style="padding: 8px 15px; border: none; border-radius: 5px; background-color: var(--hoockers-green); color: white; cursor: pointer;">
+                        <i class="bi bi-chevron-left"></i> Previous
+                    </button>
+                    <span id="page-info" style="display: flex; align-items: center; padding: 8px 15px;">Page 1 of 1</span>
+                    <button id="next-page" class="pagination-btn" style="padding: 8px 15px; border: none; border-radius: 5px; background-color: var(--hoockers-green); color: white; cursor: pointer;">
+                        Next <i class="bi bi-chevron-right"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -1059,6 +1320,260 @@
             }
         });
     }
+
+    // Image preview functionality
+    function previewImage(input, previewId) {
+        const preview = document.getElementById(previewId);
+        const file = input.files[0];
+        
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.innerHTML = `
+                    <img src="${e.target.result}" alt="Preview" 
+                        style="max-width: 100%; max-height: 200px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                `;
+            }
+            reader.readAsDataURL(file);
+        } else {
+            preview.innerHTML = '<span class="placeholder-text" style="color: #999;">No image selected</span>';
+        }
+    }
+
+    // Form control focus effects
+    document.querySelectorAll('.form-control.enhanced').forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.style.transform = 'translateY(-2px)';
+        });
+        
+        input.addEventListener('blur', function() {
+            this.parentElement.style.transform = 'translateY(0)';
+        });
+    });
+
+    // Products Modal Functionality
+    const productsModal = document.getElementById('productsModal');
+    const productsTableBody = document.getElementById('products-table-body');
+    const categoryFilter = document.getElementById('category-filter');
+    const productSearch = document.getElementById('product-search');
+    const prevPageBtn = document.getElementById('prev-page');
+    const nextPageBtn = document.getElementById('next-page');
+    const pageInfo = document.getElementById('page-info');
+    let currentPage = 1;
+    let totalPages = 1;
+
+    // Function to load products
+    function loadProducts(page = 1) {
+        const category = categoryFilter.value;
+        const search = productSearch.value;
+
+        // Show loading state
+        productsTableBody.innerHTML = `
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 30px;">
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
+                        <i class="bi bi-arrow-repeat" style="font-size: 48px; animation: spin 1s linear infinite;"></i>
+                        <p>Loading products...</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+
+        // Fetch products from the server
+        fetch(`/api/products?page=${page}&category=${category}&search=${search}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            credentials: 'same-origin'
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Network response was not ok (Status: ${response.status})`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data.products || data.products.length === 0) {
+                    productsTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 30px;">
+                                <div style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
+                                    <i class="bi bi-box" style="font-size: 48px; color: #ddd;"></i>
+                                    <h3 style="margin: 0; color: #666;">No products found</h3>
+                                    <p style="margin: 0; color: #888;">Try adjusting your filters or add a new product</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                // Update pagination
+                currentPage = data.current_page;
+                totalPages = data.last_page;
+                pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+                prevPageBtn.disabled = currentPage === 1;
+                nextPageBtn.disabled = currentPage === totalPages;
+
+                // Populate table
+                productsTableBody.innerHTML = data.products.map(product => `
+                    <tr>
+                        <td style="padding: 15px;">
+                            <img src="${product.image ? '/storage/' + product.image : '/images/placeholder.png'}" 
+                                 alt="${product.title}" 
+                                 style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
+                        </td>
+                        <td style="padding: 15px; font-weight: 500;">${product.title}</td>
+                        <td style="padding: 15px; text-align: center;">
+                            <span class="badge" style="background-color: ${product.category_color}; color: white; padding: 5px 10px; border-radius: 15px; font-size: 12px;">
+                                ${product.category_name}
+                            </span>
+                        </td>
+                        <td style="padding: 15px; text-align: right; font-weight: 600;">
+                            ₱${parseFloat(product.price).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                        </td>
+                        <td style="padding: 15px; text-align: center;">
+                            ${product.quantity} ${product.unit}
+                        </td>
+                        <td style="padding: 15px; text-align: center;">
+                            <span class="product-status status-${product.status.toLowerCase()}">
+                                ${product.status}
+                            </span>
+                        </td>
+                        <td style="padding: 15px;">
+                            <div class="product-actions">
+                                <button class="action-btn edit-btn" onclick="editProduct(${product.id})">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </button>
+                                <button class="action-btn delete-btn" onclick="deleteProduct(${product.id})">
+                                    <i class="bi bi-trash"></i> Delete
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            })
+            .catch(error => {
+                console.error('Error loading products:', error);
+                productsTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 30px;">
+                            <div style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
+                                <i class="bi bi-exclamation-circle" style="font-size: 48px; color: #dc3545;"></i>
+                                <h3 style="margin: 0; color: #666;">Error loading products</h3>
+                                <p style="margin: 0; color: #888;">${error.message}</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+    }
+
+    // Event Listeners for modal close
+    const closeButtons = document.querySelectorAll('.close');
+    closeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            productsModal.style.display = 'none';
+        });
+    });
+
+    window.addEventListener('click', (e) => {
+        if (e.target === productsModal) {
+            productsModal.style.display = 'none';
+        }
+    });
+
+    // Add escape key listener to close modal
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && productsModal.style.display === 'block') {
+            productsModal.style.display = 'none';
+        }
+    });
+
+    categoryFilter.addEventListener('change', () => {
+        currentPage = 1;
+        loadProducts(currentPage);
+    });
+
+    productSearch.addEventListener('input', debounce(() => {
+        currentPage = 1;
+        loadProducts(currentPage);
+    }, 500));
+
+    prevPageBtn.addEventListener('click', () => {
+        if (currentPage > 1) {
+            loadProducts(currentPage - 1);
+        }
+    });
+
+    nextPageBtn.addEventListener('click', () => {
+        if (currentPage < totalPages) {
+            loadProducts(currentPage + 1);
+        }
+    });
+
+    // Utility function for debouncing
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    // Function to edit product
+    function editProduct(id) {
+        // Implement edit functionality
+        console.log('Edit product:', id);
+    }
+
+    // Function to delete product
+    function deleteProduct(id) {
+        if (confirm('Are you sure you want to delete this product?')) {
+            // Implement delete functionality
+            console.log('Delete product:', id);
+        }
+    }
+
+    // Add button to open products modal
+    const openProductsBtn = document.createElement('button');
+    openProductsBtn.className = 'action-btn';
+    openProductsBtn.style.cssText = 'position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; background-color: var(--hoockers-green); color: white; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);';
+    openProductsBtn.innerHTML = '<i class="bi bi-box"></i> View My Products';
+    openProductsBtn.onclick = () => {
+        productsModal.style.display = 'block';
+        loadProducts();
+    };
+    document.body.appendChild(openProductsBtn);
+
+    // Add this script to enhance the category selection
+    document.addEventListener('DOMContentLoaded', function() {
+        const categorySelect = document.getElementById('category_id');
+        
+        // Function to update the select's background color based on the selected option
+        function updateSelectColor() {
+            const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+            const color = selectedOption.getAttribute('data-color');
+            if (color) {
+                categorySelect.style.backgroundColor = color + '20';
+            } else {
+                categorySelect.style.backgroundColor = '';
+            }
+        }
+        
+        // Update color when selection changes
+        categorySelect.addEventListener('change', updateSelectColor);
+        
+        // Initial color update
+        updateSelectColor();
+    });
     </script>
 </body>
 </html>

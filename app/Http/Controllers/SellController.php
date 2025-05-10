@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Category;
 
 class SellController extends Controller
 {
@@ -19,6 +20,9 @@ class SellController extends Controller
             return redirect()->route('login');
         }
         
-        return view('sell.item');
+        // Fetch active categories for the form
+        $categories = Category::where('is_active', true)->orderBy('name')->get();
+        
+        return view('sell.item', compact('categories'));
     }
 }
