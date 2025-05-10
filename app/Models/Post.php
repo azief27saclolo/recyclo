@@ -61,9 +61,9 @@ class Post extends Model
     /**
      * Get the category that owns the post.
      */
-    public function category(): BelongsTo
+    public function categoryRelation(): BelongsTo
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(Category::class, 'category_id');
     }
 
     /**
@@ -73,11 +73,22 @@ class Post extends Model
      */
     public function getCategoryNameAttribute()
     {
-        if ($this->category_id && $this->category()->exists()) {
-            return $this->category->name;
+        if ($this->category_id && $this->categoryRelation()->exists()) {
+            return $this->categoryRelation->name;
         }
         
         return $this->attributes['category'];
+    }
+
+    /**
+     * Get the category attribute.
+     * 
+     * This ensures that $post->category always returns the category name,
+     * whether it comes from the relationship or the legacy field.
+     */
+    public function getCategoryAttribute($value)
+    {
+        return $this->getCategoryNameAttribute();
     }
 
     /**

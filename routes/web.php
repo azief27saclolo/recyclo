@@ -16,6 +16,7 @@ use App\Http\Controllers\BuyMarketplaceController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminLoginController;
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Controllers\InventoryHistoryController;
 
 // Landing page route
 Route::redirect('/', 'landingpage');
@@ -187,6 +188,16 @@ Route::middleware('auth')->group(function() {
     
     // Add a dedicated route for direct product checkout
     Route::get('/checkout', [OrderController::class, 'checkout'])->name('orders.checkout');
+
+    // Products API Routes
+    Route::get('/api/products', [App\Http\Controllers\ShopController::class, 'getProducts']);
+    Route::post('/api/products/update-stock', [App\Http\Controllers\ShopController::class, 'updateStock']);
+    Route::post('/api/products/batch-update', [App\Http\Controllers\ShopController::class, 'batchUpdateStock']);
+    Route::get('/api/products/history', [App\Http\Controllers\ShopController::class, 'getInventoryHistory']);
+    Route::get('/api/products/export', [App\Http\Controllers\ShopController::class, 'exportInventory']);
+    Route::get('/api/products/history/export', [App\Http\Controllers\ShopController::class, 'exportInventoryHistory']);
+    Route::get('/api/products/{id}', [App\Http\Controllers\ShopController::class, 'getProduct']);
+    Route::post('/api/products/{id}', [App\Http\Controllers\ShopController::class, 'updateProduct']);
 });
 
 // Routes for guests users
@@ -227,3 +238,13 @@ Route::post('/buy-marketplace/notify', [App\Http\Controllers\BuyMarketplaceContr
 
 // Buy response routes
 Route::post('/buy-responses/{id}/mark-read', [App\Http\Controllers\BuyController::class, 'markResponseAsRead'])->name('buy.responses.mark-read')->middleware('auth');
+
+// Inventory Management Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/api/inventory', [ShopController::class, 'getInventory'])->name('api.inventory');
+    Route::post('/api/inventory/update-stock', [ShopController::class, 'updateStock'])->name('api.inventory.update');
+    Route::post('/api/inventory/batch-update', [ShopController::class, 'batchUpdateStock'])->name('api.inventory.batch-update');
+    Route::get('/api/inventory/history', [InventoryHistoryController::class, 'getHistory'])->name('api.inventory.history');
+    Route::get('/api/inventory/export', [InventoryHistoryController::class, 'exportInventory'])->name('api.inventory.export');
+    Route::get('/api/inventory/history/export', [InventoryHistoryController::class, 'exportInventoryHistory'])->name('api.inventory.history.export');
+});

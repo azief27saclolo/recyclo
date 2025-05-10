@@ -116,15 +116,14 @@ class PostController extends Controller implements HasMiddleware
         // Store image
         $path = Storage::disk('public')->put('posts_images', $request->image);
 
-        // Get the category name for backwards compatibility
-        $category = Category::find($request->category_id);
-        $categoryName = $category ? $category->name : '';
+        // Get the category for backwards compatibility
+        $category = Category::findOrFail($request->category_id);
 
         // Create a post with pending status
         $post = Auth::user()->posts()->create([
             'title' => $request->title,
             'category_id' => $request->category_id,
-            'category' => $categoryName, // Keep category name for backwards compatibility
+            'category' => $category->name, // Keep category name for backwards compatibility
             'location' => $request->location,
             'address' => $request->address,
             'price' => $request->price,
@@ -159,7 +158,10 @@ class PostController extends Controller implements HasMiddleware
         
         // Get related posts or recent posts to display in the view
         $posts = Post::where('id', '!=', $post->id)
-                    ->where('category', $post->category)
+                    ->where(function($query) use ($post) {
+                        $query->where('category_id', $post->category_id)
+                              ->orWhere('category', $post->category);
+                    })
                     ->latest()
                     ->take(5)
                     ->get();
@@ -167,7 +169,10 @@ class PostController extends Controller implements HasMiddleware
         // If we couldn't find enough related posts, fill with recent posts
         if ($posts->count() < 5) {
             $additionalPosts = Post::where('id', '!=', $post->id)
-                                ->where('category', '!=', $post->category)
+                                ->where(function($query) use ($post) {
+                                    $query->where('category_id', '!=', $post->category_id)
+                                          ->where('category', '!=', $post->category);
+                                })
                                 ->latest()
                                 ->take(5 - $posts->count())
                                 ->get();
@@ -223,15 +228,14 @@ class PostController extends Controller implements HasMiddleware
 
         $request->validate($validationRules);
 
-        // Get the category name for backwards compatibility
-        $category = Category::find($request->category_id);
-        $categoryName = $category ? $category->name : '';
+        // Get the category for backwards compatibility
+        $category = Category::findOrFail($request->category_id);
 
         // Prepare update data
         $updateData = [
             'title' => $request->title,
             'category_id' => $request->category_id,
-            'category' => $categoryName, // Keep category name for backwards compatibility
+            'category' => $category->name, // Keep category name for backwards compatibility
             'location' => $request->location,
             'address' => $request->address,
             'price' => $request->price,
@@ -242,29 +246,20 @@ class PostController extends Controller implements HasMiddleware
 
         // Update image only if a new one is provided
         if ($request->hasFile('image')) {
-            // Delete old image if it exists
-            if ($post->image) {
+            // Delete old image
+            if ($post->image && Storage::disk('public')->exists($post->image)) {
                 Storage::disk('public')->delete($post->image);
             }
             
             // Store new image
-            $path = Storage::disk('public')->put('posts_images', $request->image);
-            $updateData['image'] = $path;
+            $updateData['image'] = Storage::disk('public')->put('posts_images', $request->image);
         }
 
-        // Update the post with the new data
+        // Update the post
         $post->update($updateData);
 
-        // Check referrer and redirect accordingly
-        $referer = $request->headers->get('referer');
-        
-        if (strpos($referer, 'shop/dashboard') !== false) {
-            // If editing from shop dashboard, redirect back there
-            return redirect()->route('shop.dashboard')->with('success', 'Your product was updated!');
-        }
-        
-        // Default redirect to dashboard
-        return redirect()->route('dashboard')->with('success', 'Your post was updated!');
+        return redirect()->route('posts.show', $post)
+            ->with('success', 'Post updated successfully!');
     }
 
     /**
