@@ -93,10 +93,13 @@ class OrderController extends Controller
                 }
             } else {
                 // Regular cart checkout
-                // Get the user's active cart
-                $cart = Cart::where('user_id', Auth::id())->where('status', 'active')->first();
+                // Get the user's active cart with all necessary relationships
+                $cart = Cart::where('user_id', Auth::id())
+                    ->where('status', 'active')
+                    ->with(['items.product.post.user', 'items.product.user'])
+                    ->first();
                 
-                if (!$cart || $cart->items->count() === 0) {
+                if (!$cart || $cart->items->isEmpty()) {
                     Log::error('Empty cart during checkout');
                     return response()->json([
                         'success' => false,
@@ -117,41 +120,61 @@ class OrderController extends Controller
                     // Create separate orders for each shop's products
                     $shopOrders = [];
                     
-                    // Get cart items with proper eager loading to avoid N+1 queries
-                    $cartItems = $cart->items()->with(['product.post.user'])->get();
+                    // Get cart items with proper eager loading
+                    $cartItems = $cart->items;
                     
-                    // Filter out any items with incomplete data
+                    // Debug logging for cart items
+                    Log::info('Cart Items Debug:', [
+                        'total_items' => $cartItems->count(),
+                        'items' => $cartItems->map(function($item) {
+                            return [
+                                'item_id' => $item->id,
+                                'product_id' => $item->product_id,
+                                'has_product' => $item->product ? 'yes' : 'no',
+                                'has_post' => $item->product && $item->product->post ? 'yes' : 'no',
+                                'has_user' => $item->product && $item->product->user ? 'yes' : 'no',
+                                'product_name' => $item->product ? $item->product->name : 'N/A'
+                            ];
+                        })->toArray()
+                    ]);
+                    
+                    // Filter out any items with missing products or posts
                     $validCartItems = $cartItems->filter(function($item) {
-                        return $item->product && $item->product->post && $item->product->post->user;
+                        return $item->product && 
+                               $item->product->post && 
+                               $item->product->user && 
+                               $item->product->post->user;
                     });
                     
                     if ($validCartItems->isEmpty()) {
+                        Log::error('No valid products found in cart', [
+                            'cart_id' => $cart->id,
+                            'user_id' => Auth::id(),
+                            'total_items' => $cartItems->count(),
+                            'valid_items' => $validCartItems->count()
+                        ]);
                         throw new Exception("No valid products found in cart");
                     }
                     
-                    // Group by seller ID with null check
+                    // Group by seller ID
                     $groupedItems = $validCartItems->groupBy(function($item) {
-                        return $item->product->post->user->id;
+                        return $item->product->user_id;
                     });
                     
                     foreach ($groupedItems as $sellerId => $items) {
                         $firstItem = $items->first();
-                        $sellerUser = $firstItem->product->post->user;
+                        $sellerUser = $firstItem->product->user;
                         
                         // Calculate total amount for this seller's items
                         $totalAmount = $items->sum(function($item) {
                             return $item->quantity * $item->price;
                         });
                         
-                        // Get the first post_id to use as the main post_id for the order
-                        // This maintains compatibility with the existing database structure
-                        $primaryPostId = $firstItem->product->post->id;
-                        
                         // Create an order for this seller
                         $order = Order::create([
                             'seller_id' => $sellerId,
                             'buyer_id' => Auth::id(),
-                            'post_id' => $primaryPostId, // Use the first item's post_id instead of null
+                            'post_id' => $firstItem->product->post->id,
                             'quantity' => $items->sum('quantity'),
                             'status' => 'pending',
                             'total_amount' => $totalAmount,
@@ -160,29 +183,30 @@ class OrderController extends Controller
                         
                         // Create order items for each product
                         foreach ($items as $item) {
-                            // Get post associated with product
-                            $post = $item->product->post;
-                            
                             // Create order item
                             OrderItem::create([
                                 'order_id' => $order->id,
-                                'post_id' => $post->id,
+                                'post_id' => $item->product->post->id,
                                 'quantity' => $item->quantity,
                                 'price' => $item->price,
                             ]);
                             
-                            // Decrease post quantity
-                            if ($post->quantity < $item->quantity) {
-                                throw new Exception("Not enough quantity available for product: {$post->title}");
-                            }
-                            
-                            $post->quantity -= $item->quantity;
-                            $post->save();
-                            
-                            // Update product stock if exists
+                            // Update product stock and post quantity
                             if ($item->product) {
+                                if ($item->product->stock < $item->quantity) {
+                                    throw new Exception("Not enough stock available for product: {$item->product->name}");
+                                }
+                                
+                                // Update product stock
                                 $item->product->stock -= $item->quantity;
                                 $item->product->save();
+                                
+                                // Update post quantity
+                                $post = $item->product->post;
+                                if ($post) {
+                                    $post->quantity -= $item->quantity;
+                                    $post->save();
+                                }
                             }
                         }
                         $shopOrders[] = $order;

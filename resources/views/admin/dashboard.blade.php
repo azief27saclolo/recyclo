@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recyclo Admin Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -12,12 +12,15 @@
         :root {
             --hoockers-green: #517A5B;
             --hoockers-green_80: #517A5Bcc;
+            --card-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            --hover-shadow: 0 12px 24px rgba(0,0,0,0.15);
         }
         
         body {
             font-family: 'Urbanist', sans-serif;
-            background-color: #f5f5f5;
+            background-color: #f8f9fa;
             margin: 0;
+            color: #2c3e50;
         }
 
         .admin-container {
@@ -25,309 +28,250 @@
             min-height: 100vh;
         }
 
-        .sidebar {
-            width: 250px;
-            background: var(--hoockers-green);
-            padding: 20px;
-            color: white;
-            position: fixed;
-            height: 100vh;
-            overflow-y: auto;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-        }
-
         .main-content {
             flex: 1;
-            padding: 20px;
-            margin-left: 290px; /* Increased from 250px to account for sidebar padding */
+            padding: 30px;
+            margin-left: 290px;
             min-height: 100vh;
             width: calc(100% - 290px);
             box-sizing: border-box;
         }
 
+        .main-content h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 35px;
         }
 
         .stat-card {
             background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0,0,0,0.05);
         }
 
         .stat-card:hover {
             transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
         }
 
         .stat-card h3 {
-            margin: 0;
-            color: var(--hoockers-green);
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-        }
-
-        .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .recent-orders {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        .nav-link {
-            color: white;
-            text-decoration: none;
-            padding: 12px 15px;
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .nav-link i {
-            margin-right: 10px;
-            font-size: 1.2rem;
-        }
-
-        .nav-link:hover, .nav-link.active {
-            background: rgba(255,255,255,0.2);
-            transform: translateX(5px);
-        }
-
-        .logo-section {
-            display: flex;
-            align-items: center;
-            margin-bottom: 40px;
-            padding: 20px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .logo-section img {
-            width: 45px;
-            height: 45px;
-            margin-right: 15px;
-        }
-
-        .logo-section h2 {
-            font-size: 1.5rem;
-            margin: 0;
+            margin: 0 0 20px 0;
+            color: #2c3e50;
+            font-size: 18px;
             font-weight: 600;
         }
 
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .table th, .table td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-
-        .table th {
-            background-color: #f8f9fa;
+        .stat-card .stat-value {
+            font-size: 36px;
+            font-weight: 700;
             color: var(--hoockers-green);
-            font-weight: 600;
+            margin: 0;
+            line-height: 1.2;
         }
 
-        .badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
+        .stat-card .stat-label {
+            color: #666;
+            margin: 10px 0 0 0;
+            font-size: 14px;
             font-weight: 500;
         }
 
-        .badge.pending {
-            background-color: #fff3cd;
-            color: #856404;
-        }
-
-        .badge.completed {
-            background-color: #d4edda;
-            color: #155724;
-        }
-
-        .btn-primary {
-            background-color: var(--hoockers-green);
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--hoockers-green_80);
-        }
-
-        .dashboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(0,0,0,0.05);
             margin-bottom: 30px;
         }
 
-        .welcome-text {
-            font-size: 1.8rem;
-            color: var(--hoockers-green);
+        .card-header {
+            padding: 25px 30px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            background: transparent;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2c3e50;
             margin: 0;
         }
 
-        .date-text {
-            color: #666;
-            font-size: 1.1rem;
+        .card-body {
+            padding: 30px;
         }
 
-        /* Add responsive styling for smaller screens */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-            }
+        .activity-feed {
+            padding: 10px;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            flex-shrink: 0;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .activity-icon i {
+            color: white;
+            font-size: 20px;
+        }
+
+        .activity-content {
+            flex-grow: 1;
+        }
+
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .activity-header h6 {
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 0;
+        }
+
+        .activity-content p {
+            color: #666;
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .btn-link {
+            color: var(--hoockers-green);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            margin-top: 8px;
+            display: inline-block;
+        }
+
+        .btn-link:hover {
+            color: var(--hoockers-green_80);
+            text-decoration: underline;
+        }
+
+        .text-muted {
+            color: #95a5a6 !important;
+            font-size: 13px;
+        }
+
+        @media screen and (max-width: 768px) {
             .main-content {
                 margin-left: 0;
                 width: 100%;
+                padding: 20px;
             }
-            .admin-container {
-                flex-direction: column;
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-card {
+                padding: 20px;
+            }
+
+            .card-header, .card-body {
+                padding: 20px;
             }
         }
     </style>
 </head>
 <body>
     <div class="admin-container">
-        <div class="sidebar">
-            <div class="logo-section">
-                <img src="{{ asset('images/mainlogo.png') }}" alt="Recyclo Logo">
-                <h2>Recyclo Admin</h2>
-            </div>
-            <nav>
-                <a href="{{ route('admin.dashboard') }}" class="nav-link active">
-                    <i class="bi bi-speedometer2"></i> Dashboard
-                </a>
-                <a href="{{ route('admin.orders') }}" class="nav-link">
-                    <i class="bi bi-cart"></i> Orders
-                </a>
-                <a href="{{ route('admin.users') }}" class="nav-link">
-                    <i class="bi bi-people"></i> Users
-                </a>
-                <a href="{{ route('admin.post.requests') }}" class="nav-link">
-                    <i class="bi bi-file-earmark-plus"></i> Post Requests
-                    @if(App\Models\Post::where('status', App\Models\Post::STATUS_PENDING)->count() > 0)
-                        <span class="badge" style="background-color: #FF6B6B; color: white; margin-left: 5px; border-radius: 50%; padding: 3px 8px;">
-                            {{ App\Models\Post::where('status', App\Models\Post::STATUS_PENDING)->count() }}
-                        </span>
-                    @endif
-                </a>
-                <a href="{{ route('admin.products') }}" class="nav-link">
-                    <i class="bi bi-box-seam"></i> Products
-                </a>
-                <a href="{{ route('admin.shops') }}" class="nav-link">
-                    <i class="bi bi-shop"></i> Shops
-                </a>
-                <a href="{{ route('admin.reports') }}" class="nav-link">
-                    <i class="bi bi-file-earmark-text"></i> Reports
-                </a>
-                <!-- Change to use SweetAlert2 for logout -->
-                <a href="javascript:void(0)" class="nav-link" onclick="confirmLogout()">
-                    <i class="bi bi-box-arrow-right"></i> Logout
-                </a>
-            </nav>
-        </div>
+        <x-admin-sidebar activePage="dashboard" />
 
         <div class="main-content">
-            <div class="dashboard-header">
-                <div>
-                    <h1 class="welcome-text">Welcome back, Admin!</h1>
-                    <p class="date-text">{{ date('l, F j, Y') }}</p>
-                </div>
-            </div>
+            <h1>Dashboard</h1>
             
             <div class="stats-grid">
                 <div class="stat-card">
-                    <h3><i class="bi bi-cart-check"></i> Total Orders</h3>
-                    <p class="stat-number">{{ $orders_count }}</p>
+                    <h3>Total Users</h3>
+                    <p class="stat-value">{{ $users_count }}</p>
+                    <p class="stat-label">Registered users</p>
                 </div>
+                
                 <div class="stat-card">
-                    <h3><i class="bi bi-people"></i> Active Users</h3>
-                    <p class="stat-number">{{ $users_count }}</p>
+                    <h3>Total Orders</h3>
+                    <p class="stat-value">{{ $orders_count }}</p>
+                    <p class="stat-label">Completed orders</p>
                 </div>
+                
                 <div class="stat-card">
-                    <h3><i class="bi bi-shop"></i> Total Shops</h3>
-                    <p class="stat-number">{{ $shops_count }}</p>
+                    <h3>Total Products</h3>
+                    <p class="stat-value">{{ $products_count }}</p>
+                    <p class="stat-label">Active products</p>
+                </div>
+                
+                <div class="stat-card">
+                    <h3>Total Shops</h3>
+                    <p class="stat-value">{{ $shops_count }}</p>
+                    <p class="stat-label">Registered shops</p>
                 </div>
             </div>
 
-            <div class="recent-orders">
-                <h2><i class="bi bi-clock-history"></i> Recent Orders</h2>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Order ID</th>
-                            <th>Customer</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($recent_orders as $order)
-                        <tr>
-                            <td>#{{ $order->id }}</td>
-                            <td>{{ $order->user ? $order->user->firstname.' '.$order->user->lastname : 'Unknown User' }}</td>
-                            <td>₱{{ number_format($order->total_amount, 2) }}</td>
-                            <td><span class="badge {{ $order->status == 'completed' ? 'completed' : 'pending' }}">{{ ucfirst($order->status) }}</span></td>
-                            <td>
-                                <a href="{{ route('admin.orders') }}" class="btn btn-primary btn-sm">View</a>
-                            </td>
-                        </tr>
-                        @endforeach
-                        
-                        @if(count($recent_orders) == 0)
-                        <tr>
-                            <td colspan="5" class="text-center">No orders found</td>
-                        </tr>
-                        @endif
-                    </tbody>
-                </table>
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    <div class="activity-feed">
+                        @forelse($recent_activities as $activity)
+                            <div class="activity-item">
+                                <div class="activity-icon bg-{{ $activity['type'] === 'order' ? 'success' : ($activity['type'] === 'shop' ? 'primary' : ($activity['type'] === 'product' ? 'info' : 'warning')) }}">
+                                    <i class="bi {{ $activity['icon'] }}"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-header">
+                                        <h6>{{ $activity['title'] }}</h6>
+                                        <small class="text-muted">{{ $activity['time']->diffForHumans() }}</small>
+                                    </div>
+                                    <p>{{ $activity['description'] }}</p>
+                                    <a href="{{ $activity['link'] }}" class="btn-link">View Details</a>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-center py-4">
+                                <i class="bi bi-activity text-muted" style="font-size: 48px;"></i>
+                                <p class="mt-3 text-muted">No recent activities</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-
-    <script>
-        // Function to confirm logout with SweetAlert2
-        function confirmLogout() {
-            Swal.fire({
-                title: 'Confirm Logout',
-                text: "Are you sure you want to logout from the admin panel?",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#517A5B',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, Logout',
-                cancelButtonText: 'Cancel'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = "{{ route('admin.logout') }}";
-                }
-            });
-        }
-    </script>
 </body>
 </html>

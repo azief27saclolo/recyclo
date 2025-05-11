@@ -24,28 +24,102 @@ class AdminController extends Controller
         $orders_count = Order::count();
         $users_count = User::count();
         $shops_count = Shop::count();
+        $products_count = Post::count();
 
-        // Check if order_items table exists before using the relationship
-        if (Schema::hasTable('order_items')) {
-            // Get recent orders with their relationships
-            $recent_orders = Order::with(['user'])
-                ->orderBy('created_at', 'desc')
-                ->limit(5)
-                ->get();
-        } else {
-            // Get only orders without items relationship
-            $recent_orders = Order::orderBy('created_at', 'desc')
-                ->limit(5)
-                ->get();
-        }
+        // Get recent activities
+        $recent_activities = collect();
 
-        return view('admin.dashboard', compact('orders_count', 'users_count', 'shops_count', 'recent_orders'));
+        // Get recent orders
+        $recent_orders = Order::with(['buyer', 'post'])
+            ->latest()
+            ->take(5)
+            ->get()
+            ->map(function ($order) {
+                return [
+                    'type' => 'order',
+                    'icon' => 'bi-cart',
+                    'title' => "New order from {$order->buyer->firstname} {$order->buyer->lastname}",
+                    'description' => "Ordered {$order->post->title}",
+                    'time' => $order->created_at,
+                    'link' => route('admin.orders')
+                ];
+            });
+
+        // Get recent shop registrations
+        $recent_shops = Shop::with('user')
+            ->latest()
+            ->take(5)
+            ->get()
+            ->map(function ($shop) {
+                return [
+                    'type' => 'shop',
+                    'icon' => 'bi-shop',
+                    'title' => "New shop registered",
+                    'description' => "{$shop->user->firstname} {$shop->user->lastname} registered {$shop->shop_name}",
+                    'time' => $shop->created_at,
+                    'link' => route('admin.shops')
+                ];
+            });
+
+        // Get recent product posts
+        $recent_posts = Post::with('user')
+            ->latest()
+            ->take(5)
+            ->get()
+            ->map(function ($post) {
+                return [
+                    'type' => 'product',
+                    'icon' => 'bi-box-seam',
+                    'title' => "New product listed",
+                    'description' => "{$post->user->firstname} {$post->user->lastname} listed {$post->title}",
+                    'time' => $post->created_at,
+                    'link' => route('admin.products')
+                ];
+            });
+
+        // Get recent user registrations
+        $recent_users = User::latest()
+            ->take(5)
+            ->get()
+            ->map(function ($user) {
+                return [
+                    'type' => 'user',
+                    'icon' => 'bi-person-plus',
+                    'title' => "New user registered",
+                    'description' => "{$user->firstname} {$user->lastname} joined Recyclo",
+                    'time' => $user->created_at,
+                    'link' => route('admin.users')
+                ];
+            });
+
+        // Combine all activities and sort by time
+        $recent_activities = $recent_activities
+            ->concat($recent_orders)
+            ->concat($recent_shops)
+            ->concat($recent_posts)
+            ->concat($recent_users)
+            ->sortByDesc('time')
+            ->take(10);
+
+        return view('admin.dashboard', compact(
+            'orders_count',
+            'users_count',
+            'shops_count',
+            'products_count',
+            'recent_activities'
+        ));
     }
 
     public function orders()
     {
         $orders = Order::with(['buyer', 'seller', 'post', 'user'])->latest()->get();
         return view('admin.orders', compact('orders'));
+    }
+
+    public function showOrder(Order $order)
+    {
+        $order->load(['buyer', 'seller', 'post', 'user']);
+        return view('admin.order_details', compact('order'));
     }
     
     public function updateOrderStatus(Request $request, $orderId)
@@ -297,10 +371,17 @@ class AdminController extends Controller
 
     public function users()
     {
-        // Get users with their shop information
+        // Get users with their shop information and ensure status is properly set
         $users = User::with('shop')
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->get()
+            ->map(function ($user) {
+                // Ensure status is set, default to 'active' if not set
+                if (!isset($user->status)) {
+                    $user->status = 'active';
+                }
+                return $user;
+            });
             
         return view('admin.users', compact('users'));
     }
@@ -352,6 +433,45 @@ class AdminController extends Controller
                 'success' => false,
                 'message' => 'Failed to get user details: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function showUser(User $user)
+    {
+        try {
+            // Load user relationships
+            $user->load(['shop', 'posts' => function($query) {
+                $query->latest();
+            }]);
+            
+            // Check if user has a shop or posts
+            if ($user->shop || $user->posts->count() > 0) {
+                // If user has a shop or posts, set them as seller
+                if ($user->role !== 'seller') {
+                    $user->update(['role' => 'seller']);
+                }
+                
+                // If user has a shop, ensure it's active
+                if ($user->shop && !$user->shop->is_active) {
+                    $user->shop->update(['is_active' => true]);
+                }
+            }
+            
+            // Get user's order history - using buyer_id instead of user_id
+            $orders = Order::where('buyer_id', $user->id)
+                ->with(['post', 'seller'])
+                ->latest()
+                ->get();
+            
+            return view('admin.user_details', compact('user', 'orders'));
+        } catch (\Exception $e) {
+            \Log::error('Failed to load user details', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->route('admin.users')
+                ->with('error', 'Failed to load user details: ' . $e->getMessage());
         }
     }
 
@@ -1162,6 +1282,44 @@ class AdminController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to remove category: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateUserRole(User $user)
+    {
+        try {
+            $user->update([
+                'role' => 'seller'
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User role updated successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update user role: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function activateShop(Shop $shop)
+    {
+        try {
+            $shop->update([
+                'is_active' => true
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Shop activated successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to activate shop: ' . $e->getMessage()
             ], 500);
         }
     }

@@ -152,9 +152,12 @@ class PostController extends Controller implements HasMiddleware
                 'price' => $post->price,
                 'image' => $post->image,
                 'user_id' => $post->user_id,
-                'stock' => 1 // Default stock
+                'stock' => $post->quantity // Use post quantity as stock
             ]
         );
+        
+        // Load the product relationship
+        $post->load('product');
         
         // Get related posts or recent posts to display in the view
         $posts = Post::where('id', '!=', $post->id)
@@ -181,7 +184,6 @@ class PostController extends Controller implements HasMiddleware
         
         return view('posts.show', [
             'post' => $post,
-            'product_id' => $product->id,
             'posts' => $posts
         ]);
     }

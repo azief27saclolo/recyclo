@@ -22,11 +22,23 @@ class AuthController extends Controller
             'lastname' => ['required', 'string', 'min:2', 'max:255'],
             'username' => ['required', 'string', 'min:3', 'max:255', 'unique:users,username'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'birthday' => ['required', 'date'],
+            'birthday' => [
+                'required', 
+                'date',
+                'before_or_equal:' . now()->subYears(18)->format('Y-m-d'),
+                function ($attribute, $value, $fail) {
+                    $birthday = \Carbon\Carbon::parse($value);
+                    $age = $birthday->age;
+                    if ($age < 18) {
+                        $fail('Age not valid');
+                    }
+                },
+            ],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'terms' => ['required']
         ]);
         
+        try {
         // Remove terms from form fields as it's not a database column
         unset($formFields['terms']);
         
@@ -44,6 +56,12 @@ class AuthController extends Controller
         
         // Redirect to login page with success message
         return redirect()->route('login')->with('message', 'Account created successfully! Please log in to continue.');
+        } catch (\Exception $e) {
+            // If there's an error, redirect back to registration form with error
+            return redirect()->route('login', ['form' => 'register'])
+                ->withInput()
+                ->withErrors(['error' => 'Registration failed. Please try again.']);
+        }
     }
 
     // Verify Email Notice Handler - Modified to redirect to dashboard

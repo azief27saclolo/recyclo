@@ -75,6 +75,7 @@ class ShopController extends Controller
      */
     public function update(Request $request)
     {
+        try {
         $shop = Shop::where('user_id', Auth::id())
                     ->where('status', 'approved')
                     ->firstOrFail();
@@ -82,12 +83,18 @@ class ShopController extends Controller
         $request->validate([
             'shop_name' => 'required|string|max:255',
             'shop_address' => 'required|string',
+                'shop_description' => 'nullable|string',
+                'contact_number' => 'nullable|string|max:20',
+                'business_hours' => 'nullable|string|max:100',
             'shop_image' => 'nullable|file|mimes:jpg,jpeg,png|max:5120',
         ]);
         
         // Update shop details
         $shop->shop_name = $request->shop_name;
         $shop->shop_address = $request->shop_address;
+            $shop->shop_description = $request->shop_description;
+            $shop->contact_number = $request->contact_number;
+            $shop->business_hours = $request->business_hours;
         
         // Update shop image if provided
         if ($request->hasFile('shop_image')) {
@@ -103,14 +110,18 @@ class ShopController extends Controller
         
         $shop->save();
         
-        if ($request->ajax()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Shop settings updated successfully!'
+                'message' => 'Shop settings updated successfully!',
+                'shop' => $shop
             ]);
+        } catch (\Exception $e) {
+            \Log::error('Error updating shop settings: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update shop settings: ' . $e->getMessage()
+            ], 500);
         }
-        
-        return redirect()->route('shop.dashboard')->with('success', 'Shop settings updated successfully!');
     }
 
     /**
@@ -215,33 +226,34 @@ class ShopController extends Controller
     {
         try {
             $query = \App\Models\Post::where('user_id', Auth::id())
-                ->with('categoryRelation');
+                ->join('categories', 'posts.category_id', '=', 'categories.id')
+                ->select('posts.*', 'categories.name as category_name');
 
             // Apply search filter
             if ($request->has('search')) {
                 $search = $request->search;
                 $query->where(function($q) use ($search) {
-                    $q->where('title', 'like', "%{$search}%")
-                      ->orWhere('description', 'like', "%{$search}%");
+                    $q->where('posts.title', 'like', "%{$search}%")
+                      ->orWhere('posts.description', 'like', "%{$search}%");
                 });
             }
 
             // Apply category filter
             if ($request->has('category') && $request->category) {
-                $query->where('category_id', $request->category);
+                $query->where('posts.category_id', $request->category);
             }
 
             // Apply stock level filter
             if ($request->has('stock')) {
                 switch ($request->stock) {
                     case 'low-stock':
-                        $query->where('quantity', '<', 10)->where('quantity', '>', 0);
+                        $query->where('posts.quantity', '<', 10)->where('posts.quantity', '>', 0);
                         break;
                     case 'out-of-stock':
-                        $query->where('quantity', '<=', 0);
+                        $query->where('posts.quantity', '<=', 0);
                         break;
                     case 'in-stock':
-                        $query->where('quantity', '>=', 10);
+                        $query->where('posts.quantity', '>=', 10);
                         break;
                 }
             }
@@ -267,12 +279,13 @@ class ShopController extends Controller
 
             // Calculate inventory statistics
             $stats = [
-                'total_value' => number_format($query->sum(DB::raw('price * quantity')), 2),
-                'low_stock' => $query->where('quantity', '<', 10)->where('quantity', '>', 0)->count(),
-                'out_of_stock' => $query->where('quantity', '<=', 0)->count()
+                'total_value' => number_format($query->sum(DB::raw('posts.price * posts.quantity')), 2),
+                'low_stock' => $query->where('posts.quantity', '<', 10)->where('posts.quantity', '>', 0)->count(),
+                'out_of_stock' => $query->where('posts.quantity', '<=', 0)->count()
             ];
 
             return response()->json([
+                'success' => true,
                 'products' => $transformedProducts,
                 'total_pages' => $products->lastPage(),
                 'current_page' => $products->currentPage(),
@@ -404,15 +417,29 @@ class ShopController extends Controller
 
             $product->save();
 
+            // For AJAX requests, return JSON response
+            if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
                 'success' => true,
                 'message' => 'Product updated successfully'
             ]);
+            }
+
+            // For regular form submissions, redirect back with success message
+            return redirect()->route('shop.dashboard')
+                ->with('success', 'Product updated successfully');
         } catch (\Exception $e) {
+            // For AJAX requests, return JSON error
+            if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to update product: ' . $e->getMessage()
             ], 500);
+            }
+
+            // For regular form submissions, redirect back with error message
+            return redirect()->route('shop.dashboard')
+                ->with('error', 'Failed to update product: ' . $e->getMessage());
         }
     }
 }

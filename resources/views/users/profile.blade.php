@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>My Profile - Recyclo</title>
     
-    <!-- Required imports as specified -->
+    <!-- Required imports -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -36,97 +36,117 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
+        :root {
+            --primary-color: #517A5B;
+            --secondary-color: #3c5c44;
+            --accent-color: #8BA888;
+            --background-color: #f8f9fa;
+            --text-color: #333;
+            --text-light: #666;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
         body {
-            background-color: #f5f5f5;
+            background-color: var(--background-color);
             margin: 0;
             padding: 0;
             font-family: 'Urbanist', sans-serif;
+            color: var(--text-color);
         }
         
         .page-container {
             display: flex;
             min-height: 100vh;
+            background-color: var(--background-color);
         }
 
         .main-content {
             flex: 1;
-            margin-left: 250px;
             padding: 40px;
+            margin-left: 250px; /* Match sidebar width */
+            max-width: calc(100% - 250px); /* Account for sidebar */
+            min-height: 100vh;
+            background-color: var(--background-color);
         }
 
         .profile-header {
             background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 40px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
             margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 120px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            z-index: 0;
         }
 
         .profile-header h1 {
             margin: 0;
-            color: var(--hoockers-green);
-            font-size: 28px;
-            margin-bottom: 20px;
+            color: white;
+            font-size: 32px;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
         }
 
-        .profile-info {
+        .profile-header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .profile-content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 30px;
+            margin-top: -60px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .profile-sidebar {
             background: white;
             padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            height: fit-content;
         }
 
-        .info-group {
-            margin-bottom: 25px;
-        }
-
-        .info-group label {
-            display: block;
-            color: #666;
-            margin-bottom: 8px;
-            font-size: 13px;
-        }
-
-        .info-group .value {
-            color: #333;
-            font-size: 16px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-
-        .edit-btn {
-            background: var(--hoockers-green);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-block;
-            text-decoration: none;
-        }
-
-        .edit-btn:hover {
-            background: #3c5c44; /* Direct hex color instead of variable */
-            color: white !important; /* Force white text on hover */
-            transform: translateY(-2px); /* Add subtle lift effect */
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Add shadow for better look */
+        .profile-main {
+            background: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            min-height: 500px;
         }
 
         .profile-picture-container {
-            margin-bottom: 20px;
             text-align: center;
+            margin-bottom: 30px;
         }
 
         .profile-picture {
-            width: 150px;
-            height: 150px;
+            width: 180px;
+            height: 180px;
             border-radius: 50%;
             overflow: hidden;
-            margin: 0 auto 15px;
-            border: 3px solid var(--hoockers-green);
+            margin: 0 auto 20px;
+            border: 4px solid white;
+            box-shadow: var(--box-shadow);
+            position: relative;
         }
 
         .profile-picture img {
@@ -136,53 +156,108 @@
         }
 
         .profile-icon {
-            font-size: 100px;
+            font-size: 120px;
             color: #ccc;
             display: flex;
             align-items: center;
             justify-content: center;
             height: 100%;
+            background: #f8f9fa;
+        }
+
+        .info-group {
+            margin-bottom: 25px;
+        }
+
+        .info-group label {
+            display: block;
+            color: var(--text-light);
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .info-group .value {
+            color: var(--text-color);
+            font-size: 16px;
+            padding: 12px;
+            background: var(--background-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .info-group .value i {
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+
+        .edit-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .edit-btn i {
+            margin-right: 8px;
+        }
+
+        .edit-btn:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
         .activity-stats {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
         }
 
         .stat-box {
-            flex: 1;
+            background: white;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
             text-align: center;
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 0 5px;
+            transition: var(--transition);
+        }
+
+        .stat-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
         }
 
         .stat-number {
-            font-size: 26px;
-            font-weight: bold;
-            color: var(--hoockers-green);
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 10px;
         }
 
         .stat-label {
-            font-size: 13px;
-            color: #666;
+            font-size: 14px;
+            color: var(--text-light);
+            font-weight: 500;
         }
 
-        .form-control {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ccc;
-            border-radius: 6px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-            box-sizing: border-box; /* Ensures padding is included in width */
-        }
-        
-        .form-control:focus {
-            border-color: var(--hoockers-green);
-            outline: none;
+        .section-title {
+            font-size: 24px;
+            color: var(--primary-color);
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--background-color);
         }
 
         /* Modal Styles */
@@ -203,8 +278,8 @@
         .modal-content {
             background-color: white;
             margin: auto;
-            padding: 25px;
-            border-radius: 15px;
+            padding: 30px;
+            border-radius: var(--border-radius);
             width: 95%;
             max-width: 600px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
@@ -219,47 +294,42 @@
 
         .close-modal {
             position: absolute;
-            top: 15px;
-            right: 15px;
+            top: 20px;
+            right: 20px;
             font-size: 24px;
             cursor: pointer;
-            color: #777;
-            transition: color 0.3s;
+            color: var(--text-light);
+            transition: var(--transition);
         }
 
         .close-modal:hover {
-            color: #333;
+            color: var(--text-color);
         }
 
         .modal-header {
-            border-bottom: 1px solid #eee;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
+            margin-bottom: 25px;
         }
 
         .modal-header h3 {
             margin: 0;
-            color: var(--hoockers-green);
-            font-size: 22px;
+            color: var(--primary-color);
+            font-size: 24px;
         }
-        
-        /* Adjust form layout in modal */
-        .modal .info-group {
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: var(--transition);
             margin-bottom: 20px;
-            padding: 0; /* Remove horizontal padding */
-            width: 100%; /* Ensure full width */
         }
         
-        .modal form {
-            width: 100%;
-            padding: 0;
-        }
-        
-        /* Make input fields take full width */
-        .modal .form-control {
-            width: 100%;
-            display: block;
-            margin: 0;
+        .form-control:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(81, 122, 91, 0.1);
         }
 
         /* Map container styling */
@@ -268,111 +338,94 @@
             width: 100%;
             margin-top: 10px;
             border-radius: 8px;
-            border: 1px solid #ccc;
+            border: 2px solid #e0e0e0;
         }
-        
-        /* Search container styling */
-        .search-container {
-            margin-bottom: 10px;
+
+        /* Mobile Responsive Styles */
+        @media screen and (max-width: 1024px) {
+            .main-content {
+                margin-left: 0;
+                max-width: 100%;
+                padding: 20px;
+            }
+
+            .profile-content {
+                grid-template-columns: 1fr;
+                margin-top: -40px;
+            }
+
+            .profile-sidebar {
+                order: 2;
+            }
+
+            .profile-main {
+                order: 1;
+            }
         }
-        
-        #location-search {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #ccc;
-            border-radius: 6px;
-            font-size: 16px;
-            margin-bottom: 10px;
+
+        @media screen and (max-width: 768px) {
+            .main-content {
+                padding: 15px;
+            }
+
+            .profile-header {
+                padding: 30px 20px;
+                margin-bottom: 20px;
+            }
+
+            .profile-content {
+                gap: 20px;
+            }
+
+            .profile-sidebar,
+            .profile-main {
+                padding: 20px;
+            }
+
+            .activity-stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
         }
-        
-        .search-results {
-            max-height: 200px;
-            overflow-y: auto;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            display: none;
-        }
-        
-        .search-result-item {
-            padding: 10px;
-            cursor: pointer;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .search-result-item:hover {
-            background-color: #f0f0f0;
-        }
-        
-        .selected-location {
-            padding: 10px;
-            background-color: #e8f4ea;
-            border-radius: 6px;
-            margin-top: 10px;
-            border-left: 4px solid var(--hoockers-green);
-        }
-        
-        /* Loading indicator */
-        .loader {
-            display: none;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid var(--hoockers-green);
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
-            margin-left: 10px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* SweetAlert2 custom styles for larger modals - matching shop dashboard */
-        .swal2-popup.swal2-modal.bigger-modal {
-            width: 32em !important;
-            max-width: 90% !important;
-            font-size: 1.2rem !important;
-            padding: 2em !important;
-        }
-        
-        .swal2-popup.swal2-modal.bigger-modal .swal2-title {
-            font-size: 1.8em !important;
-            margin-bottom: 0.5em !important;
-            color: var(--hoockers-green);
-        }
-        
-        .swal2-popup.swal2-modal.bigger-modal .swal2-content,
-        .swal2-popup.swal2-modal.bigger-modal .swal2-html-container {
-            font-size: 1.1em !important;
-            line-height: 1.5 !important;
-        }
-        
-        .swal2-popup.swal2-modal.bigger-modal .swal2-confirm,
-        .swal2-popup.swal2-modal.bigger-modal .swal2-cancel {
-            font-size: 1.1em !important;
-            padding: 0.6em 1.5em !important;
-        }
-        
-        .swal2-popup.swal2-modal.bigger-modal .swal2-icon {
-            font-size: 3em !important;
+
+        @media screen and (max-width: 480px) {
+            .activity-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-header h1 {
+                font-size: 20px;
+            }
+
+            .profile-picture {
+                width: 120px;
+                height: 120px;
+            }
+
+            .stat-box {
+                padding: 15px;
+            }
+
+            .stat-number {
+                font-size: 24px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="page-container">
-        <!-- Sidebar component - properly positioned -->
+        <!-- Sidebar component -->
         <x-sidebar activePage="profile" />
 
         <!-- Main Content -->
         <div class="main-content">
-            
             <div class="profile-header">
                 <h1>My Profile</h1>
                 <p>Manage your personal information and account settings</p>
             </div>
 
-            <div class="profile-info">
+            <div class="profile-content">
+                <div class="profile-sidebar">
                 <div class="profile-picture-container">
                     <div class="profile-picture">
                         @if(auth()->user()->profile_picture)
@@ -383,57 +436,76 @@
                             </div>
                         @endif
                     </div>
+                        <button id="showEditForm" class="edit-btn">
+                            <i class="bi bi-pencil"></i> Edit Profile
+                        </button>
                 </div>
 
                 <div class="info-group">
                     <label>Username</label>
-                    <div class="value">{{ auth()->user()->username }}</div>
+                        <div class="value">
+                            <i class="bi bi-person"></i>
+                            {{ auth()->user()->username }}
+                        </div>
                 </div>
 
                 <div class="info-group">
                     <label>Name</label>
-                    <div class="value">{{ auth()->user()->firstname }} {{ auth()->user()->lastname }}</div>
+                        <div class="value">
+                            <i class="bi bi-person-badge"></i>
+                            {{ auth()->user()->firstname }} {{ auth()->user()->lastname }}
+                        </div>
                 </div>
 
                 <div class="info-group">
                     <label>Location</label>
-                    <div class="value">{{ auth()->user()->location }}</div>
+                        <div class="value">
+                            <i class="bi bi-geo-alt"></i>
+                            {{ auth()->user()->location }}
+                        </div>
                 </div>
 
                 <div class="info-group">
                     <label>Contact Number</label>
-                    <div class="value">{{ auth()->user()->number ?? 'Not provided' }}</div>
+                        <div class="value">
+                            <i class="bi bi-telephone"></i>
+                            {{ auth()->user()->number ?? 'Not provided' }}
+                        </div>
                 </div>
 
                 <div class="info-group">
                     <label>Member Since</label>
-                    <div class="value">{{ auth()->user()->created_at->format('F j, Y') }}</div>
+                        <div class="value">
+                            <i class="bi bi-calendar"></i>
+                            {{ auth()->user()->created_at->format('F j, Y') }}
+                        </div>
+                    </div>
                 </div>
 
-                <button id="showEditForm" class="edit-btn">
-                    <i class="bi bi-pencil"></i> Edit Profile
-                </button>
-            </div>
-
-            <!-- Activity Overview -->
-            <div class="profile-info">
-                <h3 style="margin-bottom: 20px; color: var(--hoockers-green);">Activity Overview</h3>
+                <div class="profile-main">
+                    <h2 class="section-title">Activity Overview</h2>
                 <div class="activity-stats">
                     <div class="stat-box">
                         <div class="stat-number">{{ auth()->user()->posts()->count() }}</div>
-                        <div class="stat-label">Listings</div>
+                            <div class="stat-label">Active Listings</div>
                     </div>
                     <div class="stat-box">
                         <div class="stat-number">{{ auth()->user()->soldOrders()->where('orders.status', 'delivered')->count() }}</div>
-                        <div class="stat-label">Sold Items</div>
+                            <div class="stat-label">Items Sold</div>
                     </div>
                     <div class="stat-box">
                         <div class="stat-number">{{ auth()->user()->boughtOrders()->count() }}</div>
-                        <div class="stat-label">My Orders</div>
+                            <div class="stat-label">Orders Placed</div>
                     </div>
                     <div class="stat-box">
                         <div class="stat-number">{{ \App\Models\Buy::where('user_id', auth()->id())->count() }}</div>
                         <div class="stat-label">Buy Requests</div>
+                        </div>
+                    </div>
+
+                    <h2 class="section-title" style="margin-top: 40px;">Recent Activity</h2>
+                    <div class="recent-activity">
+                        <!-- Add recent activity content here -->
                     </div>
                 </div>
             </div>
@@ -447,11 +519,11 @@
             <div class="modal-header">
                 <h3>Edit Your Profile</h3>
             </div>
-            <form action="{{ route('profile.update') }}" method="post" enctype="multipart/form-data" style="width: 100%;">
+            <form action="{{ route('profile.update') }}" method="post" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 
-                <div class="info-group" style="width: 100%;">
+                <div class="info-group">
                     <label for="profile_picture">Profile Picture</label>
                     <input type="file" name="profile_picture" class="form-control">
                     @error('profile_picture')
@@ -469,7 +541,7 @@
 
                 <div class="info-group">
                     <label for="password">Password</label>
-                    <input type="password" name="password" class="form-control">
+                    <input type="password" name="password" class="form-control" placeholder="Leave blank to keep current password">
                     @error('password')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
@@ -500,9 +572,9 @@
                     @enderror
                 </div>
 
-                <div class="info-group">
-                    <button type="submit" class="edit-btn" style="width: 100%; margin-bottom: 15px;">Update Profile</button>
-                </div>
+                <button type="submit" class="edit-btn">
+                    <i class="bi bi-check2"></i> Update Profile
+                </button>
             </form>
         </div>
     </div>
@@ -530,7 +602,7 @@
         
         showEditFormBtn.addEventListener('click', function() {
             modal.style.display = 'flex';
-            document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
+            document.body.style.overflow = 'hidden';
             
             // Initialize map on modal open
             setTimeout(initMap, 100);
@@ -538,7 +610,7 @@
         
         function closeModal() {
             modal.style.display = 'none';
-            document.body.style.overflow = 'auto'; // Enable scrolling again
+            document.body.style.overflow = 'auto';
         }
         
         closeModalBtn.addEventListener('click', closeModal);
@@ -775,27 +847,6 @@
                 });
         }
     });
-    
-    function confirmLogout(event) {
-        event.preventDefault();
-        Swal.fire({
-            title: 'Logout Confirmation',
-            text: "Do you really want to logout?",
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#517A5B',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Yes, logout',
-            cancelButtonText: 'No, stay',
-            customClass: {
-                popup: 'bigger-modal'
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                document.getElementById('logout-form').submit();
-            }
-        });
-    }
     </script>
 </body>
 </html>

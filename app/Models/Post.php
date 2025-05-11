@@ -41,6 +41,11 @@ class Post extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function product()
+    {
+        return $this->hasOne(Product::class);
+    }
+
     public function orders()
     {
         return $this->hasMany(Order::class, 'post_id');
@@ -61,7 +66,7 @@ class Post extends Model
     /**
      * Get the category that owns the post.
      */
-    public function categoryRelation(): BelongsTo
+    public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'category_id');
     }
@@ -70,14 +75,30 @@ class Post extends Model
      * Get the category name attribute.
      * 
      * This maintains backwards compatibility with code that uses $post->category
+     * and ensures we always return a category name if one exists.
      */
     public function getCategoryNameAttribute()
     {
-        if ($this->category_id && $this->categoryRelation()->exists()) {
-            return $this->categoryRelation->name;
+        // If we have a category relationship loaded, use that
+        if ($this->relationLoaded('category') && $this->category) {
+            return $this->category->name;
         }
         
-        return $this->attributes['category'];
+        // If we have a category_id but no loaded relationship, try to get the name
+        if ($this->category_id) {
+            try {
+                return Category::find($this->category_id)?->name;
+            } catch (\Exception $e) {
+                \Log::error('Error fetching category name', [
+                    'post_id' => $this->id,
+                    'category_id' => $this->category_id,
+                    'error' => $e->getMessage()
+                ]);
+        }
+        }
+        
+        // Fall back to the legacy category field
+        return $this->attributes['category'] ?? null;
     }
 
     /**
@@ -88,7 +109,30 @@ class Post extends Model
      */
     public function getCategoryAttribute($value)
     {
-        return $this->getCategoryNameAttribute();
+        // If we're accessing the raw attribute, return it
+        if (isset($this->attributes['category'])) {
+            return $this->attributes['category'];
+        }
+
+        // If we have a category relationship loaded, use that
+        if ($this->relationLoaded('category') && $this->category) {
+            return $this->category->name;
+        }
+        
+        // If we have a category_id but no loaded relationship, try to get the name
+        if ($this->category_id) {
+            try {
+                return Category::find($this->category_id)?->name;
+            } catch (\Exception $e) {
+                \Log::error('Error fetching category name', [
+                    'post_id' => $this->id,
+                    'category_id' => $this->category_id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+        
+        return null;
     }
 
     /**

@@ -56,6 +56,7 @@ Route::post('/admin/login', [AdminLoginController::class, 'login'])->name('admin
 Route::group(['prefix' => 'admin', 'middleware' => [AdminMiddleware::class]], function() {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     Route::get('/orders', [AdminController::class, 'orders'])->name('admin.orders');
+    Route::get('/orders/{order}', [AdminController::class, 'showOrder'])->name('admin.orders.show');
     
     // Fix approve/reject routes to use consistent naming
     Route::post('/orders/{orderId}/approve', [AdminController::class, 'approveOrder'])->name('admin.orders.approve');
@@ -71,6 +72,7 @@ Route::group(['prefix' => 'admin', 'middleware' => [AdminMiddleware::class]], fu
     Route::delete('/users/{user}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
     Route::get('/users/{user}', [AdminController::class, 'getUser'])->name('admin.users.get'); // Add this line for getting user details
     Route::put('/users/{user}/edit', [AdminController::class, 'updateUser'])->name('admin.users.update'); // Add this line for updating user
+    Route::get('/users/{user}/show', [AdminController::class, 'showUser'])->name('admin.users.show'); // Add this line for showing user details
     
     Route::get('/shops', [AdminController::class, 'shops'])->name('admin.shops');
     Route::put('/shops/{shop}/status', [AdminController::class, 'updateShopStatus'])->name('admin.shops.update-status');
@@ -113,6 +115,10 @@ Route::group(['prefix' => 'admin', 'middleware' => [AdminMiddleware::class]], fu
 
     // Add correctly defined delete order route
     Route::get('/orders/{orderId}/delete', [AdminController::class, 'deleteOrder'])->name('admin.orders.delete');
+
+    // User management routes
+    Route::post('/users/{user}/update-role', [AdminController::class, 'updateUserRole'])->name('admin.users.update-role');
+    Route::post('/shops/{shop}/activate', [AdminController::class, 'activateShop'])->name('admin.shops.activate');
 });
 
 // Define the cancel user order route outside the admin group but still with the admin controller
@@ -158,6 +164,7 @@ Route::middleware('auth')->group(function() {
     Route::post('/shop/register', [ShopController::class, 'store'])->name('shop.store');
     Route::get('/shop/dashboard', [ShopController::class, 'dashboard'])->name('shop.dashboard');
     Route::put('/shop/update', [ShopController::class, 'update'])->name('shop.update');
+    Route::put('/shop/products/{id}', [ShopController::class, 'updateProduct'])->name('shop.products.update');
 
     // Add new routes for shop orders
     Route::get('/shop/orders', [ShopController::class, 'getOrders'])->name('shop.orders');
