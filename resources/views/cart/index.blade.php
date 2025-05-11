@@ -202,39 +202,27 @@
             <div class="cart-items">
                 @foreach($cart->items as $item)
                     <div class="cart-item">
-                        @if($item->product)
-                            <img src="{{ asset('storage/' . $item->product->image) }}" alt="{{ $item->product->name }}" class="item-image">
-                            <div class="item-details">
-                                <div class="shop-name">
-                                    <i class="bi bi-shop"></i> 
-                                    @if($item->product->user && $item->product->user->shop)
-                                        {{ $item->product->user->shop->shop_name }}
-                                    @else
-                                        Unknown Shop
-                                    @endif
-                                </div>
-                                <h3 class="item-name">{{ $item->product->name }}</h3>
-                                <div class="quantity-controls">
-                                    <button class="qty-btn" type="button" onclick="updateCartItem({{ $item->id }}, '-')">-</button>
-                                    <input type="number" id="qty-input-{{ $item->id }}" class="qty-input" value="{{ $item->quantity }}" min="1" readonly>
-                                    <button class="qty-btn" type="button" onclick="updateCartItem({{ $item->id }}, '+')">+</button>
-                                </div>
-                                <div class="item-price">₱{{ number_format($item->price, 2) }} per kg</div>
+                        <img src="{{ asset('storage/' . $item->product->image) }}" alt="{{ $item->product->name }}" class="item-image">
+                        <div class="item-details">
+                            <div class="shop-name">
+                                <i class="bi bi-shop"></i> 
+                                @if($item->product->user && $item->product->user->shop)
+                                    {{ $item->product->user->shop->shop_name }}
+                                @else
+                                    Unknown Shop
+                                @endif
                             </div>
-                        @else
-                            <div class="item-image text-center">
-                                <i class="bi bi-exclamation-triangle" style="font-size: 2rem; color: #dc3545;"></i>
+                            <h3 class="item-name">{{ $item->product->name }}</h3>
+                            <div class="quantity-controls">
+                                <button class="qty-btn" type="button" onclick="updateCartItem({{ $item->id }}, '-')">-</button>
+                                <input type="number" id="qty-input-{{ $item->id }}" class="qty-input" value="{{ $item->quantity }}" min="1" readonly>
+                                <button class="qty-btn" type="button" onclick="updateCartItem({{ $item->id }}, '+')">+</button>
                             </div>
-                            <div class="item-details">
-                                <h3 class="item-name" style="color: #dc3545;">Product no longer available</h3>
-                                <p>This product has been removed or is no longer available</p>
-                                <div class="item-price">₱{{ number_format($item->price, 2) }}</div>
-                            </div>
-                        @endif
-                        <button type="button" class="remove-btn" onclick="confirmRemoveItem({{ $item->id }}, '{{ $item->product ? $item->product->name : 'Unavailable Product' }}')">
+                            <div class="item-price">₱{{ number_format($item->price, 2) }} per kg</div>
+                        </div>
+                        <button type="button" class="remove-btn" onclick="confirmRemoveItem({{ $item->id }}, '{{ $item->product->name }}')">
                             <i class="bi bi-trash"></i> Remove
                         </button>
-                        <!-- Hidden form for item removal -->
                         <form id="remove-form-{{ $item->id }}" action="{{ route('cart.remove', $item->id) }}" method="POST" style="display: none;">
                             @csrf
                             @method('DELETE')
@@ -253,7 +241,7 @@
                     <span>Total</span>
                     <span id="cart-total">₱{{ number_format($cart->total, 2) }}</span>
                 </div>
-                <button class="checkout-btn" onclick="beforeCheckout()">
+                <button class="checkout-btn" onclick="window.location.href='{{ route('checkout') }}'">
                     Proceed to Checkout
                 </button>
             </div>
@@ -343,13 +331,11 @@
         } else if (action === '-' && value > 1) {
             value -= 1;
         } else {
-            return; // Don't proceed if trying to go below 1
+            return;
         }
         
-        // Show loading state
         input.disabled = true;
         
-        // Use AJAX to update cart without refreshing the page
         fetch(`/cart/update/${itemId}`, {
             method: 'PUT',
             headers: {
@@ -364,30 +350,18 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Update quantity input
                 input.value = value;
-                
-                // Update item subtotal if needed
-                const itemPrice = parseFloat(data.itemPrice);
-                const itemSubtotal = itemPrice * value;
-                
-                // Update cart total
                 const cartTotal = document.getElementById('cart-total');
                 const cartSubtotal = document.getElementById('cart-subtotal');
                 if (cartTotal && cartSubtotal) {
                     cartSubtotal.textContent = `₱${data.cartTotal.toFixed(2)}`;
                     cartTotal.textContent = `₱${data.cartTotal.toFixed(2)}`;
                 }
-                
-                // Update items count
                 const itemsCount = document.getElementById('items-count');
                 if (itemsCount) {
                     itemsCount.textContent = `${data.itemsCount} items`;
                 }
-                
             } else {
-                console.error('Error updating cart:', data.message);
-                // Show error notification
                 Swal.fire({
                     title: 'Error!',
                     text: data.message || 'Something went wrong. Please try again.',
@@ -408,12 +382,10 @@
             });
         })
         .finally(() => {
-            // Re-enable input
             input.disabled = false;
         });
     }
 
-    // Confirmation function for removing cart items
     function confirmRemoveItem(itemId, productName) {
         Swal.fire({
             title: 'Remove Item?',
@@ -429,29 +401,9 @@
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                // Submit the hidden form to remove the item
                 document.getElementById(`remove-form-${itemId}`).submit();
             }
         });
     }
-
-    // Check for unavailable products before proceeding to checkout
-    function beforeCheckout() {
-        @if($cart->items->contains(function($item) { return $item->product === null; }))
-            Swal.fire({
-                title: 'Unavailable Products',
-                text: 'Your cart contains products that are no longer available. Please remove them before checkout.',
-                icon: 'warning',
-                confirmButtonColor: '#517A5B',
-                confirmButtonText: 'OK',
-                customClass: {
-                    popup: 'bigger-modal'
-                }
-            });
-        @else
-            window.location.href = '{{ route("checkout") }}';
-        @endif
-    }
 </script>
 @endsection
-``` 

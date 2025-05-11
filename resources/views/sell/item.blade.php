@@ -333,6 +333,167 @@
         .pagination-btn:not(:disabled):hover {
             background-color: var(--hoockers-green_80);
         }
+
+        /* Mobile Responsive Styles */
+        @media screen and (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .sell-container {
+                padding: 20px;
+            }
+
+            /* Convert to single column layout */
+            .form-grid {
+                display: block;
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .form-column {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+
+            .page-title {
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+
+            .form-label {
+                font-size: 16px;
+                margin-bottom: 8px;
+            }
+
+            .form-control {
+                font-size: 16px;
+                padding: 12px;
+                width: 100%;
+            }
+
+            .submit-btn {
+                width: 100%;
+                padding: 12px 20px;
+                font-size: 16px;
+            }
+
+            /* Map container adjustments */
+            #map-container {
+                height: 250px;
+                margin: 15px 0;
+            }
+
+            .search-container {
+                margin-bottom: 15px;
+            }
+
+            .selected-location {
+                margin: 10px 0;
+                padding: 12px;
+            }
+
+            /* Image upload container */
+            .image-upload-container {
+                padding: 20px;
+            }
+
+            /* Modal Responsive Styles */
+            .modal-content {
+                margin: 20px auto;
+                width: 95%;
+                padding: 15px;
+            }
+
+            .modal-title {
+                font-size: 24px;
+            }
+
+            .category-tab {
+                font-size: 14px;
+                padding: 8px;
+            }
+
+            .prices-table {
+                font-size: 14px;
+            }
+
+            .prices-table th,
+            .prices-table td {
+                padding: 8px;
+            }
+
+            /* Form actions */
+            .form-actions {
+                margin-top: 20px;
+                padding-top: 20px;
+            }
+
+            /* Prices Guide Button */
+            #pricesGuideBtn {
+                width: 100%;
+                margin-top: 10px;
+            }
+        }
+
+        /* Small Mobile Devices */
+        @media screen and (max-width: 480px) {
+            .main-content {
+                padding: 15px;
+            }
+
+            .sell-container {
+                padding: 15px;
+            }
+
+            .page-title {
+                font-size: 20px;
+            }
+
+            .form-label {
+                font-size: 14px;
+            }
+
+            .form-control {
+                font-size: 14px;
+                padding: 10px;
+            }
+
+            .submit-btn {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+
+            /* Map container adjustments */
+            #map-container {
+                height: 200px;
+            }
+
+            /* Modal adjustments for small screens */
+            .modal-content {
+                margin: 10px auto;
+                padding: 10px;
+            }
+
+            .modal-title {
+                font-size: 20px;
+            }
+
+            .category-tab {
+                font-size: 12px;
+                padding: 6px;
+            }
+
+            .prices-table {
+                font-size: 12px;
+            }
+
+            .prices-table th,
+            .prices-table td {
+                padding: 6px;
+            }
+        }
     </style>
 </head>
 <body>

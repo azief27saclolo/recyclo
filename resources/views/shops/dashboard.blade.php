@@ -613,6 +613,108 @@
         .close:hover {
             color: var(--hoockers-green);
         }
+
+        /* Shop Settings Modal Styles */
+        .shop-overview {
+            padding: 20px;
+        }
+
+        .shop-info {
+            font-size: 16px;
+            color: #333;
+            margin: 5px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .shop-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .stat-item {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            text-align: center;
+        }
+
+        .stat-item .stat-label {
+            display: block;
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+
+        .stat-item .stat-value {
+            display: block;
+            font-size: 18px;
+            font-weight: 600;
+            color: #517A5B;
+        }
+
+        /* Add these styles to your existing styles */
+        .modal {
+            transition: opacity 0.3s ease;
+        }
+
+        .product-overview-grid {
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .image-wrapper {
+            transition: all 0.3s ease;
+        }
+
+        .image-wrapper:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        #overviewProductImage {
+            transition: all 0.3s ease;
+        }
+
+        .detail-section {
+            transition: all 0.3s ease;
+        }
+
+        .detail-section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .description-section {
+            transition: all 0.3s ease;
+        }
+
+        .description-section:hover {
+            transform: translateY(-2px);
+        }
+
+        .price-tag {
+            transition: all 0.3s ease;
+        }
+
+        .price-tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(81, 122, 91, 0.2);
+        }
     </style>
 </head>
 <body>
@@ -624,8 +726,8 @@
         <div class="main-content">
             <div class="shop-container">
                 <div class="shop-header">
-                    <h1>{{ $shop->shop_name }}</h1>
-                    <p>{{ $shop->shop_address }}</p>
+                    <!-- <h1>{{ $shop->shop_name }}</h1>
+                    <p>{{ $shop->shop_address }}</p> -->
                     
                     <div class="shop-stats">
                         <div class="stat-card" id="productsStatCard" style="background-color: #517A5B; color: white; cursor: pointer;">
@@ -732,13 +834,13 @@
                 </div>
 
                 <div class="recent-products">
-                    <h2>Recent Products</h2>
-                    <div class="product-grid">
+                    <h2 style="font-size: 24px; font-weight: 600; color: #333; margin-bottom: 25px;">Recent Products</h2>
+                    <div class="product-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px;">
                         @php
                             try {
                                 $recentProducts = \App\Models\Post::where('user_id', Auth::id())
                                     ->latest()
-                                    ->take(4) // Changed from 5 to 4
+                                    ->take(4)
                                     ->get();
                             } catch (\Exception $e) {
                                 $recentProducts = collect([]);
@@ -747,20 +849,9 @@
                         
                         @if(count($recentProducts) > 0)
                             @foreach($recentProducts as $product)
-                                <div class="product-card">
-                                    @if($product->image)
-                                        <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->title }}">
-                                    @else
-                                        <img src="{{ asset('images/placeholder.png') }}" alt="No image">
-                                    @endif
-                                    <h3>{{ $product->title }}</h3>
-                                    <p>₱{{ number_format($product->price, 2) }}</p>
-                                    <p>Stock: {{ $product->quantity ?? 'N/A' }}</p>
-                                    
-                                    <!-- Updated action buttons with larger size -->
-                                    <div class="product-actions" style="margin-top: 15px; display: flex; justify-content: space-between;">
-                                        <button class="action-btn edit-product-btn" 
-                                                style="flex: 1; margin-right: 5px; font-size: 16px; padding: 12px 10px; height: 48px;"
+                                <div class="product-card" 
+                                    style="background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer;"
+                                    onclick="showProductOverview({{ $product->id }})"
                                                 data-product-id="{{ $product->id }}"
                                                 data-product-title="{{ $product->title }}"
                                                 data-product-category-id="{{ $product->category_id }}"
@@ -770,18 +861,197 @@
                                                 data-product-quantity="{{ $product->quantity }}"
                                                 data-product-price="{{ $product->price }}"
                                                 data-product-description="{{ $product->description }}">
-                                            <i class="bi bi-pencil" style="font-size: 18px;"></i> Edit
-                                        </button>
-                                        <button class="action-btn delete-product-btn" 
-                                                style="flex: 1; margin-left: 5px; font-size: 16px; padding: 12px 10px; height: 48px; background-color: #dc3545;"
-                                                data-product-id="{{ $product->id }}"
-                                                data-product-title="{{ $product->title }}">
-                                            <i class="bi bi-trash" style="font-size: 18px;"></i> Delete
-                                        </button>
+                                    <div class="product-image" style="position: relative; height: 200px; overflow: hidden;">
+                                        @if($product->image)
+                                            <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->title }}" 
+                                                style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;">
+                                        @else
+                                            <img src="{{ asset('images/placeholder.png') }}" alt="No image" 
+                                                style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;">
+                                        @endif
+                                        <div class="product-category" 
+                                            style="position: absolute; top: 15px; right: 15px; background: rgba(81, 122, 91, 0.9); color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;">
+                                            {{ $product->category_name }}
+                                        </div>
+                                    </div>
+                                    <div class="product-info" style="padding: 20px;">
+                                        <h3 style="font-size: 18px; font-weight: 600; color: #333; margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                            {{ $product->title }}
+                                        </h3>
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                            <span style="font-size: 20px; font-weight: 700; color: var(--hoockers-green);">
+                                                ₱{{ number_format($product->price, 2) }}
+                                            </span>
+                                            <span style="font-size: 14px; color: #666;">
+                                                {{ $product->unit }}
+                                            </span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <div style="display: flex; align-items: center; gap: 5px;">
+                                                <i class="bi bi-box-seam" style="color: var(--hoockers-green);"></i>
+                                                <span style="font-size: 14px; color: #666;">
+                                                    Stock: {{ $product->quantity }}
+                                                </span>
+                                            </div>
+                                            <div style="display: flex; align-items: center; gap: 5px;">
+                                                <i class="bi bi-geo-alt" style="color: var(--hoockers-green);"></i>
+                                                <span style="font-size: 14px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">
+                                                    {{ $product->location }}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             @endforeach
                         @else
+                            <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 40px 20px; background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                                <i class="bi bi-box" style="font-size: 48px; color: #dee2e6; margin-bottom: 15px;"></i>
+                                <h3 style="font-size: 20px; font-weight: 600; color: #333; margin-bottom: 10px;">No products yet</h3>
+                                <p style="color: #666; margin-bottom: 20px;">Start selling by adding your first product</p>
+                                <a href="{{ route('sell.item') }}" class="action-btn" style="display: inline-block; padding: 12px 25px; background: var(--hoockers-green); color: white; text-decoration: none; border-radius: 8px; font-weight: 500; transition: all 0.3s ease;">
+                                    <i class="bi bi-plus-circle"></i> Add Product
+                                </a>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Product Overview Modal -->
+                <div id="productOverviewModal" class="modal">
+                    <div class="modal-content" style="max-width: 1000px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                        <div class="modal-header" style="padding: 25px 30px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                            <h2 class="modal-title" style="color: var(--hoockers-green); font-size: 28px; font-weight: 700; margin: 0;">Product Overview</h2>
+                            <span class="close" style="color: #666; font-size: 32px; font-weight: 300; cursor: pointer; transition: color 0.3s ease;">&times;</span>
+                        </div>
+                        <div class="modal-body" style="padding: 30px;">
+                            <div class="product-overview-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+                                <!-- Left Column - Image -->
+                                <div class="product-image-container" style="position: relative;">
+                                    <div class="image-wrapper" style="position: relative; width: 100%; height: 400px; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                                        <img id="overviewProductImage" src="" alt="Product Image" 
+                                            style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;">
+                                    </div>
+                                    <div class="category-badge" style="position: absolute; top: 20px; right: 20px; background: rgba(81, 122, 91, 0.9); color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 500; backdrop-filter: blur(4px);">
+                                        <span id="overviewProductCategory"></span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Right Column - Details -->
+                                <div class="product-details" style="display: flex; flex-direction: column; gap: 25px;">
+                                    <div class="product-header">
+                                        <h3 id="overviewProductTitle" style="font-size: 28px; font-weight: 700; color: #333; margin-bottom: 15px; line-height: 1.3;"></h3>
+                                        <div class="price-tag" style="display: inline-block; background: var(--hoockers-green); color: white; padding: 8px 20px; border-radius: 30px; font-size: 24px; font-weight: 700;">
+                                            <span id="overviewProductPrice"></span>
+                                            <span id="overviewProductUnit" style="font-size: 16px; opacity: 0.9; margin-left: 5px;"></span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="detail-section" style="background: #f8f9fa; padding: 20px; border-radius: 12px;">
+                                        <div class="detail-item" style="margin-bottom: 20px;">
+                                            <label style="display: block; font-size: 14px; color: #666; margin-bottom: 8px; font-weight: 500;">
+                                                <i class="bi bi-box-seam" style="color: var(--hoockers-green); margin-right: 8px;"></i>Stock
+                                            </label>
+                                            <span id="overviewProductStock" style="font-size: 18px; color: #333; font-weight: 600;"></span>
+                                        </div>
+                                        
+                                        <div class="detail-item" style="margin-bottom: 20px;">
+                                            <label style="display: block; font-size: 14px; color: #666; margin-bottom: 8px; font-weight: 500;">
+                                                <i class="bi bi-geo-alt" style="color: var(--hoockers-green); margin-right: 8px;"></i>Location
+                                            </label>
+                                            <span id="overviewProductLocation" style="font-size: 18px; color: #333; font-weight: 600;"></span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="description-section">
+                                        <label style="display: block; font-size: 14px; color: #666; margin-bottom: 12px; font-weight: 500;">
+                                            <i class="bi bi-text-paragraph" style="color: var(--hoockers-green); margin-right: 8px;"></i>Description
+                                        </label>
+                                        <p id="overviewProductDescription" style="font-size: 16px; color: #333; line-height: 1.6; background: #f8f9fa; padding: 20px; border-radius: 12px;"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                // Product Overview Modal Functionality
+                function showProductOverview(id) {
+                    const button = document.querySelector(`[data-product-id="${id}"]`);
+                    if (!button) return;
+
+                    const productData = {
+                        id: button.getAttribute('data-product-id'),
+                        title: button.getAttribute('data-product-title'),
+                        category: button.getAttribute('data-product-category'),
+                        location: button.getAttribute('data-product-location'),
+                        unit: button.getAttribute('data-product-unit'),
+                        quantity: button.getAttribute('data-product-quantity'),
+                        price: button.getAttribute('data-product-price'),
+                        description: button.getAttribute('data-product-description')
+                    };
+
+                    // Update modal content
+                    document.getElementById('overviewProductTitle').textContent = productData.title;
+                    document.getElementById('overviewProductCategory').textContent = productData.category;
+                    document.getElementById('overviewProductPrice').textContent = `₱${parseFloat(productData.price).toFixed(2)}`;
+                    document.getElementById('overviewProductUnit').textContent = productData.unit;
+                    document.getElementById('overviewProductStock').textContent = `${productData.quantity} units`;
+                    document.getElementById('overviewProductLocation').textContent = productData.location;
+                    document.getElementById('overviewProductDescription').textContent = productData.description || 'No description available';
+
+                    // Update product image
+                    const productImage = button.querySelector('.product-image img');
+                    if (productImage) {
+                        const overviewImage = document.getElementById('overviewProductImage');
+                        overviewImage.src = productImage.src;
+                        
+                        // Add loading state
+                        overviewImage.style.opacity = '0';
+                        overviewImage.onload = function() {
+                            overviewImage.style.opacity = '1';
+                        };
+                    }
+
+                    // Show modal with animation
+                    const modal = document.getElementById('productOverviewModal');
+                    modal.style.display = 'block';
+                    modal.style.opacity = '0';
+                    setTimeout(() => {
+                        modal.style.opacity = '1';
+                    }, 10);
+                }
+
+                // Close modal when clicking the X button
+                document.querySelector('#productOverviewModal .close').addEventListener('click', function() {
+                    const modal = document.getElementById('productOverviewModal');
+                    modal.style.opacity = '0';
+                    setTimeout(() => {
+                        modal.style.display = 'none';
+                    }, 300);
+                });
+
+                // Close modal when clicking outside
+                window.addEventListener('click', function(e) {
+                    const modal = document.getElementById('productOverviewModal');
+                    if (e.target === modal) {
+                        modal.style.opacity = '0';
+                        setTimeout(() => {
+                            modal.style.display = 'none';
+                        }, 300);
+                    }
+                });
+
+                // Add hover effect to product image
+                document.getElementById('overviewProductImage').addEventListener('mouseenter', function() {
+                    this.style.transform = 'scale(1.05)';
+                });
+
+                document.getElementById('overviewProductImage').addEventListener('mouseleave', function() {
+                    this.style.transform = 'scale(1)';
+                });
+                </script>
+
                             <div class="empty-state">
                                 <i class="bi bi-box"></i>
                                 <h3>No products yet</h3>
@@ -789,9 +1059,6 @@
                                 <a href="{{ route('sell.item') }}" class="action-btn" style="display: inline-block; margin-top: 15px;">
                                     <i class="bi bi-plus-circle"></i> Add Product
                                 </a>
-                            </div>
-                        @endif
-                    </div>
                 </div>
             </div>
         </div>
@@ -904,9 +1171,34 @@
             const categoryId = categoryFilter.value;
             const stockLevel = stockFilter.value;
 
-            fetch(`/api/inventory?page=${currentPage}&search=${searchTerm}&category=${categoryId}&stock=${stockLevel}`)
+            // Show loading state
+            inventoryTableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 20px;">
+                        <p>Loading inventory...</p>
+                    </td>
+                </tr>
+            `;
+
+            // Fetch inventory from API
+            fetch(`{{ route("api.inventory") }}?page=${currentPage}&search=${searchTerm}&category=${categoryId}&stock=${stockLevel}`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
                 .then(response => response.json())
                 .then(data => {
+                if (!data.success && data.message) {
+                    throw new Error(data.message);
+                }
+                
+                if (!data.products) {
+                    throw new Error('Invalid response format from server');
+                }
+
                     updateInventoryTable(data.products);
                     updateInventoryStats(data.stats);
                     totalPages = data.total_pages;
@@ -914,9 +1206,16 @@
                 })
                 .catch(error => {
                     console.error('Error loading inventory:', error);
+                inventoryTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 20px;">
+                            <p style="color: #dc3545;">${error.message || 'Failed to load inventory data.'}</p>
+                        </td>
+                    </tr>
+                `;
                     Swal.fire({
                         title: 'Error!',
-                        text: 'Failed to load inventory data.',
+                    text: error.message || 'Failed to load inventory data.',
                         icon: 'error',
                         confirmButtonColor: '#517A5B'
                     });
@@ -1050,48 +1349,149 @@
         batchUpdateBtn.addEventListener('click', () => {
             if (selectedItems.size === 0) return;
 
-            Swal.fire({
-                title: 'Batch Update Stock',
-                html: `
-                    <div class="form-group">
-                        <label class="form-label">Action</label>
-                        <select id="batch-stock-action" class="form-control">
+            const batchUpdateModal = document.getElementById('batchUpdateModal');
+            const selectedProductsList = document.getElementById('selected-products-list');
+            
+            // Update selected products list
+            selectedProductsList.innerHTML = '';
+            Array.from(selectedItems).forEach(productId => {
+                const product = document.querySelector(`.product-checkbox[data-id="${productId}"]`).closest('tr');
+                const productName = product.querySelector('td:nth-child(2)').textContent;
+                selectedProductsList.innerHTML += `<div>${productName}</div>`;
+            });
+
+            // Show the modal
+            batchUpdateModal.style.display = 'block';
+        });
+
+        // Batch update form submission
+        const batchUpdateForm = document.getElementById('batchUpdateForm');
+        
+        // Handle batch action change
+        document.getElementById('batch-action').addEventListener('change', function() {
+            const action = this.value;
+            const batchValueContainer = document.getElementById('batch-value-container');
+            
+            if (!action) {
+                batchValueContainer.style.display = 'none';
+                return;
+            }
+            
+            batchValueContainer.style.display = 'block';
+            
+            switch (action) {
+                case 'stock':
+                    batchValueContainer.innerHTML = `
+                        <label class="form-label" for="batch-stock-action">Stock Action</label>
+                        <select name="batch_stock_action" id="batch-stock-action" class="form-control" required>
                             <option value="add">Add Stock</option>
                             <option value="remove">Remove Stock</option>
+                            <option value="set">Set Exact Amount</option>
                         </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Quantity</label>
-                        <input type="number" id="batch-stock-quantity" class="form-control" min="1" value="1">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Notes (Optional)</label>
-                        <textarea id="batch-stock-notes" class="form-control" rows="3"></textarea>
-                    </div>
-                `,
-                showCancelButton: true,
-                confirmButtonColor: '#517A5B',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Update',
-                cancelButtonText: 'Cancel',
-                preConfirm: () => {
-                    const action = document.getElementById('batch-stock-action').value;
-                    const quantity = document.getElementById('batch-stock-quantity').value;
-                    const notes = document.getElementById('batch-stock-notes').value;
+                        <label class="form-label" for="batch-stock-quantity">Quantity</label>
+                        <input type="number" name="batch_stock_quantity" id="batch-stock-quantity" class="form-control" min="1" value="1" required>
+                    `;
+                    break;
+                case 'price':
+                    batchValueContainer.innerHTML = `
+                        <label class="form-label" for="batch-price">New Price (₱)</label>
+                        <input type="number" name="batch_price" id="batch-price" class="form-control" step="0.01" min="0" required>
+                    `;
+                    break;
+                case 'category':
+                    batchValueContainer.innerHTML = `
+                        <label class="form-label" for="batch-category">New Category</label>
+                        <select name="batch_category" id="batch-category" class="form-control" required>
+                            <option value="">--Select Category--</option>
+                            @foreach($categories as $category)
+                                <option value="{{ $category->id }}">{{ $category->name }}</option>
+                            @endforeach
+                        </select>
+                    `;
+                    break;
+            }
+        });
 
-                    if (!quantity || quantity < 1) {
-                        Swal.showValidationMessage('Please enter a valid quantity');
-                        return false;
-                    }
-
-                    return { action, quantity, notes };
+        batchUpdateForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const action = document.getElementById('batch-action').value;
+            const notes = document.getElementById('batch-notes').value;
+            const productIds = Array.from(selectedItems);
+            
+            let payload = {
+                action: action,
+                product_ids: productIds,
+                notes: notes
+            };
+            
+            switch (action) {
+                case 'stock':
+                    payload.stock_action = document.getElementById('batch-stock-action').value;
+                    payload.quantity = parseInt(document.getElementById('batch-stock-quantity').value);
+                    break;
+                case 'price':
+                    payload.price = parseFloat(document.getElementById('batch-price').value);
+                    break;
+                case 'category':
+                    payload.category = document.getElementById('batch-category').value;
+                    break;
+            }
+            
+            // Send batch update request
+            fetch('/api/inventory/batch-update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('batchUpdateModal').style.display = 'none';
+                    
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Batch update completed successfully',
+                        icon: 'success',
+                        confirmButtonColor: '#517A5B'
+                    });
+                    
+                    // Clear selected items
+                    selectedItems.clear();
+                    updateSelectedItemsCount();
+                    
+                    // Reload inventory to reflect changes
+                    loadInventory(1);
+                } else {
+                    throw new Error(data.message || 'Failed to complete batch update');
                 }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const { action, quantity, notes } = result.value;
-                    updateBatchStock(action, quantity, notes);
-                }
+            })
+            .catch(error => {
+                console.error('Error completing batch update:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: error.message || 'Something went wrong. Please try again.',
+                    icon: 'error',
+                    confirmButtonColor: '#517A5B'
+                });
             });
+        });
+
+        // Close batch update modal when clicking outside
+        window.addEventListener('click', function(e) {
+            const batchUpdateModal = document.getElementById('batchUpdateModal');
+            if (e.target === batchUpdateModal) {
+                batchUpdateModal.style.display = 'none';
+            }
+        });
+
+        // Close batch update modal when X is clicked
+        document.querySelector('#batchUpdateModal .close').addEventListener('click', function() {
+            document.getElementById('batchUpdateModal').style.display = 'none';
         });
 
         // Export inventory button
@@ -1435,6 +1835,47 @@
                 <button id="export-history-btn" class="action-btn">
                     <i class="bi bi-download"></i> Export History
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Batch Update Modal -->
+    <div id="batchUpdateModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Batch Update Products</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="batchUpdateForm">
+                    <div class="form-group">
+                        <label class="form-label">Selected Products</label>
+                        <div id="selected-products-list" style="max-height: 150px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 10px;">
+                            <p style="text-align: center; color: #666;">No products selected</p>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="batch-action">Update Action</label>
+                        <select name="batch_action" id="batch-action" class="form-control" required>
+                            <option value="">--Select--</option>
+                            <option value="stock">Update Stock</option>
+                            <option value="price">Update Price</option>
+                            <option value="category">Update Category</option>
+                        </select>
+                    </div>
+                    
+                    <div id="batch-value-container" class="form-group" style="display: none;">
+                        <!-- Dynamic content based on selected action -->
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="batch-notes">Notes (Optional)</label>
+                        <textarea name="notes" id="batch-notes" class="form-control" rows="3" placeholder="Enter notes about this batch update..."></textarea>
+                    </div>
+
+                    <button type="submit" class="submit-btn">Update Products</button>
+                </form>
             </div>
         </div>
     </div>
@@ -1931,22 +2372,40 @@
 
     <!-- Edit Product Modal -->
     <div id="editProductModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Edit Product</h2>
-                <span class="close">&times;</span>
+        <!-- Add Leaflet CSS and JS dependencies -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+        <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+        <div class="modal-content" style="max-width: 900px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+            <div class="modal-header" style="padding: 25px 30px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                <h2 class="modal-title" style="color: var(--hoockers-green); font-size: 28px; font-weight: 700; margin: 0;">Edit Product</h2>
+                <span class="close" style="color: #666; font-size: 32px; font-weight: 300; cursor: pointer; transition: color 0.3s ease;">&times;</span>
             </div>
-            <form id="editProductForm" method="POST" enctype="multipart/form-data">
+            <form id="editProductForm" method="POST" action="{{ route('shop.products.update', ['id' => ':id']) }}" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
                 <input type="hidden" id="editProductId" name="id">
-                <div class="form-group">
-                    <label class="form-label" for="editTitle">Product Title</label>
-                    <input type="text" id="editTitle" name="title" class="form-control" required>
+                <div class="form-container" style="padding: 30px;">
+                    <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                        <!-- Left Column -->
+                        <div class="form-column">
+                            <div class="form-group" style="margin-bottom: 25px;">
+                                <label class="form-label" for="editTitle" style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 10px;">
+                                    <i class="bi bi-tag" style="color: var(--hoockers-green);"></i> Product Title
+                                </label>
+                                <input type="text" id="editTitle" name="title" class="form-control enhanced" 
+                                    style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; transition: all 0.3s ease;"
+                                    required>
                 </div>
-                <div class="form-group">
-                    <label class="form-label" for="editCategory">Category</label>
-                    <select id="editCategory" name="category_id" class="form-control" required>
+
+                            <div class="form-group" style="margin-bottom: 25px;">
+                                <label class="form-label" for="editCategory" style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 10px;">
+                                    <i class="bi bi-grid" style="color: var(--hoockers-green);"></i> Category
+                                </label>
+                                <select id="editCategory" name="category_id" class="form-control enhanced" 
+                                    style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; transition: all 0.3s ease;"
+                                    required>
                         <option value="">--Select Category--</option>
                         @foreach(\App\Models\Category::where('is_active', true)->orderBy('name')->get() as $category)
                             <option value="{{ $category->id }}" 
@@ -1957,13 +2416,35 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="form-group">
-                    <label class="form-label" for="editLocation">Location</label>
-                    <input type="text" id="editLocation" name="location" class="form-control" required>
+
+                            <div class="form-group" style="margin-bottom: 25px;">
+                                <label class="form-label" for="editLocation" style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 10px;">
+                                    <i class="bi bi-geo-alt" style="color: var(--hoockers-green);"></i> Location
+                                </label>
+                                <div class="input-group" style="display: flex; gap: 10px;">
+                                    <input type="text" id="editLocation" name="location" class="form-control enhanced" 
+                                        style="flex: 1; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; transition: all 0.3s ease;"
+                                        required>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="getCurrentLocationForEdit()"
+                                        style="padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; background: white; color: var(--hoockers-green); transition: all 0.3s ease;">
+                                        <i class="bi bi-geo-alt"></i>
+                                    </button>
                 </div>
-                <div class="form-group">
-                    <label class="form-label" for="editUnit">Unit</label>
-                    <select id="editUnit" name="unit" class="form-control" required>
+                                <input type="hidden" id="editLatitude" name="latitude">
+                                <input type="hidden" id="editLongitude" name="longitude">
+                                <div id="editLocationMap" style="height: 300px; width: 100%; border-radius: 10px; border: 2px solid #e0e0e0; margin-top: 10px;"></div>
+                                <small class="form-text text-muted" style="display: block; margin-top: 8px; color: #666;">
+                                    Click on the map to set the product's location
+                                </small>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 25px;">
+                                <label class="form-label" for="editUnit" style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 10px;">
+                                    <i class="bi bi-rulers" style="color: var(--hoockers-green);"></i> Unit
+                                </label>
+                                <select id="editUnit" name="unit" class="form-control enhanced" 
+                                    style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; transition: all 0.3s ease;"
+                                    required>
                         <option value="kg">Kilograms (kg)</option>
                         <option value="g">Grams (g)</option>
                         <option value="pcs">Pieces (pcs)</option>
@@ -1971,34 +2452,125 @@
                         <option value="sack">Sack</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label class="form-label" for="editQuantity">Quantity</label>
-                    <input type="number" id="editQuantity" name="quantity" class="form-control" required>
                 </div>
-                <div class="form-group">
-                    <label class="form-label" for="editPrice">Price (₱)</label>
-                    <input type="number" id="editPrice" name="price" class="form-control" required>
+
+                        <!-- Right Column -->
+                        <div class="form-column">
+                            <div class="form-group" style="margin-bottom: 25px;">
+                                <label class="form-label" for="editQuantity" style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 10px;">
+                                    <i class="bi bi-box-seam" style="color: var(--hoockers-green);"></i> Quantity
+                                </label>
+                                <input type="number" id="editQuantity" name="quantity" class="form-control enhanced" 
+                                    style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; transition: all 0.3s ease;"
+                                    min="0" step="0.01" required>
                 </div>
-                <div class="form-group">
-                    <label class="form-label" for="editDescription">Description</label>
-                    <textarea id="editDescription" name="description" class="form-control" rows="4"></textarea>
+
+                            <div class="form-group" style="margin-bottom: 25px;">
+                                <label class="form-label" for="editPrice" style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 10px;">
+                                    <i class="bi bi-currency-peso" style="color: var(--hoockers-green);"></i> Price per unit
+                                </label>
+                                <input type="number" id="editPrice" name="price" class="form-control enhanced" 
+                                    style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; transition: all 0.3s ease;"
+                                    min="0" step="0.01" required>
                 </div>
-                <div class="form-group">
-                    <label class="form-label" for="editImage">Photo (leave blank to keep current image)</label>
-                    <input type="file" id="editImage" name="image" class="form-control" accept="image/*">
-                    <div id="editImagePreview" class="mt-2">
-                        <img id="editPreviewImg" src="" alt="Current image" style="max-width: 200px; display: none;">
+
+                            <div class="form-group" style="margin-bottom: 25px;">
+                                <label class="form-label" for="editDescription" style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 10px;">
+                                    <i class="bi bi-text-paragraph" style="color: var(--hoockers-green);"></i> Description
+                                </label>
+                                <textarea id="editDescription" name="description" class="form-control enhanced" 
+                                    style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; transition: all 0.3s ease; min-height: 120px; resize: vertical;"
+                                    required></textarea>
                     </div>
+
+                            <div class="form-group" style="margin-bottom: 25px;">
+                                <label class="form-label" for="editImage" style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 10px;">
+                                    <i class="bi bi-image" style="color: var(--hoockers-green);"></i> Photo (leave blank to keep current image)
+                                </label>
+                                <div class="image-upload-container" style="border: 2px dashed #e0e0e0; border-radius: 10px; padding: 20px; text-align: center; transition: all 0.3s ease;">
+                                    <input type="file" id="editImage" name="image" class="image-upload-input" 
+                                        style="display: none;" accept="image/*" onchange="previewImage(this, 'editImagePreview')">
+                                    <label for="editImage" class="image-upload-label" 
+                                        style="cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                                        <i class="bi bi-cloud-upload" style="font-size: 32px; color: var(--hoockers-green);"></i>
+                                        <span style="font-size: 15px; color: #666;">Click to upload image</span>
+                                        <small style="color: #999;">or drag and drop</small>
+                                    </label>
+                                    <div id="editImagePreview" class="image-preview" style="margin-top: 15px;">
+                                        <span class="placeholder-text" style="color: #999;">No image selected</span>
                 </div>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Update Product</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions" style="display: flex; justify-content: flex-end; gap: 15px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                        <button type="button" class="btn btn-secondary" onclick="closeEditModal()"
+                            style="padding: 12px 25px; border: none; border-radius: 8px; font-size: 15px; font-weight: 500; color: #666; background-color: #f5f5f5; cursor: pointer; transition: all 0.3s ease;">
+                            <i class="bi bi-x"></i> Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary"
+                            style="padding: 12px 25px; border: none; border-radius: 8px; font-size: 15px; font-weight: 500; color: white; background-color: var(--hoockers-green); cursor: pointer; transition: all 0.3s ease;">
+                            <i class="bi bi-check2"></i> Update Product
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
+    // Global variables for edit product map
+    let editMap = null;
+    let editMarker = null;
+
+    // Function to reverse geocode coordinates to address for edit modal
+    function reverseGeocodeForEdit(lat, lng) {
+        fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.display_name) {
+                    document.getElementById('editLocation').value = data.display_name;
+                    document.getElementById('editLatitude').value = lat;
+                    document.getElementById('editLongitude').value = lng;
+                }
+            })
+            .catch(error => {
+                console.error('Error in reverse geocoding:', error);
+            });
+    }
+
+    // Function to get current location for edit modal
+    function getCurrentLocationForEdit() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    editMap.setView([lat, lng], 16);
+                    editMarker.setLatLng([lat, lng]);
+                    reverseGeocodeForEdit(lat, lng);
+                },
+                function(error) {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Error: The Geolocation service failed. ' + error.message,
+                        icon: 'error',
+                        confirmButtonColor: '#517A5B'
+                    });
+                }
+            );
+        } else {
+            Swal.fire({
+                title: 'Error!',
+                text: 'Error: Your browser doesn\'t support geolocation.',
+                icon: 'error',
+                confirmButtonColor: '#517A5B'
+            });
+        }
+    }
+
+    // Function to edit product
     function editProduct(id) {
         const editModal = document.getElementById('editProductModal');
         const button = document.querySelector(`[data-product-id="${id}"]`);
@@ -2018,7 +2590,6 @@
             id: button.getAttribute('data-product-id'),
             title: button.getAttribute('data-product-title'),
             category_id: button.getAttribute('data-product-category-id'),
-            category_name: button.getAttribute('data-product-category'),
             location: button.getAttribute('data-product-location'),
             unit: button.getAttribute('data-product-unit'),
             quantity: button.getAttribute('data-product-quantity'),
@@ -2028,7 +2599,7 @@
 
         // Update form action URL with the product ID
         const form = document.getElementById('editProductForm');
-        form.action = `/posts/${productData.id}`;
+        form.action = form.action.replace(':id', productData.id);
 
         // Populate form fields
         document.getElementById('editProductId').value = productData.id;
@@ -2042,15 +2613,58 @@
 
         // Show the modal
         editModal.style.display = 'block';
+        
+        // Initialize map after a short delay to ensure the modal is fully visible
+        setTimeout(() => {
+            initEditMap();
+            
+            // If location exists, try to geocode it
+            if (productData.location) {
+                // Use the geocoder to find coordinates for the location
+                const geocoder = L.Control.geocoder({
+                    defaultMarkGeocode: false
+                });
+                
+                geocoder.options.geocoder.geocode(productData.location, function(results) {
+                    if (results && results.length > 0) {
+                        const latlng = results[0].center;
+                        editMap.setView(latlng, 16);
+                        editMarker.setLatLng(latlng);
+                        document.getElementById('editLatitude').value = latlng.lat;
+                        document.getElementById('editLongitude').value = latlng.lng;
+                    }
+                });
+            }
+        }, 300);
     }
 
+    // Function to close edit modal
     function closeEditModal() {
         const editModal = document.getElementById('editProductModal');
         editModal.style.display = 'none';
         // Reset form
         document.getElementById('editProductForm').reset();
-        document.getElementById('editPreviewImg').style.display = 'none';
+        document.getElementById('editImagePreview').innerHTML = '';
     }
+
+    // Handle form submission
+    document.getElementById('editProductForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        // Show loading state
+        Swal.fire({
+            title: 'Updating product...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // Submit the form
+        this.submit();
+    });
 
     // Close modal when clicking outside
     window.addEventListener('click', function(e) {
@@ -2063,7 +2677,434 @@
     // Close modal when clicking the X button
     document.querySelector('#editProductModal .close').addEventListener('click', closeEditModal);
 
-    // ... existing code ...
+    // Image preview functionality
+    document.getElementById('editImage').addEventListener('change', function(e) {
+        const preview = document.getElementById('editImagePreview');
+        const file = e.target.files[0];
+        
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.innerHTML = `
+                    <img src="${e.target.result}" alt="Preview" 
+                        style="max-width: 100%; max-height: 200px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                `;
+            }
+            reader.readAsDataURL(file);
+        } else {
+            preview.innerHTML = '';
+        }
+    });
+    </script>
+
+    <!-- Shop Settings Modal -->
+    <div id="shopSettingsModal" class="modal">
+        <div class="modal-content" style="max-width: 1000px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+            <div class="modal-header" style="padding: 25px 30px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                <h2 class="modal-title" style="color: var(--hoockers-green); font-size: 28px; font-weight: 700; margin: 0;">
+                    <i class="bi bi-shop me-2"></i> Shop Settings
+                </h2>
+                <span class="close" style="color: #666; font-size: 32px; font-weight: 300; cursor: pointer; transition: color 0.3s ease;">&times;</span>
+            </div>
+            <div class="modal-body" style="padding: 30px;">
+                <div class="shop-overview">
+                    <div id="shopInfoView">
+                        <div class="shop-header" style="background: linear-gradient(135deg, #517A5B 0%, #3a5c42 100%); padding: 30px; border-radius: 15px; color: white; margin-bottom: 30px;">
+                            <h3 style="font-size: 24px; margin-bottom: 10px;">{{ $shop->shop_name }}</h3>
+                            <p style="opacity: 0.9; margin-bottom: 0;">
+                                <i class="bi bi-geo-alt me-2"></i>{{ $shop->shop_address }}
+                            </p>
+                        </div>
+                        
+                        <div class="shop-details" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                            <div class="detail-card" style="background: #f8f9fa; padding: 20px; border-radius: 12px; border: 1px solid #eee;">
+                                <h4 style="color: var(--hoockers-green); font-size: 18px; margin-bottom: 15px;">
+                                    <i class="bi bi-info-circle me-2"></i>Shop Information
+                                </h4>
+                                <p style="margin-bottom: 10px;">
+                                    <strong>Description:</strong><br>
+                                    {{ $shop->shop_description ?? 'No description provided' }}
+                                </p>
+                            </div>
+                            
+                            <div class="detail-card" style="background: #f8f9fa; padding: 20px; border-radius: 12px; border: 1px solid #eee;">
+                                <h4 style="color: var(--hoockers-green); font-size: 18px; margin-bottom: 15px;">
+                                    <i class="bi bi-telephone me-2"></i>Contact Details
+                                </h4>
+                                <p style="margin-bottom: 10px;">
+                                    <strong>Contact Number:</strong><br>
+                                    {{ $shop->contact_number ?? 'Not provided' }}
+                                </p>
+                                <p>
+                                    <strong>Business Hours:</strong><br>
+                                    {{ $shop->business_hours ?? 'Not specified' }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="form-actions" style="margin-top: 20px; text-align: right;">
+                            <button type="button" class="btn btn-primary" onclick="toggleEditMode(true)" 
+                                style="background: var(--hoockers-green); border: none; padding: 12px 25px; border-radius: 8px; color: white; font-weight: 500; transition: all 0.3s ease;">
+                                <i class="bi bi-pencil me-2"></i> Edit Shop Details
+                            </button>
+                        </div>
+                    </div>
+
+                    <form id="updateShopForm" action="{{ route('shop.update') }}" method="POST" style="display: none;">
+                        @csrf
+                        @method('PUT')
+                        <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                            <div class="form-column">
+                                <div class="form-group" style="margin-bottom: 25px;">
+                                    <label class="form-label" style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 10px;">
+                                        <i class="bi bi-shop" style="color: var(--hoockers-green);"></i> Shop Name
+                                    </label>
+                                    <input type="text" name="shop_name" class="form-control enhanced" 
+                                        style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; transition: all 0.3s ease;"
+                                        value="{{ $shop->shop_name }}" required>
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 25px;">
+                                    <label class="form-label" style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 10px;">
+                                        <i class="bi bi-geo-alt" style="color: var(--hoockers-green);"></i> Shop Address
+                                    </label>
+                                    <div class="input-group" style="display: flex; gap: 10px;">
+                                        <input type="text" id="shop_address" name="shop_address" class="form-control enhanced" 
+                                            style="flex: 1; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; transition: all 0.3s ease;"
+                                            value="{{ $shop->shop_address }}" required>
+                                        <button type="button" class="btn btn-outline-secondary" onclick="getCurrentLocation()"
+                                            style="padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; background: white; color: var(--hoockers-green); transition: all 0.3s ease;">
+                                            <i class="bi bi-geo-alt"></i>
+                                        </button>
+                                    </div>
+                                    <input type="hidden" id="latitude" name="latitude" value="{{ $shop->latitude }}">
+                                    <input type="hidden" id="longitude" name="longitude" value="{{ $shop->longitude }}">
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 25px;">
+                                    <label class="form-label" style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 10px;">
+                                        <i class="bi bi-map" style="color: var(--hoockers-green);"></i> Location Map
+                                    </label>
+                                    <div id="map" style="height: 300px; width: 100%; border-radius: 10px; border: 2px solid #e0e0e0;"></div>
+                                    <small class="form-text text-muted" style="display: block; margin-top: 8px; color: #666;">
+                                        Click on the map to set your shop's location
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="form-column">
+                                <div class="form-group" style="margin-bottom: 25px;">
+                                    <label class="form-label" style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 10px;">
+                                        <i class="bi bi-text-paragraph" style="color: var(--hoockers-green);"></i> Shop Description
+                                    </label>
+                                    <textarea name="shop_description" class="form-control enhanced" 
+                                        style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; transition: all 0.3s ease; min-height: 120px; resize: vertical;"
+                                        rows="3">{{ $shop->shop_description }}</textarea>
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 25px;">
+                                    <label class="form-label" style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 10px;">
+                                        <i class="bi bi-telephone" style="color: var(--hoockers-green);"></i> Contact Information
+                                    </label>
+                                    <input type="text" name="contact_number" class="form-control enhanced" 
+                                        style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; transition: all 0.3s ease;"
+                                        value="{{ $shop->contact_number }}" placeholder="Enter contact number">
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 25px;">
+                                    <label class="form-label" style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 10px;">
+                                        <i class="bi bi-clock" style="color: var(--hoockers-green);"></i> Business Hours
+                                    </label>
+                                    <input type="text" name="business_hours" class="form-control enhanced" 
+                                        style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; transition: all 0.3s ease;"
+                                        value="{{ $shop->business_hours }}" placeholder="e.g., Mon-Fri: 9AM-6PM">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 15px;">
+                            <button type="button" class="btn btn-secondary" onclick="toggleEditMode(false)"
+                                style="padding: 12px 25px; border: none; border-radius: 8px; font-size: 15px; font-weight: 500; color: #666; background-color: #f5f5f5; cursor: pointer; transition: all 0.3s ease;">
+                                <i class="bi bi-x me-2"></i> Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary"
+                                style="padding: 12px 25px; border: none; border-radius: 8px; font-size: 15px; font-weight: 500; color: white; background-color: var(--hoockers-green); cursor: pointer; transition: all 0.3s ease;">
+                                <i class="bi bi-check2 me-2"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Shop Settings Modal Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const shopSettingsModal = document.getElementById('shopSettingsModal');
+            const shopSettingsBtn = document.getElementById('shopSettingsBtn');
+            const shopSettingsCloseBtn = shopSettingsModal.querySelector('.close');
+            const updateShopForm = document.getElementById('updateShopForm');
+            const shopInfoView = document.getElementById('shopInfoView');
+            let map, marker;
+
+            // Function to toggle between view and edit modes
+            window.toggleEditMode = function(showEdit) {
+                const shopInfoView = document.getElementById('shopInfoView');
+                const updateShopForm = document.getElementById('updateShopForm');
+                
+                if (showEdit) {
+                    shopInfoView.style.display = 'none';
+                    updateShopForm.style.display = 'block';
+                    // Reinitialize map when switching to edit mode
+                    initMap();
+                } else {
+                    shopInfoView.style.display = 'block';
+                    updateShopForm.style.display = 'none';
+                }
+            };
+
+            // Handle shop settings form submission
+            updateShopForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Show loading state
+                Swal.fire({
+                    title: 'Updating Shop Settings...',
+                    html: 'Please wait while we save your changes.',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                // Create form data object from the form
+                const formData = new FormData(updateShopForm);
+                
+                // Send AJAX request
+                fetch('{{ route("shop.update") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Network response was not ok (Status: ${response.status})`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Close the modal
+                        shopSettingsModal.style.display = 'none';
+                        
+                        // Show success message
+                        Swal.fire({
+                            title: 'Success!',
+                            text: data.message || 'Shop settings updated successfully!',
+                            icon: 'success',
+                            confirmButtonColor: '#517A5B',
+                            customClass: {
+                                popup: 'bigger-modal'
+                            }
+                        }).then(() => {
+                            // Reload the page to reflect changes
+                            window.location.reload();
+                        });
+                    } else {
+                        throw new Error(data.message || 'Failed to update shop settings');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Error!',
+                        text: error.message || 'An error occurred while updating shop settings. Please try again.',
+                        icon: 'error',
+                        confirmButtonColor: '#dc3545',
+                        customClass: {
+                            popup: 'bigger-modal'
+                        }
+                    });
+                });
+            });
+
+            // Initialize map when modal is opened
+            shopSettingsBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                shopSettingsModal.style.display = 'block';
+                initMap();
+            });
+
+            // Initialize map
+            function initMap() {
+                if (map) {
+                    map.invalidateSize();
+                    return;
+                }
+
+                // Default to Zamboanga City coordinates
+                let initialLat = {{ $shop->latitude ?? 6.9214 }};
+                let initialLng = {{ $shop->longitude ?? 122.0790 }};
+                let initialZoom = 13;
+
+                // Initialize the map
+                map = L.map('map').setView([initialLat, initialLng], initialZoom);
+
+                // Add OpenStreetMap tile layer
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+
+                // Initialize marker
+                marker = L.marker([initialLat, initialLng], {
+                    draggable: true
+                }).addTo(map);
+
+                // Update location when marker is dragged
+                marker.on('dragend', function(event) {
+                    const position = marker.getLatLng();
+                    reverseGeocode(position.lat, position.lng);
+                });
+
+                // Add click event to map for positioning marker
+                map.on('click', function(e) {
+                    marker.setLatLng(e.latlng);
+                    reverseGeocode(e.latlng.lat, e.latlng.lng);
+                });
+
+                // Initialize the geocoder control
+                L.Control.geocoder({
+                    defaultMarkGeocode: false
+                }).on('markgeocode', function(e) {
+                    const latlng = e.geocode.center;
+                    marker.setLatLng(latlng);
+                    map.setView(latlng, 16);
+                    reverseGeocode(latlng.lat, latlng.lng);
+                }).addTo(map);
+            }
+
+            // Reverse geocode coordinates to address
+            function reverseGeocode(lat, lng) {
+                fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data && data.display_name) {
+                            document.getElementById('shop_address').value = data.display_name;
+                            document.getElementById('latitude').value = lat;
+                            document.getElementById('longitude').value = lng;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error in reverse geocoding:', error);
+                    });
+            }
+
+            // Get current location
+            window.getCurrentLocation = function() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        function(position) {
+                            const lat = position.coords.latitude;
+                            const lng = position.coords.longitude;
+                            map.setView([lat, lng], 16);
+                            marker.setLatLng([lat, lng]);
+                            reverseGeocode(lat, lng);
+                        },
+                        function(error) {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'Error: The Geolocation service failed. ' + error.message,
+                                icon: 'error',
+                                confirmButtonColor: '#517A5B'
+                            });
+                        }
+                    );
+                } else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Error: Your browser doesn\'t support geolocation.',
+                        icon: 'error',
+                        confirmButtonColor: '#517A5B'
+                    });
+                }
+            };
+
+            // Clean up when modal is closed
+            shopSettingsCloseBtn.addEventListener('click', function() {
+                shopSettingsModal.style.display = 'none';
+            });
+
+            // Clean up when clicking outside modal
+            window.addEventListener('click', function(e) {
+                if (e.target === shopSettingsModal) {
+                    shopSettingsModal.style.display = 'none';
+                }
+            });
+        });
+
+        // Initialize map for editing
+        function initEditMap() {
+            if (editMap) {
+                editMap.invalidateSize();
+                return;
+            }
+
+            // Default to Zamboanga City coordinates
+            let initialLat = 6.9214;
+            let initialLng = 122.0790;
+            let initialZoom = 13;
+
+            // Initialize the map
+            editMap = L.map('editLocationMap', {
+                center: [initialLat, initialLng],
+                zoom: initialZoom,
+                zoomControl: true
+            });
+
+            // Add OpenStreetMap tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19
+            }).addTo(editMap);
+
+            // Initialize marker
+            editMarker = L.marker([initialLat, initialLng], {
+                draggable: true
+            }).addTo(editMap);
+
+            // Update location when marker is dragged
+            editMarker.on('dragend', function(event) {
+                const position = editMarker.getLatLng();
+                reverseGeocodeForEdit(position.lat, position.lng);
+            });
+
+            // Add click event to map for positioning marker
+            editMap.on('click', function(e) {
+                editMarker.setLatLng(e.latlng);
+                reverseGeocodeForEdit(e.latlng.lat, e.latlng.lng);
+            });
+
+            // Initialize the geocoder control
+            const geocoder = L.Control.geocoder({
+                defaultMarkGeocode: false,
+                placeholder: 'Search for a location...',
+                errorMessage: 'Nothing found.'
+            }).on('markgeocode', function(e) {
+                const latlng = e.geocode.center;
+                editMarker.setLatLng(latlng);
+                editMap.setView(latlng, 16);
+                reverseGeocodeForEdit(latlng.lat, latlng.lng);
+            }).addTo(editMap);
+
+            // Force a resize event after a short delay to ensure proper rendering
+            setTimeout(() => {
+                editMap.invalidateSize();
+            }, 100);
+        }
     </script>
 </body>
 </html>

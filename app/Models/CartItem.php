@@ -14,6 +14,13 @@ class CartItem extends Model
     ];
 
     /**
+     * The relationships that should always be loaded.
+     *
+     * @var array
+     */
+    protected $with = ['product.post', 'product.user'];
+
+    /**
      * Get the cart that owns the item.
      */
     public function cart()

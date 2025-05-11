@@ -38,6 +38,7 @@
                 <a href="#" class="btn btn-primary" onclick="addToCart(event)" style="width: 400px; height: 45px; border-radius: 30px; margin-right: 10px;">Add to Cart</a>
                 <a href="#" onclick="redirectToCheckout()" class="btn btn-primary" style="width: 400px; height: 45px; border-radius: 30px;">Check Out</a>
               </div>
+              <div id="stockWarning" style="margin-top: 10px; color: #dc3545; font-weight: 500; display: none;"></div>
             </div>
           </div>
 
@@ -214,8 +215,17 @@
       var maxQuantity = {{ $post->quantity }};
       if (parseInt(quantity.value) < maxQuantity) {
         quantity.value = parseInt(quantity.value) + 1;
+        updateStockWarning();
       } else {
-        alert('Maximum available quantity is ' + maxQuantity + ' {{ $post->unit }}');
+        Swal.fire({
+            title: 'Stock Limit',
+            text: 'Not enough stock! Only ' + maxQuantity + ' {{ $post->unit }} available.',
+            icon: 'warning',
+            confirmButtonColor: '#517A5B',
+            customClass: {
+                popup: 'extra-large-modal'
+            }
+        });
       }
     }
 
@@ -223,6 +233,7 @@
       var quantity = document.getElementById('quantity');
       if (quantity.value > 1) {
         quantity.value = parseInt(quantity.value) - 1;
+        updateStockWarning();
       }
     }
 
@@ -231,9 +242,31 @@
       var maxQuantity = {{ $post->quantity }};
       if (parseInt(this.value) > maxQuantity) {
         this.value = maxQuantity;
-        alert('Maximum available quantity is ' + maxQuantity + ' {{ $post->unit }}');
+        Swal.fire({
+            title: 'Stock Limit',
+            text: 'Not enough stock! Only ' + maxQuantity + ' {{ $post->unit }} available.',
+            icon: 'warning',
+            confirmButtonColor: '#517A5B',
+            customClass: {
+                popup: 'extra-large-modal'
+            }
+        });
       }
+      updateStockWarning();
     });
+
+    function updateStockWarning() {
+      var quantity = parseInt(document.getElementById('quantity').value);
+      var maxQuantity = {{ $post->quantity }};
+      var stockWarning = document.getElementById('stockWarning');
+      
+      if (quantity > maxQuantity) {
+        stockWarning.style.display = 'block';
+        stockWarning.innerHTML = 'Not enough stock! Only ' + maxQuantity + ' {{ $post->unit }} available.';
+      } else {
+        stockWarning.style.display = 'none';
+      }
+    }
 
     function redirectToCheckout() {
         var quantity = document.getElementById('quantity').value;
@@ -267,7 +300,22 @@
     function addToCart(event) {
         event.preventDefault();
         
-        var quantity = document.getElementById('quantity').value;
+        var quantity = parseInt(document.getElementById('quantity').value);
+        var maxQuantity = {{ $post->quantity }};
+        
+        // Check if quantity exceeds available stock
+        if (quantity > maxQuantity) {
+            Swal.fire({
+                title: 'Error',
+                text: 'Not enough stock! Only ' + maxQuantity + ' {{ $post->unit }} available.',
+                icon: 'error',
+                confirmButtonColor: '#517A5B',
+                customClass: {
+                    popup: 'extra-large-modal'
+                }
+            });
+            return;
+        }
         
         // Show loading indicator via SweetAlert2
         Swal.fire({
@@ -293,7 +341,7 @@
                 'Accept': 'application/json'
             },
             body: JSON.stringify({
-                product_id: '{{ $product_id }}',
+                product_id: '{{ $post->product->id }}',  // Use the product ID instead of post ID
                 quantity: quantity
             })
         })
