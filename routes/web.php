@@ -87,6 +87,7 @@ Route::group(['prefix' => 'admin', 'middleware' => [AdminMiddleware::class]], fu
     Route::get('/reports/export', [AdminController::class, 'exportReports'])->name('admin.reports.export');
     Route::get('/reports/seller/{id}', [AdminController::class, 'getSellerDetails']);
     Route::get('/reports/transaction/{id}', [AdminController::class, 'getTransactionDetails']);
+    Route::get('/reports/chart-data', [AdminController::class, 'getTransactionChartData']);
     
     // Ensure the post-request endpoint is correctly defined 
     // and placed BEFORE the more generic products/{id} route to avoid route conflicts

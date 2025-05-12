@@ -406,6 +406,84 @@
             font-size: 0.85rem;
             padding: 5px 10px;
         }
+
+        /* Tab styling */
+        .tab-container {
+            margin-bottom: 25px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .tab-btn {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            text-decoration: none;
+        }
+        
+        .tab-btn.active {
+            border-bottom: 3px solid var(--hoockers-green);
+            color: var(--hoockers-green);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .badge-pending {
+            background-color: #FFC107;
+            color: #333;
+        }
+        
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            background: transparent;
+            border: none;
+            transition: transform 0.2s;
+        }
+        
+        .btn-sm:hover {
+            transform: scale(1.15);
+            background: transparent;
+        }
+        
+        .btn-sm:focus {
+            box-shadow: none;
+            background: transparent;
+        }
+        
+        .d-flex {
+            display: flex;
+        }
+        
+        .gap-2 {
+            gap: 0.5rem;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 50px 0;
+            color: #666;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -434,43 +512,7 @@
     ?>
     
     <div class="admin-container">
-        <div class="sidebar">
-            <div class="logo-section">
-                <img src="{{ asset('images/mainlogo.png') }}" alt="Recyclo Logo">
-                <h2>Recyclo Admin</h2>
-            </div>
-            <nav>
-                <a href="{{ route('admin.dashboard') }}" class="nav-link">
-                    <i class="bi bi-speedometer2"></i> Dashboard
-                </a>
-                <a href="{{ route('admin.orders') }}" class="nav-link">
-                    <i class="bi bi-cart"></i> Orders
-                </a>
-                <a href="{{ route('admin.users') }}" class="nav-link">
-                    <i class="bi bi-people"></i> Users
-                </a>
-                <a href="{{ route('admin.post.requests') }}" class="nav-link">
-                    <i class="bi bi-file-earmark-plus"></i> Post Requests
-                    @if(App\Models\Post::where('status', App\Models\Post::STATUS_PENDING)->count() > 0)
-                        <span class="badge" style="background-color: #FF6B6B; color: white; margin-left: 5px; border-radius: 50%; padding: 3px 8px;">
-                            {{ App\Models\Post::where('status', App\Models\Post::STATUS_PENDING)->count() }}
-                        </span>
-                    @endif
-                </a>
-                <a href="{{ route('admin.products') }}" class="nav-link active">
-                    <i class="bi bi-box-seam"></i> Products
-                </a>
-                <a href="{{ route('admin.shops') }}" class="nav-link">
-                    <i class="bi bi-shop"></i> Shops
-                </a>
-                <a href="{{ route('admin.reports') }}" class="nav-link">
-                    <i class="bi bi-file-earmark-text"></i> Reports
-                </a>
-                <a href="javascript:void(0)" class="nav-link" onclick="confirmLogout()">
-                    <i class="bi bi-box-arrow-right"></i> Logout
-                </a>
-            </nav>
-        </div>
+        <x-admin-sidebar activePage="products" />
 
         <div class="main-content">
             @if (session('success'))
@@ -479,124 +521,224 @@
                 </div>
             @endif
             
+            @if (session('error'))
+                <div class="alert alert-danger">
+                    {{ session('error') }}
+                </div>
+            @endif
+            
             <div class="products-card">
                 <div class="products-heading">
                     <h1><i class="bi bi-box-seam"></i> Products Management</h1>
                     <div style="display: flex; align-items: center; gap: 15px;">
-                        <a href="{{ route('admin.post.requests') }}" class="btn btn-primary">
-                            <i class="bi bi-file-earmark-plus"></i> 
-                            Post Requests 
-                            @if(isset($pendingPostsCount) && $pendingPostsCount > 0)
-                                <span class="badge" style="background-color: #FF6B6B; color: white; margin-left: 5px; border-radius: 50%; padding: 3px 8px;">
-                                    {{ $pendingPostsCount }}
-                                </span>
-                            @endif
-                        </a>
                         <button id="manageCategoriesBtn" class="btn btn-primary">
                             <i class="bi bi-tags"></i> Manage Categories
                         </button>
                     </div>
                 </div>
                 
-                <div class="search-filters">
-                    <div class="search-box">
-                        <input type="text" id="productSearch" class="form-control" placeholder="Search products...">
-                    </div>
-                    <div class="category-filter">
-                        <select id="categoryFilter" class="form-control">
-                            <option value="">All Categories</option>
-                            @if(isset($categories))
-                                @foreach($categories as $category)
-                                    <option value="{{ $category->name }}">{{ $category->name }}</option>
-                                @endforeach
+                <div class="tab-container">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" data-tab="approved-products">
+                            Approved Products
+                        </button>
+                        <button class="tab-btn" data-tab="pending-requests">
+                            Pending Requests
+                            @if(isset($pendingPostsCount) && $pendingPostsCount > 0)
+                                <span class="badge badge-pending" style="margin-left: 5px;">
+                                    {{ $pendingPostsCount }}
+                                </span>
                             @endif
-                        </select>
+                        </button>
                     </div>
                 </div>
                 
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Image</th>
-                                <th>Title</th>
-                                <th>Category</th>
-                                <th>Price</th>
-                                <th>Quantity</th>
-                                <th>Seller</th>
-                                <th>Posted Date</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if(count($products) > 0)
-                                @foreach($products as $product)
+                <!-- Approved Products Tab -->
+                <div class="tab-content active" id="approved-products">
+                    <div class="search-filters">
+                        <div class="search-box">
+                            <input type="text" id="productSearch" class="form-control" placeholder="Search products...">
+                        </div>
+                        <div class="category-filter">
+                            <select id="categoryFilter" class="form-control">
+                                <option value="">All Categories</option>
+                                @if(isset($categories))
+                                    @foreach($categories as $category)
+                                        <option value="{{ $category->name }}">{{ $category->name }}</option>
+                                    @endforeach
+                                @endif
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
                                 <tr>
-                                    <td>{{ $product->id }}</td>
+                                    <th>ID</th>
+                                    <th>Image</th>
+                                    <th>Title</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Seller</th>
+                                    <th>Posted Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if(count($products) > 0)
+                                    @foreach($products as $product)
+                                    <tr>
+                                        <td>{{ $product->id }}</td>
+                                        <td>
+                                            @if($product->image)
+                                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->title }}" class="product-img">
+                                            @else
+                                                <div style="width: 60px; height: 60px; background-color: #eee; display: flex; align-items: center; justify-content: center; border-radius: 6px;">
+                                                    <i class="bi bi-image" style="font-size: 24px; color: #aaa;"></i>
+                                                </div>
+                                            @endif
+                                        </td>
+                                        <td>{{ $product->title }}</td>
+                                        <td>
+                                            @php
+                                                // Determine if category is an object or string and set color accordingly
+                                                $categoryColor = is_object($product->category) && isset($product->category->color) ? $product->category->color : '#f0f0f0';
+                                                $categoryName = is_object($product->category) ? $product->category->name : $product->category;
+                                            @endphp
+                                            <span class="badge" style="background-color: {{ $categoryColor }}; color: {{ getContrastColor($categoryColor) }}">
+                                                {{ $categoryName }}
+                                            </span>
+                                        </td>
+                                        <td>₱{{ number_format($product->price, 2) }} / {{ $product->unit }}</td>
+                                        <td>{{ $product->quantity }} {{ $product->unit }}</td>
+                                        <td>
+                                            @if($product->user)
+                                                {{ $product->user->firstname }} {{ $product->user->lastname }}
+                                            @else
+                                                Unknown
+                                            @endif
+                                        </td>
+                                        <td>{{ $product->created_at->format('M d, Y') }}</td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="btn btn-sm btn-primary view-product" data-id="{{ $product->id }}" data-toggle="tooltip" title="View details">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-warning edit-product" data-id="{{ $product->id }}" data-toggle="tooltip" title="Edit product">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <form action="{{ route('admin.products.delete', $product->id) }}" method="POST" style="display:inline;">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this product?')" data-toggle="tooltip" title="Delete product">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                @else
+                                    <tr>
+                                        <td colspan="9" class="text-center">No products found</td>
+                                    </tr>
+                                @endif
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination">
+                        {{ $products->links('pagination::bootstrap-4') }}
+                    </div>
+                </div>
+                
+                <!-- Pending Requests Tab -->
+                <div class="tab-content" id="pending-requests">
+                    @if(count($pendingPosts) > 0)
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Image</th>
+                                    <th>Title</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Seller</th>
+                                    <th>Submitted</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($pendingPosts as $post)
+                                <tr>
+                                    <td>{{ $post->id }}</td>
                                     <td>
-                                        @if($product->image)
-                                            <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->title }}" class="product-img">
+                                        @if($post->image)
+                                            <img src="{{ asset('storage/' . $post->image) }}" alt="{{ $post->title }}" class="product-img">
                                         @else
                                             <div style="width: 60px; height: 60px; background-color: #eee; display: flex; align-items: center; justify-content: center; border-radius: 6px;">
                                                 <i class="bi bi-image" style="font-size: 24px; color: #aaa;"></i>
                                             </div>
                                         @endif
                                     </td>
-                                    <td>{{ $product->title }}</td>
+                                    <td>{{ $post->title }}</td>
                                     <td>
                                         @php
                                             // Determine if category is an object or string and set color accordingly
-                                            $categoryColor = is_object($product->category) && isset($product->category->color) ? $product->category->color : '#f0f0f0';
-                                            $categoryName = is_object($product->category) ? $product->category->name : $product->category;
+                                            $categoryColor = is_object($post->category) && isset($post->category->color) ? $post->category->color : '#f0f0f0';
+                                            $categoryName = is_object($post->category) ? $post->category->name : $post->category;
                                         @endphp
                                         <span class="badge" style="background-color: {{ $categoryColor }}; color: {{ getContrastColor($categoryColor) }}">
                                             {{ $categoryName }}
                                         </span>
                                     </td>
-                                    <td>₱{{ number_format($product->price, 2) }} / {{ $product->unit }}</td>
-                                    <td>{{ $product->quantity }} {{ $product->unit }}</td>
+                                    <td>₱{{ number_format($post->price, 2) }} / {{ $post->unit }}</td>
+                                    <td>{{ $post->quantity }} {{ $post->unit }}</td>
                                     <td>
-                                        @if($product->user)
-                                            {{ $product->user->firstname }} {{ $product->user->lastname }}
+                                        @if($post->user)
+                                            {{ $post->user->firstname }} {{ $post->user->lastname }}
                                         @else
                                             Unknown
                                         @endif
                                     </td>
-                                    <td>{{ $product->created_at->format('M d, Y') }}</td>
+                                    <td>{{ $post->created_at->format('M d, Y') }}</td>
                                     <td>
-                                        <div class="action-buttons">
-                                            <button class="btn btn-sm btn-primary view-product" data-id="{{ $product->id }}" data-toggle="tooltip" title="View details">
-                                                <i class="bi bi-eye"></i>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-sm view-post" data-id="{{ $post->id }}" title="View Details">
+                                                <i class="bi bi-eye-fill" style="color: var(--hoockers-green); font-size: 1.2rem;"></i>
                                             </button>
-                                            <button class="btn btn-sm btn-warning edit-product" data-id="{{ $product->id }}" data-toggle="tooltip" title="Edit product">
-                                                <i class="bi bi-pencil"></i>
+                                            <button class="btn btn-sm approve-post" data-id="{{ $post->id }}" data-title="{{ $post->title }}" title="Approve Post">
+                                                <i class="bi bi-check-circle-fill" style="color: #28a745; font-size: 1.2rem;"></i>
                                             </button>
-                                            <form action="{{ route('admin.products.delete', $product->id) }}" method="POST" style="display:inline;">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this product?')" data-toggle="tooltip" title="Delete product">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </form>
+                                            <button class="btn btn-sm reject-post" data-id="{{ $post->id }}" data-title="{{ $post->title }}" title="Reject Post">
+                                                <i class="bi bi-x-circle-fill" style="color: #dc3545; font-size: 1.2rem;"></i>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
                                 @endforeach
-                            @else
-                                <tr>
-                                    <td colspan="9" class="text-center">No products found</td>
-                                </tr>
-                            @endif
-                        </tbody>
-                    </table>
-                </div>
-                <div class="pagination">
-                    {{ $products->links('pagination::bootstrap-4') }}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="pagination">
+                        {{ $pendingPosts->links('pagination::bootstrap-4') }}
+                    </div>
+                    @else
+                    <div class="empty-state">
+                        <i class="bi bi-check2-circle"></i>
+                        <h3>No pending post requests</h3>
+                        <p>All post requests have been reviewed.</p>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
+    
     <!-- Product View Modal -->
     <div id="productModal" class="modal">
         <div class="modal-content">
@@ -647,70 +789,45 @@
             </div>
         </div>
     </div>
-    <!-- Product Edit Modal -->
-    <div id="editProductModal" class="modal">
+    
+    <!-- Post View Modal -->
+    <div id="postModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title">Edit Product</h2>
-                <span class="close" id="closeEditModal">&times;</span>
+                <h2 class="modal-title">Post Request Details</h2>
+                <span class="close" id="closePostModal">&times;</span>
             </div>
-            <form id="editProductForm" method="POST" action="" enctype="multipart/form-data">
-                @csrf
-                @method('PUT')
-                <div class="form-group">
-                    <label for="edit_title">Title</label>
-                    <input type="text" class="form-control" id="edit_title" name="title" required>
+            <div class="post-details">
+                <img src="" alt="Product Image" id="modalPostImage" style="max-width: 300px; max-height: 300px; object-fit: cover; border-radius: 10px; margin-bottom: 20px;">
+                <div class="post-info" style="margin-bottom: 20px;">
+                    <h3 id="modalPostTitle" style="color: var(--hoockers-green); margin-top: 0;"></h3>
+                    <p><strong>Category:</strong> <span id="modalPostCategory"></span></p>
+                    <p><strong>Price:</strong> <span id="modalPostPrice"></span></p>
+                    <p><strong>Quantity:</strong> <span id="modalPostQuantity"></span></p>
+                    <p><strong>Seller:</strong> <span id="modalPostSeller"></span></p>
+                    <p><strong>Location:</strong> <span id="modalPostLocation"></span></p>
+                    <p><strong>Address:</strong> <span id="modalPostAddress"></span></p>
+                    <p><strong>Submitted on:</strong> <span id="modalPostDate"></span></p>
+                    
+                    <p><strong>Description:</strong></p>
+                    <p id="modalPostDescription" style="background-color: #f8f9fa; padding: 10px; border-radius: 5px;"></p>
                 </div>
-                <div class="form-group">
-                    <label for="edit_category_id">Category</label>
-                    <select class="form-control" id="edit_category_id" name="category_id" required>
-                        @foreach(\App\Models\Category::where('is_active', true)->orderBy('name')->get() as $category)
-                            <option value="{{ $category->id }}" data-color="{{ $category->color }}">
-                                {{ $category->name }}
-                            </option>
-                        @endforeach
-                    </select>
+                <div class="action-buttons" style="display: flex; gap: 10px; margin-top: 20px;">
+                    <form id="approveForm" method="POST" style="display: inline;">
+                        @csrf
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle-fill" style="margin-right: 5px;"></i> Approve Post
+                        </button>
+                    </form>
+                    
+                    <button type="button" class="btn btn-danger" id="rejectBtn">
+                        <i class="bi bi-x-circle-fill" style="margin-right: 5px;"></i> Reject Post
+                    </button>
                 </div>
-                <div class="form-group">
-                    <label for="edit_price">Price</label>
-                    <input type="number" step="0.01" class="form-control" id="edit_price" name="price" required>
-                </div>
-                <div class="form-group">
-                    <label for="edit_unit">Unit</label>
-                    <input type="text" class="form-control" id="edit_unit" name="unit" required>
-                </div>
-                <div class="form-group">
-                    <label for="edit_quantity">Quantity</label>
-                    <input type="number" step="0.01" class="form-control" id="edit_quantity" name="quantity" required>
-                </div>
-                <div class="form-group">
-                    <label for="edit_location">Location</label>
-                    <input type="text" class="form-control" id="edit_location" name="location" required>
-                </div>
-                <div class="form-group">
-                    <label for="edit_address">Address</label>
-                    <input type="text" class="form-control" id="edit_address" name="address" required>
-                </div>
-                <div class="form-group">
-                    <label for="edit_description">Description</label>
-                    <textarea class="form-control" id="edit_description" name="description" rows="4" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="edit_image">Image</label>
-                    <input type="file" class="form-control" id="edit_image" name="image" accept="image/*">
-                    <small class="text-muted">Leave empty to keep current image</small>
-                    <div id="currentImageContainer" class="mt-2">
-                        <p>Current Image:</p>
-                        <img id="currentImage" src="" alt="Current Product Image" style="max-width: 200px; max-height: 200px;">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" id="cancelEditBtn">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
+    
     <!-- Category Management Modal -->
     <div id="categoryModal" class="modal">
         <div class="modal-content">
@@ -756,6 +873,7 @@
             </div>
         </div>
     </div>
+    
     <script>
         // Search functionality for products table
         document.getElementById('productSearch').addEventListener('keyup', function() {
@@ -768,6 +886,28 @@
             const categoryTerm = this.value;
             filterProducts(document.getElementById('productSearch').value.toLowerCase(), categoryTerm);
         });
+
+        // JavaScript version of getContrastColor function
+        function getContrastColor(hexColor) {
+            // Remove # if present
+            hexColor = hexColor.replace('#', '');
+            
+            // Default to black if invalid hex color
+            if (hexColor.length !== 6) {
+                return '#000000';
+            }
+            
+            // Convert hex to RGB
+            const r = parseInt(hexColor.substr(0, 2), 16);
+            const g = parseInt(hexColor.substr(2, 2), 16);
+            const b = parseInt(hexColor.substr(4, 2), 16);
+            
+            // Calculate luminance
+            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            
+            // Return black for light colors, white for dark colors
+            return (luminance > 0.5) ? '#000000' : '#ffffff';
+        }
 
         // Initialize tooltips
         document.addEventListener('DOMContentLoaded', function() {
@@ -800,6 +940,547 @@
                 }
             });
         }
+
+        // Tab functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Remove active class from all buttons and contents
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to clicked button and corresponding content
+                    this.classList.add('active');
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+            
+            // Initialize SweetAlert2 success messages
+            @if(session('success') && str_contains(session('success'), 'approved successfully'))
+                Swal.fire({
+                    title: 'Success!',
+                    text: "{{ session('success') }}",
+                    icon: 'success',
+                    confirmButtonColor: '#28a745',
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            @endif
+               
+            @if(session('success') && str_contains(session('success'), 'rejected'))
+                Swal.fire({
+                    title: 'Post Rejected',
+                    text: "{{ session('success') }}",
+                    icon: 'warning',
+                    confirmButtonColor: '#dc3545',
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            @endif
+        });
+        
+        // Function to fetch post details
+        function fetchPostDetails(postId) {
+            console.log('Fetching details for post ID:', postId);
+            
+            fetch(`/admin/post-request/${postId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        console.error('Response not OK:', response.status);
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Received data:', data);
+                    
+                    if (data.success) {
+                        const post = data.product;
+                        const modal = document.getElementById('postModal');
+                           
+                        // Update modal content
+                        document.getElementById('modalPostTitle').textContent = post.title;
+                        document.getElementById('modalPostCategory').textContent = post.category.name || post.category;
+                        document.getElementById('modalPostPrice').textContent = `₱${parseFloat(post.price).toFixed(2)} / ${post.unit}`;
+                        document.getElementById('modalPostQuantity').textContent = `${post.quantity} ${post.unit}`;
+                        document.getElementById('modalPostSeller').textContent = post.user ? `${post.user.firstname} ${post.user.lastname}` : 'Unknown';
+                        document.getElementById('modalPostLocation').textContent = post.location || 'Not specified';
+                        document.getElementById('modalPostAddress').textContent = post.address || 'Not specified';
+                        document.getElementById('modalPostDescription').textContent = post.description || 'No description provided';
+                        document.getElementById('modalPostDate').textContent = new Date(post.created_at).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        
+                        // Set image or placeholder
+                        if (post.image) {
+                            document.getElementById('modalPostImage').src = `/storage/${post.image}`;
+                            document.getElementById('modalPostImage').style.display = 'block';
+                        } else {
+                            document.getElementById('modalPostImage').style.display = 'none';
+                        }
+                        
+                        // Set up the forms for approval/rejection from the detail view
+                        document.getElementById('approveForm').action = `{{ url('admin/post-requests') }}/${postId}/approve`;
+                        document.getElementById('rejectBtn').onclick = function() {
+                            modal.style.display = 'none';
+                            
+                            // Use SweetAlert2 for rejection
+                            Swal.fire({
+                                title: 'Reject Post?',
+                                text: `Are you sure you want to reject this post?`,
+                                input: 'text',
+                                inputPlaceholder: 'Enter reason for rejection (optional)',
+                                inputAttributes: {
+                                    autocapitalize: 'off'
+                                },
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonColor: '#dc3545',
+                                cancelButtonColor: '#6c757d',
+                                confirmButtonText: 'Yes, reject it!',
+                                cancelButtonText: 'Cancel'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    // Create and submit form for rejection
+                                    const form = document.createElement('form');
+                                    form.method = 'POST';
+                                    form.action = `{{ url('admin/post-requests') }}/${postId}/reject`;
+                                    form.style.display = 'none';
+                                    
+                                    const csrfToken = document.createElement('input');
+                                    csrfToken.type = 'hidden';
+                                    csrfToken.name = '_token';
+                                    csrfToken.value = '{{ csrf_token() }}';
+                                    
+                                    const remarks = document.createElement('input');
+                                    remarks.type = 'hidden';
+                                    remarks.name = 'remarks';
+                                    remarks.value = result.value || 'Post rejected by admin';
+                                    
+                                    form.appendChild(csrfToken);
+                                    form.appendChild(remarks);
+                                    document.body.appendChild(form);
+                                    form.submit();
+                                }
+                            });
+                        };
+                        
+                        // Show modal
+                        modal.style.display = 'block';
+                    } else {
+                        Swal.fire({
+                            title: 'Error',
+                            text: data.message || 'Failed to load post details',
+                            icon: 'error',
+                            confirmButtonColor: '#517A5B'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error details:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'An error occurred while loading post details',
+                        icon: 'error',
+                        confirmButtonColor: '#517A5B'
+                    });
+                });
+        }
+        
+        // Initialize event listeners for pending posts when the DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            const postModal = document.getElementById('postModal');
+            const closePostBtn = document.getElementById('closePostModal');
+            
+            // View post modal functionality
+            const viewButtons = document.querySelectorAll('.view-post');
+            viewButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const postId = this.getAttribute('data-id');
+                    fetchPostDetails(postId);
+                });
+            });
+
+            // Close post modal when clicking X button
+            if (closePostBtn) {
+                closePostBtn.addEventListener('click', function() {
+                    postModal.style.display = 'none';
+                });
+            }
+
+            // Close post modal when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target == postModal) {
+                    postModal.style.display = 'none';
+                }
+            });
+            
+            // Get all approve buttons
+            const approveButtons = document.querySelectorAll('.approve-post');
+            
+            // Add click event for approve buttons
+            approveButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const postId = this.getAttribute('data-id');
+                    const postTitle = this.getAttribute('data-title');
+                      
+                    // Show SweetAlert2 confirmation
+                    Swal.fire({
+                        title: 'Approve Post?',
+                        text: `Are you sure you want to approve "${postTitle}"? This will make it visible in the marketplace.`,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#28a745',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, approve it!',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Show loading state
+                            Swal.fire({
+                                title: 'Processing...',
+                                text: 'Approving the post request',
+                                icon: 'info',
+                                allowOutsideClick: false,
+                                allowEscapeKey: false,
+                                showConfirmButton: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                            
+                            // Create and submit form for approval
+                            const form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = `{{ url('admin/post-requests') }}/${postId}/approve`;
+                            form.style.display = 'none';
+                            
+                            const csrfToken = document.createElement('input');
+                            csrfToken.type = 'hidden';
+                            csrfToken.name = '_token';
+                            csrfToken.value = '{{ csrf_token() }}';
+                            
+                            form.appendChild(csrfToken);
+                            document.body.appendChild(form);
+                            form.submit();
+                        }
+                    });
+                });
+            });
+            
+            // Similar event for reject buttons
+            const rejectButtons = document.querySelectorAll('.reject-post');
+            rejectButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const postId = this.getAttribute('data-id');
+                    const postTitle = this.getAttribute('data-title');
+                    
+                    Swal.fire({
+                        title: 'Reject Post?',
+                        text: `Are you sure you want to reject "${postTitle}"?`,
+                        input: 'text',
+                        inputPlaceholder: 'Enter reason for rejection (optional)',
+                        inputAttributes: {
+                            autocapitalize: 'off'
+                        },
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, reject it!',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Create and submit form for rejection
+                            const form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = `{{ url('admin/post-requests') }}/${postId}/reject`;
+                            form.style.display = 'none';
+                            
+                            const csrfToken = document.createElement('input');
+                            csrfToken.type = 'hidden';
+                            csrfToken.name = '_token';
+                            csrfToken.value = '{{ csrf_token() }}';
+                            
+                            const remarks = document.createElement('input');
+                            remarks.type = 'hidden';
+                            remarks.name = 'remarks';
+                            remarks.value = result.value || 'Post rejected by admin';
+                            
+                            form.appendChild(csrfToken);
+                            form.appendChild(remarks);
+                            document.body.appendChild(form);
+                            form.submit();
+                        }
+                    });
+                });
+            });
+            
+            // Category Management Modal
+            const categoryModal = document.getElementById('categoryModal');
+            const closeCategoryModal = document.getElementById('closeCategoryModal');
+            const manageCategoriesBtn = document.getElementById('manageCategoriesBtn');
+            
+            // Setup Manage Categories button click handler
+            if (manageCategoriesBtn) {
+                manageCategoriesBtn.addEventListener('click', function() {
+                    // Fetch categories before opening modal
+                    loadCategories();
+                    // Show the modal
+                    categoryModal.style.display = 'block';
+                });
+            }
+            
+            // Close modal when clicking the X button
+            if (closeCategoryModal) {
+                closeCategoryModal.addEventListener('click', function() {
+                    categoryModal.style.display = 'none';
+                });
+            }
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target == categoryModal) {
+                    categoryModal.style.display = 'none';
+                }
+            });
+            
+            // Function to load categories
+            function loadCategories() {
+                fetch('/admin/categories')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const categoriesList = document.getElementById('categoriesList');
+                            const categoryToRemove = document.getElementById('categoryToRemove');
+                            const replacementCategory = document.getElementById('replacementCategory');
+                            
+                            // Clear existing options
+                            categoriesList.innerHTML = '';
+                            categoryToRemove.innerHTML = '<option value="">Select a category</option>';
+                            replacementCategory.innerHTML = '<option value="">Select a category</option>';
+                            
+                            // Add categories to displays
+                            data.categories.forEach(category => {
+                                if (category.is_active) {
+                                    // Add to badge list
+                                    const badge = document.createElement('span');
+                                    badge.className = 'category-badge';
+                                    badge.style.backgroundColor = category.color || '#f0f0f0';
+                                    badge.style.color = getContrastColor(category.color.replace('#', ''));
+                                    badge.textContent = category.name;
+                                    categoriesList.appendChild(badge);
+                                    
+                                    // Add to dropdown options
+                                    const option = document.createElement('option');
+                                    option.value = category.id;
+                                    option.textContent = category.name;
+                                    categoryToRemove.appendChild(option.cloneNode(true));
+                                    replacementCategory.appendChild(option.cloneNode(true));
+                                }
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error',
+                                text: data.message || 'Failed to load categories',
+                                icon: 'error'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading categories:', error);
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Failed to load categories: ' + error.message,
+                            icon: 'error'
+                        });
+                    });
+            }
+            
+            // Handle Add Category button click
+            const addCategoryBtn = document.getElementById('addCategoryBtn');
+            if (addCategoryBtn) {
+                addCategoryBtn.addEventListener('click', function() {
+                    const name = document.getElementById('newCategoryName').value.trim();
+                    const description = document.getElementById('newCategoryDescription').value.trim();
+                    const color = document.getElementById('newCategoryColor').value;
+                    
+                    if (!name) {
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Please enter a category name',
+                            icon: 'warning'
+                        });
+                        return;
+                    }
+                    
+                    // Set loading state
+                    addCategoryBtn.disabled = true;
+                    addCategoryBtn.innerHTML = '<i class="bi bi-hourglass"></i> Adding...';
+                    
+                    // Send request to add category
+                    fetch('/admin/categories/add', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            name: name,
+                            description: description,
+                            color: color
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Reset button state
+                        addCategoryBtn.disabled = false;
+                        addCategoryBtn.innerHTML = '<i class="bi bi-plus-circle"></i> Add Category';
+                        
+                        if (data.success) {
+                            // Clear input fields
+                            document.getElementById('newCategoryName').value = '';
+                            document.getElementById('newCategoryDescription').value = '';
+                            document.getElementById('newCategoryColor').value = '#517A5B';
+                            
+                            // Reload categories
+                            loadCategories();
+                            
+                            Swal.fire({
+                                title: 'Success',
+                                text: data.message,
+                                icon: 'success'
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error',
+                                text: data.message || 'Failed to add category',
+                                icon: 'error'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        // Reset button state
+                        addCategoryBtn.disabled = false;
+                        addCategoryBtn.innerHTML = '<i class="bi bi-plus-circle"></i> Add Category';
+                        
+                        console.error('Error adding category:', error);
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Failed to add category: ' + error.message,
+                            icon: 'error'
+                        });
+                    });
+                });
+            }
+            
+            // Handle Remove Category button click
+            const removeCategoryBtn = document.getElementById('removeCategoryBtn');
+            if (removeCategoryBtn) {
+                removeCategoryBtn.addEventListener('click', function() {
+                    const categoryId = document.getElementById('categoryToRemove').value;
+                    const replacementId = document.getElementById('replacementCategory').value;
+                    
+                    if (!categoryId || !replacementId) {
+                        Swal.fire({
+                            title: 'Missing Selection',
+                            text: 'Please select both a category to remove and a replacement category',
+                            icon: 'warning'
+                        });
+                        return;
+                    }
+                    
+                    if (categoryId === replacementId) {
+                        Swal.fire({
+                            title: 'Invalid Selection',
+                            text: 'The replacement category cannot be the same as the category to remove',
+                            icon: 'warning'
+                        });
+                        return;
+                    }
+                    
+                    // Confirm removal
+                    Swal.fire({
+                        title: 'Remove Category?',
+                        text: 'All products in this category will be moved to the replacement category',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, remove it',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Set loading state
+                            removeCategoryBtn.disabled = true;
+                            removeCategoryBtn.innerHTML = '<i class="bi bi-hourglass"></i> Processing...';
+                            
+                            // Send request to remove category
+                            fetch('/admin/categories/remove', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                },
+                                body: JSON.stringify({
+                                    category_id: categoryId,
+                                    replacement_category_id: replacementId
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                // Reset button state
+                                removeCategoryBtn.disabled = false;
+                                removeCategoryBtn.innerHTML = '<i class="bi bi-trash"></i> Remove Category';
+                                
+                                if (data.success) {
+                                    // Reset dropdowns
+                                    document.getElementById('categoryToRemove').value = '';
+                                    document.getElementById('replacementCategory').value = '';
+                                    
+                                    // Reload categories
+                                    loadCategories();
+                                    
+                                    Swal.fire({
+                                        title: 'Success',
+                                        text: data.message,
+                                        icon: 'success'
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        title: 'Error',
+                                        text: data.message || 'Failed to remove category',
+                                        icon: 'error'
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                // Reset button state
+                                removeCategoryBtn.disabled = false;
+                                removeCategoryBtn.innerHTML = '<i class="bi bi-trash"></i> Remove Category';
+                                
+                                console.error('Error removing category:', error);
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: 'Failed to remove category: ' + error.message,
+                                    icon: 'error'
+                                });
+                            });
+                        }
+                    });
+                });
+            }
+        });
     </script>
 </body>
 </html>

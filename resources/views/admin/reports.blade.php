@@ -8,6 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Add SweetAlert2 library -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Add Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --hoockers-green: #517A5B;
@@ -23,19 +25,6 @@
         .admin-container {
             display: flex;
             min-height: 100vh;
-        }
-
-        .sidebar {
-            width: 250px;
-            background: var(--hoockers-green);
-            padding: 20px;
-            color: white;
-            position: fixed;
-            height: 100vh;
-            overflow-y: auto;
-            z-index: 1000;
-            left: 0;
-            top: 0;
         }
 
         .main-content {
@@ -66,26 +55,6 @@
         .nav-link:hover, .nav-link.active {
             background: rgba(255,255,255,0.2);
             transform: translateX(5px);
-        }
-
-        .logo-section {
-            display: flex;
-            align-items: center;
-            margin-bottom: 40px;
-            padding: 20px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .logo-section img {
-            width: 45px;
-            height: 45px;
-            margin-right: 15px;
-        }
-
-        .logo-section h2 {
-            font-size: 1.5rem;
-            margin: 0;
-            font-weight: 600;
         }
 
         .reports-header {
@@ -398,14 +367,46 @@
             color: var(--hoockers-green);
             font-weight: 600;
         }
-        
+
+        /* Transaction Chart Styles */
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+
+        .period-filter {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: flex-end;
+        }
+
+        .period-btn {
+            padding: 8px 15px;
+            border: 2px solid var(--hoockers-green);
+            border-radius: 8px;
+            background: white;
+            color: var(--hoockers-green);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .period-btn.active {
+            background: var(--hoockers-green);
+            color: white;
+        }
+
+        .chart-wrapper {
+            height: 350px;
+            position: relative;
+        }
+
         /* Add responsive styling for smaller screens */
         @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-            }
             .main-content {
                 margin-left: 0;
                 width: 100%;
@@ -418,44 +419,7 @@
 </head>
 <body>
     <div class="admin-container">
-        <div class="sidebar">
-            <div class="logo-section">
-                <img src="{{ asset('images/mainlogo.png') }}" alt="Recyclo Logo">
-                <h2>Recyclo Admin</h2>
-            </div>
-            <nav>
-                <a href="{{ route('admin.dashboard') }}" class="nav-link">
-                    <i class="bi bi-speedometer2"></i> Dashboard
-                </a>
-                <a href="{{ route('admin.orders') }}" class="nav-link">
-                    <i class="bi bi-cart"></i> Orders
-                </a>
-                <a href="{{ route('admin.users') }}" class="nav-link">
-                    <i class="bi bi-people"></i> Users
-                </a>
-                <a href="{{ route('admin.post.requests') }}" class="nav-link">
-                    <i class="bi bi-file-earmark-plus"></i> Post Requests
-                    @if(App\Models\Post::where('status', App\Models\Post::STATUS_PENDING)->count() > 0)
-                        <span class="badge" style="background-color: #FF6B6B; color: white; margin-left: 5px; border-radius: 50%; padding: 3px 8px;">
-                            {{ App\Models\Post::where('status', App\Models\Post::STATUS_PENDING)->count() }}
-                        </span>
-                    @endif
-                </a>
-                <a href="{{ route('admin.products') }}" class="nav-link">
-                    <i class="bi bi-box-seam"></i> Products
-                </a>
-                <a href="{{ route('admin.shops') }}" class="nav-link">
-                    <i class="bi bi-shop"></i> Shops
-                </a>
-                <a href="{{ route('admin.reports') }}" class="nav-link active">
-                    <i class="bi bi-file-earmark-text"></i> Reports
-                </a>
-                <!-- Change to use SweetAlert2 for logout -->
-                <a href="javascript:void(0)" class="nav-link" onclick="confirmLogout()">
-                    <i class="bi bi-box-arrow-right"></i> Logout
-                </a>
-            </nav>
-        </div>
+        <x-admin-sidebar activePage="reports" />
 
         <!-- Main Content -->
         <div class="main-content">
@@ -507,6 +471,23 @@
                 <div class="summary-card">
                     <div class="card-label">Average Order Value</div>
                     <div class="card-value">₱{{ number_format($averageOrderValue, 2) }}</div>
+                </div>
+            </div>
+
+            <!-- Transaction Chart Section -->
+            <div class="reports-header" style="margin-top: 40px;">
+                <h1 class="header-title">Transactions Overview</h1>
+                <div class="period-filter">
+                    <button type="button" class="period-btn active" data-period="monthly">Monthly</button>
+                    <button type="button" class="period-btn" data-period="weekly">Weekly</button>
+                    <button type="button" class="period-btn" data-period="daily">Daily</button>
+                    <button type="button" class="period-btn" data-period="yearly">Yearly</button>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-wrapper">
+                    <canvas id="transactionChart"></canvas>
                 </div>
             </div>
 
@@ -767,6 +748,122 @@
                 }
             });
         }
+
+        // Transaction Chart Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Default period
+            let currentPeriod = 'monthly';
+            let transactionChart = null;
+
+            // Initialize chart with monthly data
+            fetchTransactionData(currentPeriod);
+
+            // Add event listeners to period buttons
+            document.querySelectorAll('.period-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    // Update active button
+                    document.querySelectorAll('.period-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    this.classList.add('active');
+
+                    // Update current period and fetch new data
+                    currentPeriod = this.getAttribute('data-period');
+                    fetchTransactionData(currentPeriod);
+                });
+            });
+
+            // Function to fetch transaction data
+            function fetchTransactionData(period) {
+                fetch(`{{ url('admin/reports/chart-data') }}?period=${period}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            updateTransactionChart(data.chartData);
+                        } else {
+                            console.error('Error loading chart data');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching transaction data:', error);
+                    });
+            }
+
+            // Function to update transaction chart
+            function updateTransactionChart(chartData) {
+                const ctx = document.getElementById('transactionChart').getContext('2d');
+                
+                // Destroy existing chart if it exists
+                if (transactionChart) {
+                    transactionChart.destroy();
+                }
+                
+                // Create new chart
+                transactionChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: chartData.labels,
+                        datasets: [
+                            {
+                                label: 'Transactions',
+                                data: chartData.transactions,
+                                backgroundColor: 'rgba(81, 122, 91, 0.7)',
+                                borderColor: 'rgba(81, 122, 91, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Revenue (₱)',
+                                data: chartData.revenue,
+                                backgroundColor: 'rgba(146, 184, 153, 0.7)',
+                                borderColor: 'rgba(146, 184, 153, 1)',
+                                borderWidth: 1,
+                                yAxisID: 'y1'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Number of Transactions'
+                                }
+                            },
+                            y1: {
+                                beginAtZero: true,
+                                position: 'right',
+                                title: {
+                                    display: true,
+                                    text: 'Revenue (₱)'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Period'
+                                }
+                            }
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Transactions and Revenue Over Time',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            },
+                            legend: {
+                                position: 'top'
+                            }
+                        }
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>
