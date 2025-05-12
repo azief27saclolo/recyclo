@@ -268,146 +268,441 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(0, 0, 0, 0.6);
             z-index: 1000;
             overflow: auto;
             justify-content: center;
             align-items: center;
+            backdrop-filter: blur(5px);
         }
 
         .modal-content {
             background-color: white;
-            margin: auto;
-            padding: 30px;
-            border-radius: var(--border-radius);
+            margin: 30px auto;
+            padding: 0;
+            border-radius: 16px;
             width: 95%;
-            max-width: 600px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            max-width: 700px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
             position: relative;
-            animation: modalAnimation 0.3s ease;
+            animation: modalAnimation 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            overflow: hidden;
         }
 
         @keyframes modalAnimation {
-            from {opacity: 0; transform: translateY(-30px);}
-            to {opacity: 1; transform: translateY(0);}
+            from {opacity: 0; transform: scale(0.9) translateY(-20px);}
+            to {opacity: 1; transform: scale(1) translateY(0);}
         }
 
         .close-modal {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: 24px;
+            right: 24px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 24px;
             cursor: pointer;
-            color: var(--text-light);
+            color: #fff;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
             transition: var(--transition);
+            z-index: 5;
         }
 
         .close-modal:hover {
-            color: var(--text-color);
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
         }
 
         .modal-header {
-            margin-bottom: 25px;
+            margin: 0;
+            padding: 35px 40px 30px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            position: relative;
+        }
+
+        .modal-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(30%, -30%);
+        }
+
+        .modal-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 20px;
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(-50%, 50%);
         }
 
         .modal-header h3 {
             margin: 0;
-            color: var(--primary-color);
-            font-size: 24px;
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
         }
 
-        .form-control {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
+        .modal-header p {
+            margin: 8px 0 0;
+            color: rgba(255, 255, 255, 0.8);
             font-size: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .modal-body {
+            padding: 30px 40px 40px;
+        }
+
+        .form-tabs {
+            display: flex;
+            margin-bottom: 25px;
+            border-bottom: 1px solid #eee;
+            position: relative;
+        }
+
+        .form-tab {
+            padding: 12px 20px;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-light);
+            cursor: pointer;
             transition: var(--transition);
-            margin-bottom: 20px;
+            border-bottom: 3px solid transparent;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-tab i {
+            margin-right: 8px;
+            font-size: 18px;
+        }
+
+        .form-tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .form-tab:hover:not(.active) {
+            color: var(--text-color);
+            border-bottom-color: #ddd;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {opacity: 0; transform: translateY(10px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+
+        .profile-upload-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .profile-upload-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid #eee;
+            position: relative;
+            flex-shrink: 0;
+            background-color: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-upload-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-upload-preview .profile-icon {
+            font-size: 60px;
+            color: #ccc;
+        }
+
+        .profile-upload-info {
+            margin-left: 20px;
+        }
+
+        .profile-upload-label {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-bottom: 10px;
+            font-weight: 500;
+            font-size: 14px;
         }
         
-        .form-control:focus {
-            border-color: var(--primary-color);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(81, 122, 91, 0.1);
+        .profile-upload-label:hover {
+            background-color: var(--secondary-color);
         }
 
-        /* Map container styling */
-        #map-container {
-            height: 300px;
+        .profile-upload-info p {
+            font-size: 13px;
+            color: var(--text-light);
+            margin: 0;
+        }
+
+        .profile-picture-input {
+            position: absolute;
+            width: 0;
+            height: 0;
+            overflow: hidden;
+            opacity: 0;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            color: var(--text-color);
+            margin-bottom: 8px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .form-input {
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 14px 16px;
             width: 100%;
-            margin-top: 10px;
+            font-size: 15px;
+            transition: var(--transition);
+            color: var(--text-color);
+        }
+
+        .form-input:focus {
+            border-color: var(--primary-color);
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(81, 122, 91, 0.1);
+            outline: none;
+        }
+
+        .form-input-icon {
+            position: relative;
+        }
+
+        .form-input-icon input {
+            padding-left: 42px;
+        }
+
+        .form-input-icon i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+            transition: var(--transition);
+        }
+
+        .form-input-icon input:focus + i {
+            color: var(--primary-color);
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .loader {
+            display: none;
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: translateY(-50%) rotate(0deg); }
+            100% { transform: translateY(-50%) rotate(360deg); }
+        }
+
+        .search-results {
+            display: none;
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 100%;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 10;
+        }
+
+        .search-result-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: var(--transition);
+            font-size: 14px;
+            }
+
+        .search-result-item:hover {
+            background-color: #f9f9f9;
+            }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+            }
+
+        .selected-location {
+            background-color: #f9f9f9;
+            padding: 12px 16px;
             border-radius: 8px;
-            border: 2px solid #e0e0e0;
+            font-size: 14px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+            color: var(--text-color);
         }
 
-        /* Mobile Responsive Styles */
-        @media screen and (max-width: 1024px) {
-            .main-content {
-                margin-left: 0;
-                max-width: 100%;
-                padding: 20px;
+        #map-container {
+            height: 250px;
+            width: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #eee;
+            margin-bottom: 15px;
             }
 
-            .profile-content {
-                grid-template-columns: 1fr;
-                margin-top: -40px;
+        .error-message {
+            color: #e74c3c;
+            font-size: 13px;
+            margin-top: 5px;
+            font-weight: 500;
             }
 
-            .profile-sidebar {
-                order: 2;
-            }
-
-            .profile-main {
-                order: 1;
-            }
+        .submit-btn {
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 16px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 15px;
+            position: relative;
+            overflow: hidden;
         }
 
+        .submit-btn i {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 14px rgba(0,0,0,0.1);
+        }
+
+        .submit-btn:after {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 200px;
+            background: rgba(255,255,255,0.1);
+            transform: rotate(45deg);
+            left: -85px;
+            animation: shine 3s ease-in-out infinite;
+        }
+
+        @keyframes shine {
+            0% { left: -85px; }
+            20% { left: 120%; }
+            100% { left: 120%; }
+        }
+
+        /* Mobile Responsive Styles for Modal */
         @media screen and (max-width: 768px) {
-            .main-content {
-                padding: 15px;
+            .modal-content {
+                width: 95%;
+                margin: 20px auto;
+            }
+            
+            .modal-header,
+            .modal-body {
+                padding: 25px;
             }
 
-            .profile-header {
-                padding: 30px 20px;
-                margin-bottom: 20px;
+            .profile-upload-container {
+                flex-direction: column;
+                text-align: center;
             }
 
-            .profile-content {
-                gap: 20px;
+            .profile-upload-info {
+                margin-left: 0;
+                margin-top: 15px;
+            }
+            
+            .form-tabs {
+                overflow-x: auto;
+                white-space: nowrap;
+                padding-bottom: 5px;
             }
 
-            .profile-sidebar,
-            .profile-main {
-                padding: 20px;
-            }
-
-            .activity-stats {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 15px;
+            .form-tab {
+                padding: 10px 15px;
+                font-size: 14px;
             }
         }
 
         @media screen and (max-width: 480px) {
-            .activity-stats {
-                grid-template-columns: 1fr;
+            .modal-header h3 {
+                font-size: 22px;
             }
-
-            .profile-header h1 {
-                font-size: 20px;
-            }
-
-            .profile-picture {
-                width: 120px;
-                height: 120px;
-            }
-
-            .stat-box {
-                padding: 15px;
-            }
-
-            .stat-number {
-                font-size: 24px;
+            
+            .modal-header,
+            .modal-body {
+                padding: 20px;
             }
         }
     </style>
@@ -518,64 +813,124 @@
             <span class="close-modal">&times;</span>
             <div class="modal-header">
                 <h3>Edit Your Profile</h3>
+                <p>Update your personal information and profile settings</p>
             </div>
-            <form action="{{ route('profile.update') }}" method="post" enctype="multipart/form-data">
+            <div class="modal-body">
+                <div class="form-tabs">
+                    <div class="form-tab active" data-tab="personal">
+                        <i class="bi bi-person"></i> Personal Info
+                    </div>
+                    <div class="form-tab" data-tab="location">
+                        <i class="bi bi-geo-alt"></i> Location
+                    </div>
+                    <div class="form-tab" data-tab="security">
+                        <i class="bi bi-shield-lock"></i> Security
+                    </div>
+                </div>
+                
+                <form action="{{ route('profile.update') }}" method="post" enctype="multipart/form-data" id="profile-form">
                 @csrf
                 @method('PUT')
 
-                <div class="info-group">
-                    <label for="profile_picture">Profile Picture</label>
-                    <input type="file" name="profile_picture" class="form-control">
+                    <!-- Personal Info Tab -->
+                    <div class="tab-content active" id="tab-personal">
+                        <div class="profile-upload-container">
+                            <div class="profile-upload-preview" id="preview-container">
+                                @if(auth()->user()->profile_picture)
+                                    <img src="{{ asset('storage/' . auth()->user()->profile_picture) }}" alt="Profile" id="profile-preview">
+                                @else
+                                    <div class="profile-icon">
+                                        <ion-icon name="person"></ion-icon>
+                                    </div>
+                                @endif
+                            </div>
+                            <div class="profile-upload-info">
+                                <label for="profile_picture" class="profile-upload-label">
+                                    <i class="bi bi-camera"></i> Choose Image
+                                </label>
+                                <input type="file" name="profile_picture" id="profile_picture" class="profile-picture-input">
+                                <p>Recommended: Square JPG, PNG.<br>Max size: 2MB</p>
                     @error('profile_picture')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                    <div class="error-message">{{ $message }}</div>
                     @enderror
+                            </div>
                 </div>
 
-                <div class="info-group">
+                        <div class="form-group">
                     <label for="username">Username</label>
-                    <input type="text" name="username" value="{{ auth()->user()->username }}" class="form-control">
+                            <div class="form-input-icon">
+                                <input type="text" name="username" id="username" value="{{ auth()->user()->username }}" class="form-input">
+                                <i class="bi bi-at"></i>
+                            </div>
                     @error('username')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                <div class="error-message">{{ $message }}</div>
                     @enderror
                 </div>
 
-                <div class="info-group">
-                    <label for="password">Password</label>
-                    <input type="password" name="password" class="form-control" placeholder="Leave blank to keep current password">
-                    @error('password')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        <div class="form-group">
+                            <label for="number">Contact Number</label>
+                            <div class="form-input-icon">
+                                <input type="text" name="number" id="number" value="{{ auth()->user()->number }}" class="form-input">
+                                <i class="bi bi-telephone"></i>
+                            </div>
+                            @error('number')
+                                <div class="error-message">{{ $message }}</div>
                     @enderror
+                        </div>
                 </div>
 
-                <div class="info-group">
-                    <label for="location">Location</label>
+                    <!-- Location Tab -->
+                    <div class="tab-content" id="tab-location">
+                        <div class="form-group">
+                            <label for="location-search">Search Location</label>
                     <div class="search-container">
-                        <input type="text" id="location-search" placeholder="Search for a location..." class="form-control">
+                                <div class="form-input-icon">
+                                    <input type="text" id="location-search" placeholder="Search for a location..." class="form-input">
+                                    <i class="bi bi-search"></i>
+                                </div>
                         <div class="loader" id="search-loader"></div>
                         <div class="search-results" id="search-results"></div>
                     </div>
+                        </div>
+                        
                     <div id="map-container"></div>
+                        
                     <div class="selected-location" id="selected-location">
-                        <strong>Selected:</strong> <span id="location-display">{{ auth()->user()->location }}</span>
+                            <strong>Selected Location:</strong> <span id="location-display">{{ auth()->user()->location }}</span>
                     </div>
                     <input type="hidden" name="location" id="location-input" value="{{ auth()->user()->location }}">
                     @error('location')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            <div class="error-message">{{ $message }}</div>
                     @enderror
                 </div>
 
-                <div class="info-group">
-                    <label for="number">Contact Number</label>
-                    <input type="text" name="number" value="{{ auth()->user()->number }}" class="form-control">
-                    @error('number')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    <!-- Security Tab -->
+                    <div class="tab-content" id="tab-security">
+                        <div class="form-group">
+                            <label for="password">New Password</label>
+                            <div class="form-input-icon">
+                                <input type="password" name="password" id="password" class="form-input" placeholder="Leave blank to keep current password">
+                                <i class="bi bi-lock"></i>
+                            </div>
+                            @error('password')
+                                <div class="error-message">{{ $message }}</div>
                     @enderror
                 </div>
 
-                <button type="submit" class="edit-btn">
-                    <i class="bi bi-check2"></i> Update Profile
+                        <div class="form-group">
+                            <label for="password_confirmation">Confirm New Password</label>
+                            <div class="form-input-icon">
+                                <input type="password" name="password_confirmation" id="password_confirmation" class="form-input" placeholder="Confirm new password">
+                                <i class="bi bi-key"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">
+                        <i class="bi bi-check-lg"></i> Save Changes
                 </button>
             </form>
+            </div>
         </div>
     </div>
 
@@ -584,6 +939,11 @@
         const modal = document.getElementById('editProfileModal');
         const showEditFormBtn = document.getElementById('showEditForm');
         const closeModalBtn = document.querySelector('.close-modal');
+        const formTabs = document.querySelectorAll('.form-tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const profilePictureInput = document.getElementById('profile_picture');
+        const profilePreviewContainer = document.getElementById('preview-container');
+        
         let map, marker, geocoder;
         
         // Check for success message in session and show popup
@@ -595,18 +955,95 @@
                 confirmButtonColor: '#517A5B',
                 confirmButtonText: 'OK',
                 customClass: {
-                    popup: 'bigger-modal'
+                    popup: 'swal-wide'
                 }
             });
         @endif
         
-        showEditFormBtn.addEventListener('click', function() {
+        // Check for validation errors and show modal if there are any
+        @if($errors->any())
+            showModal();
+            // Show the tab containing the error
+            const errorFields = [@error('profile_picture') 'profile_picture', @enderror
+                              @error('username') 'username', @enderror
+                              @error('number') 'number', @enderror
+                              @error('location') 'location', @enderror
+                              @error('password') 'password', @enderror];
+            
+            if (errorFields.includes('profile_picture') || 
+                errorFields.includes('username') || 
+                errorFields.includes('number')) {
+                switchTab('personal');
+            } else if (errorFields.includes('location')) {
+                switchTab('location');
+            } else if (errorFields.includes('password')) {
+                switchTab('security');
+            }
+        @endif
+        
+        // Tab switching
+        formTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabId = this.getAttribute('data-tab');
+                switchTab(tabId);
+            });
+        });
+        
+        function switchTab(tabId) {
+            // Remove active class from all tabs and content
+            formTabs.forEach(tab => tab.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // Add active class to selected tab and content
+            document.querySelector(`.form-tab[data-tab="${tabId}"]`).classList.add('active');
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            
+            // If location tab is selected, initialize map
+            if (tabId === 'location' && modal.style.display === 'flex') {
+            setTimeout(initMap, 100);
+            }
+        }
+        
+        // Profile picture preview
+        if (profilePictureInput) {
+            profilePictureInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        let existingImg = profilePreviewContainer.querySelector('img');
+                        let existingIcon = profilePreviewContainer.querySelector('.profile-icon');
+                        
+                        if (existingIcon) {
+                            existingIcon.remove();
+                        }
+                        
+                        if (existingImg) {
+                            existingImg.src = e.target.result;
+                        } else {
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.id = 'profile-preview';
+                            img.alt = 'Profile Preview';
+                            profilePreviewContainer.appendChild(img);
+                        }
+                    }
+                    
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        }
+        
+        // Modal functionality
+        showEditFormBtn.addEventListener('click', showModal);
+        
+        function showModal() {
             modal.style.display = 'flex';
             document.body.style.overflow = 'hidden';
             
-            // Initialize map on modal open
-            setTimeout(initMap, 100);
-        });
+            // Initialize first tab
+            switchTab('personal');
+        }
         
         function closeModal() {
             modal.style.display = 'none';
