@@ -16,16 +16,13 @@
         <a href="{{ route('admin.users') }}" class="nav-link {{ $activePage == 'users' ? 'active' : '' }}">
             <i class="bi bi-people"></i> Users
         </a>
-        <a href="{{ route('admin.post.requests') }}" class="nav-link {{ $activePage == 'post-requests' ? 'active' : '' }}">
-            <i class="bi bi-file-earmark-plus"></i> Post Requests
+        <a href="{{ route('admin.products') }}" class="nav-link {{ $activePage == 'products' ? 'active' : '' }}">
+            <i class="bi bi-box-seam"></i> Products
             @if(App\Models\Post::where('status', App\Models\Post::STATUS_PENDING)->count() > 0)
                 <span class="badge" style="background-color: #FF6B6B; color: white; margin-left: 5px; border-radius: 50%; padding: 3px 8px;">
                     {{ App\Models\Post::where('status', App\Models\Post::STATUS_PENDING)->count() }}
                 </span>
             @endif
-        </a>
-        <a href="{{ route('admin.products') }}" class="nav-link {{ $activePage == 'products' ? 'active' : '' }}">
-            <i class="bi bi-box-seam"></i> Products
         </a>
         <a href="{{ route('admin.shops') }}" class="nav-link {{ $activePage == 'shops' ? 'active' : '' }}">
             <i class="bi bi-shop"></i> Shops
@@ -104,21 +101,18 @@
 <script>
     function confirmLogout() {
         Swal.fire({
-            title: 'Logout Confirmation',
-            text: "Do you really want to logout?",
+            title: 'Confirm Logout',
+            text: "Are you sure you want to logout from the admin panel?",
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#517A5B',
             cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Yes, logout',
-            cancelButtonText: 'No, stay',
-            customClass: {
-                popup: 'bigger-modal'
-            }
+            confirmButtonText: 'Yes, Logout',
+            cancelButtonText: 'Cancel'
         }).then((result) => {
             if (result.isConfirmed) {
-                window.location.href = "{{ route('logout') }}";
+                window.location.href = "{{ route('admin.logout') }}";
             }
         });
     }
-</script> 
+</script>

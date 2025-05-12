@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
-    public function dashboard()
+    public function dashboard(Request $request)
     {
         // Get counts for dashboard stats
         $orders_count = Order::count();
@@ -101,13 +101,430 @@ class AdminController extends Controller
             ->sortByDesc('time')
             ->take(10);
 
+        // Get user registration data for the chart
+        $period = $request->input('period', 'monthly'); // Default to monthly
+        $userData = $this->getUserRegistrationData($period);
+        
+        // Get order data for the chart with separate period filter
+        $orders_period = $request->input('orders_period', $period); // Default to same as user period
+        $orderData = $this->getOrderData($orders_period);
+        
+        // Get product listing data for the chart with separate period filter
+        $products_period = $request->input('products_period', $period); // Default to same as user period
+        $productData = $this->getProductListingData($products_period);
+        
+        // Get shop registration data for the chart with separate period filter
+        $shops_period = $request->input('shops_period', $period); // Default to same as user period
+        $shopData = $this->getShopRegistrationData($shops_period);
+
         return view('admin.dashboard', compact(
             'orders_count',
             'users_count',
             'shops_count',
             'products_count',
-            'recent_activities'
+            'recent_activities',
+            'userData',
+            'orderData',
+            'productData',
+            'shopData',
+            'period',
+            'orders_period',
+            'products_period',
+            'shops_period'
         ));
+    }
+
+    /**
+     * Get user registration data for charting
+     *
+     * @param string $period
+     * @return array
+     */
+    private function getUserRegistrationData($period)
+    {
+        $today = Carbon::today();
+        $labels = [];
+        $data = [];
+
+        switch ($period) {
+            case 'daily':
+                // Last 14 days data
+                $startDate = $today->copy()->subDays(13);
+                $endDate = $today;
+                
+                for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
+                    $labels[] = $date->format('M d');
+                    $count = User::whereDate('created_at', $date->format('Y-m-d'))->count();
+                    $data[] = $count;
+                }
+                break;
+
+            case 'weekly':
+                // Last 12 weeks data
+                $startDate = $today->copy()->startOfWeek()->subWeeks(11);
+                
+                for ($i = 0; $i < 12; $i++) {
+                    $weekStart = $startDate->copy()->addWeeks($i);
+                    $weekEnd = $weekStart->copy()->endOfWeek();
+                    
+                    $labels[] = "Week " . ($i + 1);
+                    $count = User::whereBetween('created_at', [$weekStart, $weekEnd])->count();
+                    $data[] = $count;
+                }
+                break;
+
+            case 'yearly':
+                // Last 5 years data
+                $startYear = $today->copy()->subYears(4)->year;
+                
+                for ($year = $startYear; $year <= $today->year; $year++) {
+                    $labels[] = (string)$year;
+                    $count = User::whereYear('created_at', $year)->count();
+                    $data[] = $count;
+                }
+                break;
+
+            case 'monthly':
+            default:
+                // Last 12 months data
+                $startDate = $today->copy()->subMonths(11)->startOfMonth();
+                
+                for ($i = 0; $i < 12; $i++) {
+                    $monthStart = $startDate->copy()->addMonths($i);
+                    $monthName = $monthStart->format('M Y');
+                    
+                    $labels[] = $monthName;
+                    $count = User::whereYear('created_at', $monthStart->year)
+                        ->whereMonth('created_at', $monthStart->month)
+                        ->count();
+                    $data[] = $count;
+                }
+                break;
+        }
+
+        return [
+            'labels' => $labels,
+            'data' => $data
+        ];
+    }
+
+    /**
+     * Get order data for charting
+     *
+     * @param string $period
+     * @return array
+     */
+    private function getOrderData($period)
+    {
+        $today = Carbon::today();
+        $labels = [];
+        $data = [];
+
+        switch ($period) {
+            case 'daily':
+                // Last 14 days data
+                $startDate = $today->copy()->subDays(13);
+                $endDate = $today;
+                
+                for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
+                    $labels[] = $date->format('M d');
+                    $count = Order::whereDate('created_at', $date->format('Y-m-d'))->count();
+                    $data[] = $count;
+                }
+                break;
+
+            case 'weekly':
+                // Last 12 weeks data
+                $startDate = $today->copy()->startOfWeek()->subWeeks(11);
+                
+                for ($i = 0; $i < 12; $i++) {
+                    $weekStart = $startDate->copy()->addWeeks($i);
+                    $weekEnd = $weekStart->copy()->endOfWeek();
+                    
+                    $labels[] = "Week " . ($i + 1);
+                    $count = Order::whereBetween('created_at', [$weekStart, $weekEnd])->count();
+                    $data[] = $count;
+                }
+                break;
+
+            case 'yearly':
+                // Last 5 years data
+                $startYear = $today->copy()->subYears(4)->year;
+                
+                for ($year = $startYear; $year <= $today->year; $year++) {
+                    $labels[] = (string)$year;
+                    $count = Order::whereYear('created_at', $year)->count();
+                    $data[] = $count;
+                }
+                break;
+
+            case 'monthly':
+            default:
+                // Last 12 months data
+                $startDate = $today->copy()->subMonths(11)->startOfMonth();
+                
+                for ($i = 0; $i < 12; $i++) {
+                    $monthStart = $startDate->copy()->addMonths($i);
+                    $monthName = $monthStart->format('M Y');
+                    
+                    $labels[] = $monthName;
+                    $count = Order::whereYear('created_at', $monthStart->year)
+                        ->whereMonth('created_at', $monthStart->month)
+                        ->count();
+                    $data[] = $count;
+                }
+                break;
+        }
+
+        return [
+            'labels' => $labels,
+            'data' => $data
+        ];
+    }
+
+    /**
+     * Get product listing data for charting
+     *
+     * @param string $period
+     * @return array
+     */
+    private function getProductListingData($period)
+    {
+        $today = Carbon::today();
+        $labels = [];
+        $data = [];
+
+        switch ($period) {
+            case 'daily':
+                // Last 14 days data
+                $startDate = $today->copy()->subDays(13);
+                $endDate = $today;
+                
+                for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
+                    $labels[] = $date->format('M d');
+                    $count = Post::whereDate('created_at', $date->format('Y-m-d'))->count();
+                    $data[] = $count;
+                }
+                break;
+
+            case 'weekly':
+                // Last 12 weeks data
+                $startDate = $today->copy()->startOfWeek()->subWeeks(11);
+                
+                for ($i = 0; $i < 12; $i++) {
+                    $weekStart = $startDate->copy()->addWeeks($i);
+                    $weekEnd = $weekStart->copy()->endOfWeek();
+                    
+                    $labels[] = "Week " . ($i + 1);
+                    $count = Post::whereBetween('created_at', [$weekStart, $weekEnd])->count();
+                    $data[] = $count;
+                }
+                break;
+
+            case 'yearly':
+                // Last 5 years data
+                $startYear = $today->copy()->subYears(4)->year;
+                
+                for ($year = $startYear; $year <= $today->year; $year++) {
+                    $labels[] = (string)$year;
+                    $count = Post::whereYear('created_at', $year)->count();
+                    $data[] = $count;
+                }
+                break;
+
+            case 'monthly':
+            default:
+                // Last 12 months data
+                $startDate = $today->copy()->subMonths(11)->startOfMonth();
+                
+                for ($i = 0; $i < 12; $i++) {
+                    $monthStart = $startDate->copy()->addMonths($i);
+                    $monthName = $monthStart->format('M Y');
+                    
+                    $labels[] = $monthName;
+                    $count = Post::whereYear('created_at', $monthStart->year)
+                        ->whereMonth('created_at', $monthStart->month)
+                        ->count();
+                    $data[] = $count;
+                }
+                break;
+        }
+
+        return [
+            'labels' => $labels,
+            'data' => $data
+        ];
+    }
+
+    /**
+     * Get shop registration data for charting
+     *
+     * @param string $period
+     * @return array
+     */
+    private function getShopRegistrationData($period)
+    {
+        $today = Carbon::today();
+        $labels = [];
+        $data = [];
+
+        switch ($period) {
+            case 'daily':
+                // Last 14 days data
+                $startDate = $today->copy()->subDays(13);
+                $endDate = $today;
+                
+                for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
+                    $labels[] = $date->format('M d');
+                    $count = Shop::whereDate('created_at', $date->format('Y-m-d'))->count();
+                    $data[] = $count;
+                }
+                break;
+
+            case 'weekly':
+                // Last 12 weeks data
+                $startDate = $today->copy()->startOfWeek()->subWeeks(11);
+                
+                for ($i = 0; $i < 12; $i++) {
+                    $weekStart = $startDate->copy()->addWeeks($i);
+                    $weekEnd = $weekStart->copy()->endOfWeek();
+                    
+                    $labels[] = "Week " . ($i + 1);
+                    $count = Shop::whereBetween('created_at', [$weekStart, $weekEnd])->count();
+                    $data[] = $count;
+                }
+                break;
+
+            case 'yearly':
+                // Last 5 years data
+                $startYear = $today->copy()->subYears(4)->year;
+                
+                for ($year = $startYear; $year <= $today->year; $year++) {
+                    $labels[] = (string)$year;
+                    $count = Shop::whereYear('created_at', $year)->count();
+                    $data[] = $count;
+                }
+                break;
+
+            case 'monthly':
+            default:
+                // Last 12 months data
+                $startDate = $today->copy()->subMonths(11)->startOfMonth();
+                
+                for ($i = 0; $i < 12; $i++) {
+                    $monthStart = $startDate->copy()->addMonths($i);
+                    $monthName = $monthStart->format('M Y');
+                    
+                    $labels[] = $monthName;
+                    $count = Shop::whereYear('created_at', $monthStart->year)
+                        ->whereMonth('created_at', $monthStart->month)
+                        ->count();
+                    $data[] = $count;
+                }
+                break;
+        }
+
+        return [
+            'labels' => $labels,
+            'data' => $data
+        ];
+    }
+
+    /**
+     * Get transaction chart data
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getTransactionChartData(Request $request)
+    {
+        $period = $request->input('period', 'monthly');
+        $today = Carbon::today();
+        $labels = [];
+        $transactions = [];
+        $revenue = [];
+
+        switch ($period) {
+            case 'daily':
+                // Last 14 days data
+                $startDate = $today->copy()->subDays(13);
+                $endDate = $today;
+                
+                for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
+                    $labels[] = $date->format('M d');
+                    $dayTransactions = Order::whereDate('created_at', $date->format('Y-m-d'))->count();
+                    $dayRevenue = Order::whereDate('created_at', $date->format('Y-m-d'))
+                        ->where('status', 'completed')
+                        ->sum('total_amount');
+                    $transactions[] = $dayTransactions;
+                    $revenue[] = round($dayRevenue, 2);
+                }
+                break;
+
+            case 'weekly':
+                // Last 12 weeks data
+                $startDate = $today->copy()->startOfWeek()->subWeeks(11);
+                
+                for ($i = 0; $i < 12; $i++) {
+                    $weekStart = $startDate->copy()->addWeeks($i);
+                    $weekEnd = $weekStart->copy()->endOfWeek();
+                    
+                    $labels[] = "Week " . ($i + 1);
+                    $weekTransactions = Order::whereBetween('created_at', [$weekStart, $weekEnd])->count();
+                    $weekRevenue = Order::whereBetween('created_at', [$weekStart, $weekEnd])
+                        ->where('status', 'completed')
+                        ->sum('total_amount');
+                    $transactions[] = $weekTransactions;
+                    $revenue[] = round($weekRevenue, 2);
+                }
+                break;
+
+            case 'yearly':
+                // Last 5 years data
+                $startYear = $today->copy()->subYears(4)->year;
+                
+                for ($year = $startYear; $year <= $today->year; $year++) {
+                    $labels[] = (string)$year;
+                    $yearTransactions = Order::whereYear('created_at', $year)->count();
+                    $yearRevenue = Order::whereYear('created_at', $year)
+                        ->where('status', 'completed')
+                        ->sum('total_amount');
+                    $transactions[] = $yearTransactions;
+                    $revenue[] = round($yearRevenue, 2);
+                }
+                break;
+
+            case 'monthly':
+            default:
+                // Last 12 months data
+                $startDate = $today->copy()->subMonths(11)->startOfMonth();
+                
+                for ($i = 0; $i < 12; $i++) {
+                    $monthStart = $startDate->copy()->addMonths($i);
+                    $monthName = $monthStart->format('M Y');
+                    
+                    $labels[] = $monthName;
+                    $monthTransactions = Order::whereYear('created_at', $monthStart->year)
+                        ->whereMonth('created_at', $monthStart->month)
+                        ->count();
+                    $monthRevenue = Order::whereYear('created_at', $monthStart->year)
+                        ->whereMonth('created_at', $monthStart->month)
+                        ->where('status', 'completed')
+                        ->sum('total_amount');
+                    $transactions[] = $monthTransactions;
+                    $revenue[] = round($monthRevenue, 2);
+                }
+                break;
+        }
+
+        return response()->json([
+            'success' => true,
+            'chartData' => [
+                'labels' => $labels,
+                'transactions' => $transactions,
+                'revenue' => $revenue
+            ]
+        ]);
     }
 
     public function orders()
@@ -980,26 +1397,31 @@ class AdminController extends Controller
 
     public function products()
     {
-        // Get all products with their user information
+        // Get all approved products with their user information
         $products = Post::with(['user', 'category'])
             ->where('status', Post::STATUS_APPROVED) // Show only approved posts
             ->orderBy('created_at', 'desc')
             ->paginate(10);
         
-        // Get pending post requests count for notification badge
-        $pendingPostsCount = Post::where('status', Post::STATUS_PENDING)->count();
-            
-        return view('admin.products', compact('products', 'pendingPostsCount'));
-    }
-
-    public function postRequests()
-    {
+        // Get pending post requests with user information
         $pendingPosts = Post::where('status', Post::STATUS_PENDING)
             ->with('user', 'category')
             ->latest()
-            ->paginate(15);
+            ->paginate(10);
+        
+        // Get pending post requests count for notification badge
+        $pendingPostsCount = Post::where('status', Post::STATUS_PENDING)->count();
+        
+        // Get categories for the filter dropdown
+        $categories = Category::where('is_active', true)->orderBy('name')->get();
             
-        return view('admin.post_requests', compact('pendingPosts'));
+        return view('admin.products', compact('products', 'pendingPosts', 'pendingPostsCount', 'categories'));
+    }
+
+    // We'll keep this method for backward compatibility or direct access
+    public function postRequests()
+    {
+        return redirect()->route('admin.products');
     }
 
     public function approvePost($id)

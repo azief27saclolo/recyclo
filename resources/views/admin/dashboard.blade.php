@@ -8,206 +8,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Add SweetAlert2 library -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-        :root {
-            --hoockers-green: #517A5B;
-            --hoockers-green_80: #517A5Bcc;
-            --card-shadow: 0 8px 16px rgba(0,0,0,0.1);
-            --hover-shadow: 0 12px 24px rgba(0,0,0,0.15);
-        }
-        
-        body {
-            font-family: 'Urbanist', sans-serif;
-            background-color: #f8f9fa;
-            margin: 0;
-            color: #2c3e50;
-        }
-
-        .admin-container {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        .main-content {
-            flex: 1;
-            padding: 30px;
-            margin-left: 290px;
-            min-height: 100vh;
-            width: calc(100% - 290px);
-            box-sizing: border-box;
-        }
-
-        .main-content h1 {
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 30px;
-            color: #2c3e50;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-            margin-bottom: 35px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: var(--card-shadow);
-            transition: all 0.3s ease;
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--hover-shadow);
-        }
-
-        .stat-card h3 {
-            margin: 0 0 20px 0;
-            color: #2c3e50;
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .stat-card .stat-value {
-            font-size: 36px;
-            font-weight: 700;
-            color: var(--hoockers-green);
-            margin: 0;
-            line-height: 1.2;
-        }
-
-        .stat-card .stat-label {
-            color: #666;
-            margin: 10px 0 0 0;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .card {
-            background: white;
-            border-radius: 20px;
-            box-shadow: var(--card-shadow);
-            border: 1px solid rgba(0,0,0,0.05);
-            margin-bottom: 30px;
-        }
-
-        .card-header {
-            padding: 25px 30px;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-            background: transparent;
-        }
-
-        .card-title {
-            font-size: 20px;
-            font-weight: 600;
-            color: #2c3e50;
-            margin: 0;
-        }
-
-        .card-body {
-            padding: 30px;
-        }
-
-        .activity-feed {
-            padding: 10px;
-        }
-
-        .activity-item {
-            display: flex;
-            align-items: flex-start;
-            padding: 20px 0;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-        }
-
-        .activity-item:last-child {
-            border-bottom: none;
-        }
-
-        .activity-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 20px;
-            flex-shrink: 0;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-
-        .activity-icon i {
-            color: white;
-            font-size: 20px;
-        }
-
-        .activity-content {
-            flex-grow: 1;
-        }
-
-        .activity-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .activity-header h6 {
-            color: #2c3e50;
-            font-weight: 600;
-            font-size: 16px;
-            margin: 0;
-        }
-
-        .activity-content p {
-            color: #666;
-            margin: 0;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        .btn-link {
-            color: var(--hoockers-green);
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 14px;
-            margin-top: 8px;
-            display: inline-block;
-        }
-
-        .btn-link:hover {
-            color: var(--hoockers-green_80);
-            text-decoration: underline;
-        }
-
-        .text-muted {
-            color: #95a5a6 !important;
-            font-size: 13px;
-        }
-
-        @media screen and (max-width: 768px) {
-            .main-content {
-                margin-left: 0;
-                width: 100%;
-                padding: 20px;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .stat-card {
-                padding: 20px;
-            }
-
-            .card-header, .card-body {
-                padding: 20px;
-            }
-        }
-    </style>
+    <!-- Add Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- External CSS file -->
+    <link href="{{ asset('css/admin-styles.css') }}" rel="stylesheet">
 </head>
 <body>
     <div class="admin-container">
@@ -242,6 +46,103 @@
                 </div>
             </div>
 
+            <!-- Chart Section Container -->
+            <div class="chart-container-grid">
+                <!-- User Registration Chart Section -->
+                <div class="card mt-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title">User Registrations</h5>
+                        <div class="chart-filters">
+                            <form id="period-form" method="get" action="{{ route('admin.dashboard') }}">
+                                <select name="period" id="period-select" class="form-select" onchange="document.getElementById('period-form').submit()">
+                                    <option value="daily" {{ $period === 'daily' ? 'selected' : '' }}>Daily</option>
+                                    <option value="weekly" {{ $period === 'weekly' ? 'selected' : '' }}>Weekly</option>
+                                    <option value="monthly" {{ $period === 'monthly' ? 'selected' : '' }}>Monthly</option>
+                                    <option value="yearly" {{ $period === 'yearly' ? 'selected' : '' }}>Yearly</option>
+                                </select>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="position: relative; height:300px; width:100%">
+                            <canvas id="userRegistrationChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orders Chart Section -->
+                <div class="card mt-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title">Orders Received</h5>
+                        <div class="chart-filters">
+                            <form id="orders-period-form" method="get" action="{{ route('admin.dashboard') }}">
+                                <input type="hidden" name="period" value="{{ $period }}">
+                                <select name="orders_period" id="orders-period-select" class="form-select" onchange="document.getElementById('orders-period-form').submit()">
+                                    <option value="daily" {{ $orders_period === 'daily' ? 'selected' : '' }}>Daily</option>
+                                    <option value="weekly" {{ $orders_period === 'weekly' ? 'selected' : '' }}>Weekly</option>
+                                    <option value="monthly" {{ $orders_period === 'monthly' ? 'selected' : '' }}>Monthly</option>
+                                    <option value="yearly" {{ $orders_period === 'yearly' ? 'selected' : '' }}>Yearly</option>
+                                </select>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="position: relative; height:300px; width:100%">
+                            <canvas id="ordersChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Products Listed Chart Section -->
+                <div class="card mt-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title">Products Listed</h5>
+                        <div class="chart-filters">
+                            <form id="products-period-form" method="get" action="{{ route('admin.dashboard') }}">
+                                <input type="hidden" name="period" value="{{ $period }}">
+                                <input type="hidden" name="orders_period" value="{{ $orders_period }}">
+                                <select name="products_period" id="products-period-select" class="form-select" onchange="document.getElementById('products-period-form').submit()">
+                                    <option value="daily" {{ isset($products_period) && $products_period === 'daily' ? 'selected' : '' }}>Daily</option>
+                                    <option value="weekly" {{ isset($products_period) && $products_period === 'weekly' ? 'selected' : '' }}>Weekly</option>
+                                    <option value="monthly" {{ isset($products_period) && $products_period === 'monthly' ? 'selected' : '' }}>Monthly</option>
+                                    <option value="yearly" {{ isset($products_period) && $products_period === 'yearly' ? 'selected' : '' }}>Yearly</option>
+                                </select>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="position: relative; height:300px; width:100%">
+                            <canvas id="productsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Shops Registered Chart Section -->
+                <div class="card mt-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title">Shops Registered</h5>
+                        <div class="chart-filters">
+                            <form id="shops-period-form" method="get" action="{{ route('admin.dashboard') }}">
+                                <input type="hidden" name="period" value="{{ $period }}">
+                                <input type="hidden" name="orders_period" value="{{ $orders_period }}">
+                                <input type="hidden" name="products_period" value="{{ isset($products_period) ? $products_period : 'monthly' }}">
+                                <select name="shops_period" id="shops-period-select" class="form-select" onchange="document.getElementById('shops-period-form').submit()">
+                                    <option value="daily" {{ isset($shops_period) && $shops_period === 'daily' ? 'selected' : '' }}>Daily</option>
+                                    <option value="weekly" {{ isset($shops_period) && $shops_period === 'weekly' ? 'selected' : '' }}>Weekly</option>
+                                    <option value="monthly" {{ isset($shops_period) && $shops_period === 'monthly' ? 'selected' : '' }}>Monthly</option>
+                                    <option value="yearly" {{ isset($shops_period) && $shops_period === 'yearly' ? 'selected' : '' }}>Yearly</option>
+                                </select>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="position: relative; height:300px; width:100%">
+                            <canvas id="shopsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="card">
                 <div class="card-header">
                     <h5 class="card-title">Recent Activity</h5>
@@ -273,5 +174,172 @@
             </div>
         </div>
     </div>
+
+    <!-- Chart Initialization Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // User Registration Chart
+            const userCtx = document.getElementById('userRegistrationChart').getContext('2d');
+            const userChartLabels = @json($userData['labels']);
+            const userChartData = @json($userData['data']);
+            
+            new Chart(userCtx, {
+                type: 'bar',
+                data: {
+                    labels: userChartLabels,
+                    datasets: [{
+                        label: 'New User Registrations',
+                        data: userChartData,
+                        backgroundColor: 'rgba(81, 122, 91, 0.7)',
+                        borderColor: '#517A5B',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Orders Chart
+            const orderCtx = document.getElementById('ordersChart').getContext('2d');
+            const orderChartLabels = @json($orderData['labels']);
+            const orderChartData = @json($orderData['data']);
+            
+            new Chart(orderCtx, {
+                type: 'line',
+                data: {
+                    labels: orderChartLabels,
+                    datasets: [{
+                        label: 'Orders Received',
+                        data: orderChartData,
+                        backgroundColor: 'rgba(25, 135, 84, 0.2)',
+                        borderColor: '#198754',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        fill: true,
+                        pointBackgroundColor: '#198754',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Products Chart
+            const productCtx = document.getElementById('productsChart').getContext('2d');
+            const productChartLabels = @json($productData['labels']);
+            const productChartData = @json($productData['data']);
+            
+            new Chart(productCtx, {
+                type: 'bar',
+                data: {
+                    labels: productChartLabels,
+                    datasets: [{
+                        label: 'Products Listed',
+                        data: productChartData,
+                        backgroundColor: 'rgba(255, 193, 7, 0.6)',
+                        borderColor: '#FFC107',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Shops Chart
+            const shopCtx = document.getElementById('shopsChart').getContext('2d');
+            const shopChartLabels = @json($shopData['labels']);
+            const shopChartData = @json($shopData['data']);
+            
+            new Chart(shopCtx, {
+                type: 'line',
+                data: {
+                    labels: shopChartLabels,
+                    datasets: [{
+                        label: 'Shops Registered',
+                        data: shopChartData,
+                        backgroundColor: 'rgba(13, 110, 253, 0.2)',
+                        borderColor: '#0d6efd',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        fill: true,
+                        pointBackgroundColor: '#0d6efd',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+
+    <!-- Add this style section to make charts display side by side on large screens -->
+    <style>
+        .chart-container-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        @media (min-width: 992px) {
+            .chart-container-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        @media (min-width: 1200px) {
+            .chart-container-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .chart-container-grid > div:nth-child(3),
+            .chart-container-grid > div:nth-child(4) {
+                grid-column: span 1;
+            }
+        }
+    </style>
 </body>
 </html>
