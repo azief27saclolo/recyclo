@@ -71,7 +71,7 @@
             <span>My Orders</span>
         </a>
         
-        <a href="#" class="menu-item {{ $activePage == 'privacy' ? 'active' : '' }}">
+        <a href="{{ route('privacy.settings') }}" class="menu-item {{ $activePage == 'privacy' ? 'active' : '' }}">
             <i class="bi bi-shield-lock"></i>
             <span>Privacy Settings</span>
         </a>
@@ -129,7 +129,7 @@
             <span>My Orders</span>
         </a>
         
-        <a href="#" class="menu-item {{ $activePage == 'privacy' ? 'active' : '' }}">
+        <a href="{{ route('privacy.settings') }}" class="menu-item {{ $activePage == 'privacy' ? 'active' : '' }}">
             <i class="bi bi-shield-lock"></i>
             <span>Privacy Settings</span>
         </a>
@@ -215,6 +215,10 @@
         justify-content: space-between;
         align-items: center;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .mobile-nav img {
+        height: 30px;
     }
 
     .burger-menu {

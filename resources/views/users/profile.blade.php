@@ -87,7 +87,7 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 120px;
+            height: 100px;
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             z-index: 0;
         }
@@ -112,7 +112,7 @@
             display: grid;
             grid-template-columns: 350px 1fr;
             gap: 30px;
-            margin-top: -60px;
+            margin-top: -50px;
             position: relative;
             z-index: 2;
         }
@@ -123,6 +123,7 @@
             border-radius: var(--border-radius);
             box-shadow: var(--box-shadow);
             height: fit-content;
+            margin-bottom: 0;
         }
 
         .profile-main {
@@ -278,7 +279,7 @@
 
         .modal-content {
             background-color: white;
-            margin: 30px auto;
+            margin: 15px;
             padding: 0;
             border-radius: 16px;
             width: 95%;
@@ -287,6 +288,7 @@
             position: relative;
             animation: modalAnimation 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
             overflow: hidden;
+            max-height: calc(100vh - 30px);
         }
 
         @keyframes modalAnimation {
@@ -319,7 +321,7 @@
 
         .modal-header {
             margin: 0;
-            padding: 35px 40px 30px;
+            padding: 25px;
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
             position: relative;
@@ -367,7 +369,7 @@
         }
 
         .modal-body {
-            padding: 30px 40px 40px;
+            padding: 25px;
         }
 
         .form-tabs {
@@ -485,7 +487,11 @@
         }
 
         .form-group {
-            margin-bottom: 25px;
+            margin-bottom: 20px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
         }
 
         .form-group label {
@@ -500,7 +506,7 @@
             background-color: #f9f9f9;
             border: 1px solid #eee;
             border-radius: 10px;
-            padding: 14px 16px;
+            padding: 12px 15px;
             width: 100%;
             font-size: 15px;
             transition: var(--transition);
@@ -519,12 +525,12 @@
         }
 
         .form-input-icon input {
-            padding-left: 42px;
+            padding-left: 40px;
         }
 
         .form-input-icon i {
             position: absolute;
-            left: 16px;
+            left: 15px;
             top: 50%;
             transform: translateY(-50%);
             color: #aaa;
@@ -537,7 +543,7 @@
 
         .search-container {
             position: relative;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         .loader {
@@ -591,11 +597,10 @@
 
         .selected-location {
             background-color: #f9f9f9;
-            padding: 12px 16px;
+            padding: 10px 15px;
             border-radius: 8px;
             font-size: 14px;
-            margin-top: 15px;
-            margin-bottom: 15px;
+            margin: 15px 0;
             color: var(--text-color);
         }
 
@@ -605,7 +610,7 @@
             border-radius: 10px;
             overflow: hidden;
             border: 1px solid #eee;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             }
 
         .error-message {
@@ -619,7 +624,7 @@
             background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
             color: white;
             border: none;
-            padding: 16px 25px;
+            padding: 14px 20px;
             border-radius: 10px;
             cursor: pointer;
             transition: var(--transition);
@@ -629,7 +634,7 @@
             width: 100%;
             font-size: 16px;
             font-weight: 600;
-            margin-top: 15px;
+            margin-top: 25px;
             position: relative;
             overflow: hidden;
         }
@@ -661,48 +666,157 @@
             100% { left: 120%; }
         }
 
-        /* Mobile Responsive Styles for Modal */
+        /* Mobile Responsive Styles */
+        @media screen and (max-width: 1024px) {
+            .profile-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                margin-top: -40px;
+            }
+
+            .profile-sidebar {
+                order: 2;
+            }
+
+            .profile-main {
+                order: 1;
+            }
+
+            .activity-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
         @media screen and (max-width: 768px) {
-            .modal-content {
-                width: 95%;
-                margin: 20px auto;
-            }
-            
-            .modal-header,
-            .modal-body {
-                padding: 25px;
-            }
-
-            .profile-upload-container {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .profile-upload-info {
+            .main-content {
                 margin-left: 0;
-                margin-top: 15px;
-            }
-            
-            .form-tabs {
-                overflow-x: auto;
-                white-space: nowrap;
-                padding-bottom: 5px;
+                max-width: 100%;
+                padding: 20px;
             }
 
-            .form-tab {
-                padding: 10px 15px;
+            .profile-header {
+                padding: 30px 20px;
+                margin-bottom: 20px;
+            }
+
+            .profile-header h1 {
+                font-size: 28px;
+            }
+
+            .profile-header p {
                 font-size: 14px;
+            }
+
+            .profile-content {
+                margin-top: -30px;
+            }
+
+            .profile-sidebar,
+            .profile-main {
+                padding: 20px;
+            }
+
+            .profile-picture {
+                width: 150px;
+                height: 150px;
+            }
+
+            .profile-icon {
+                font-size: 100px;
+            }
+
+            .info-group {
+                margin-bottom: 20px;
+            }
+
+            .info-group .value {
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            .activity-stats {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .stat-box {
+                padding: 20px;
+            }
+
+            .stat-number {
+                font-size: 28px;
+            }
+
+            .section-title {
+                font-size: 20px;
+                margin-bottom: 20px;
             }
         }
 
         @media screen and (max-width: 480px) {
-            .modal-header h3 {
-                font-size: 22px;
+            .main-content {
+                padding: 15px;
             }
-            
-            .modal-header,
-            .modal-body {
-                padding: 20px;
+
+            .profile-header {
+                padding: 25px 15px;
+            }
+
+            .profile-header h1 {
+                font-size: 24px;
+            }
+
+            .profile-content {
+                margin-top: -25px;
+            }
+
+            .profile-sidebar,
+            .profile-main {
+                padding: 15px;
+            }
+
+            .profile-picture {
+                width: 120px;
+                height: 120px;
+            }
+
+            .profile-icon {
+                font-size: 80px;
+            }
+
+            .edit-btn {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+
+            .info-group label {
+                font-size: 12px;
+            }
+
+            .info-group .value {
+                padding: 8px;
+                font-size: 13px;
+            }
+
+            .info-group .value i {
+                font-size: 14px;
+            }
+
+            .stat-box {
+                padding: 15px;
+            }
+
+            .stat-number {
+                font-size: 24px;
+            }
+
+            .stat-label {
+                font-size: 12px;
+            }
+
+            .section-title {
+                font-size: 18px;
+                margin-bottom: 15px;
             }
         }
     </style>

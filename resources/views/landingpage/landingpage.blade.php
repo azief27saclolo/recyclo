@@ -107,49 +107,54 @@
                 <ul class="has-scrollbar product-slider">
                     @forelse ($posts as $post)       
                         <li class="scrollbar-item">
-                            <x-postCard :post="$post"/>
-                        </li>
-                    @empty
-                        @for($i = 1; $i <= 6; $i++)
-                        <li class="scrollbar-item">
-                            <div class="shop-card">
-                                <div class="card-banner img-holder" style="--width: 270; --height: 360;">
-                                    <img src="{{ asset('images/f' . ($i % 6 + 1) . '.jpg') }}" width="270" height="360" loading="lazy"
-                                        alt="Sample Product" class="img-cover" style="object-fit: cover; width: 100%; height: 100%; max-height: 360px;">
-                                    <span class="badge" aria-label="category">Sample</span>
-                                    <div class="card-actions">
-                                        <button class="action-btn" aria-label="add to cart">
-                                            <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
-                                        </button>
-                                        <button class="action-btn" aria-label="add to wishlist">
-                                            <ion-icon name="heart-outline" aria-hidden="true"></ion-icon>
-                                        </button>
+                            <a href="{{ route('posts.show', $post) }}" class="shop-card-link">
+                                <div class="shop-card">
+                                    <div class="card-banner img-holder" style="--width: 270; --height: 360;">
+                                        @if($post->image)
+                                            <img src="{{ asset('storage/' . $post->image) }}" width="270" height="360" loading="lazy"
+                                                alt="{{ $post->title }}" class="img-cover" style="object-fit: cover; width: 100%; height: 100%; max-height: 360px;">
+                                        @else
+                                            <img src="{{ asset('images/default-product.jpg') }}" width="270" height="360" loading="lazy"
+                                                alt="{{ $post->title }}" class="img-cover" style="object-fit: cover; width: 100%; height: 100%; max-height: 360px;">
+                                        @endif
+                                        <span class="badge" aria-label="category">{{ $post->category_name }}</span>
+                                    </div>
+                                    <div class="card-content">
+                                        <div class="price">
+                                            <span class="span">₱{{ number_format($post->price, 2) }}</span>
+                                        </div>
+                                        <h3 class="card-title">{{ $post->title }}</h3>
+                                        <div class="shop-info">
+                                            <div class="flex items-center gap-2 text-sm text-gray-600">
+                                                <img src="{{ $post->user->profile_picture ? asset('storage/' . $post->user->profile_picture) : asset('images/default-profile.png') }}" 
+                                                     alt="{{ $post->user->username }}" 
+                                                     class="w-6 h-6 rounded-full object-cover">
+                                                <a href="{{ route('shops.show', $post->user->id) }}" class="hover:text-primary-600" id="owner-name">
+                                                    {{ $post->user->username }}
+                                                </a>
+                                            </div>
+                                            @if($post->user && $post->user->location)
+                                                <div class="location-info">
+                                                    <ion-icon name="location-outline"></ion-icon>
+                                                    <span>{{ Str::limit($post->user->location, 20) }}</span>
+                                                </div>
+                                            @endif
+                                        </div>
+                                        <div class="product-stats">
+                                            <span class="quantity">Available: {{ $post->quantity }} {{ $post->unit }}</span>
+                                        </div>
                                     </div>
                                 </div>
+                            </a>
+                        </li>
+                    @empty
+                        <li class="scrollbar-item">
+                            <div class="shop-card">
                                 <div class="card-content">
-                                    <div class="price">
-                                        <span class="span">₱150.00</span>
-                                    </div>
-                                    <h3>
-                                        <a href="#" class="card-title">Sample Product {{ $i }}</a>
-                                    </h3>
-                                    <h3>
-                                        <a href="#" class="card-title">Sample Shop</a>
-                                    </h3>
-                                    <div class="card-rating">
-                                        <div class="rating-wrapper" aria-label="5 start rating">
-                                            <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                            <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                            <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                            <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                            <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                        </div>
-                                        <p class="rating-text">{{ random_int(10, 500) }} reviews</p>
-                                    </div>
+                                    <p>No products available at the moment.</p>
                                 </div>
                             </div>
                         </li>
-                        @endfor
                     @endforelse
                 </ul>
             </div>
@@ -170,88 +175,64 @@
                         <div class="shop-card">
                             <div class="card-banner img-holder" style="--width: 540; --height: 720;">
                                 @if($shop->image)
-                                <img src="{{ asset('storage/' . $shop->image) }}" width="540" height="720" loading="lazy" alt="{{ $shop->shop_name }}" class="img-cover">
+                                    <img src="{{ asset('storage/' . $shop->image) }}" width="540" height="720" loading="lazy" alt="{{ $shop->shop_name }}" class="img-cover">
                                 @elseif($shop->user && $shop->user->profile_picture)
-                                <img src="{{ asset('storage/' . $shop->user->profile_picture) }}" width="540" height="720" loading="lazy" alt="{{ $shop->shop_name }}" class="img-cover">
+                                    <img src="{{ asset('storage/' . $shop->user->profile_picture) }}" width="540" height="720" loading="lazy" alt="{{ $shop->shop_name }}" class="img-cover">
                                 @else
-                                <img src="{{ asset('images/f' . ($loop->iteration % 6 + 1) . '.jpg') }}" width="540" height="720" loading="lazy" alt="{{ $shop->shop_name }}" class="img-cover">
+                                    <img src="{{ asset('images/default-shop.jpg') }}" width="540" height="720" loading="lazy" alt="{{ $shop->shop_name }}" class="img-cover">
                                 @endif
                                 <div class="card-actions">
                                     <a href="{{ route('shops.show', $shop->user_id) }}" class="action-btn" aria-label="view shop">
-                                        <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
+                                        <ion-icon name="eye-outline" aria-hidden="true"></ion-icon>
                                     </a>
-                                    <button class="action-btn" aria-label="favorite shop">
-                                        <ion-icon name="heart-outline" aria-hidden="true"></ion-icon>
-                                    </button>
-                                    <button class="action-btn" aria-label="contact shop">
-                                        <ion-icon name="chatbubble-outline" aria-hidden="true"></ion-icon>
-                                    </button>
                                 </div>
                             </div>
                             <div class="card-content">
-                                <div class="price">
-                                    <span class="span">{{ $shop->shop_name }}</span>
-                                </div>
-                                <h3>
-                                    <a href="{{ route('shops.show', $shop->user_id) }}" class="card-title">
-                                        @if($shop->user && $shop->user->profile_picture)
-                                        <img src="{{ asset('storage/' . $shop->user->profile_picture) }}" alt="Profile" class="shop-profile-pic" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 8px; vertical-align: middle;">
-                                        @endif
-                                        {{ $shop->user->username ?? 'Shop' }}'s Shop
-                                    </a>
-                                </h3>
-                                <div class="card-rating">
-                                    <div class="rating-wrapper" aria-label="5 start rating">
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                        <ion-icon name="star" aria-hidden="true"></ion-icon>
+                                <div class="shop-header">
+                                    <div class="shop-name">
+                                        <span class="shop-label">Shop Name</span>
+                                        <h3 class="shop-title">{{ $shop->shop_name }}</h3>
                                     </div>
-                                    <p class="rating-text">{{ random_int(10, 500) }} reviews</p>
+                                    <div class="shop-owner">
+                                        <span class="owner-label">Owner</span>
+                                        <a href="{{ route('shops.show', $shop->user_id) }}" class="owner-name">
+                                            @if($shop->user && $shop->user->profile_picture)
+                                                <img src="{{ asset('storage/' . $shop->user->profile_picture) }}" alt="Profile" class="owner-avatar">
+                                            @endif
+                                            <span class="owner-name">{{ $shop->user->username ?? 'Shop Owner' }}</span>
+                                        </a>
+                                    </div>
                                 </div>
+                                
+                                @if($shop->user && $shop->user->location)
+                                    <div class="shop-info">
+                                        <div class="info-item">
+                                            <ion-icon name="location-outline"></ion-icon>
+                                            <div class="info-content">
+                                                <span class="info-label">Location</span>
+                                                <span class="info-text">{{ $shop->user->location }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+
+                                @if($shop->shop_description)
+                                    <div class="shop-description">
+                                        <span class="description-label">About Shop</span>
+                                        <p class="description-text">{{ Str::limit($shop->shop_description, 100) }}</p>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </li>
                     @empty
-                        @for ($i = 1; $i <= 6; $i++)
-                        <li class="scrollbar-item">
-                            <div class="shop-card">
-                                <div class="card-banner img-holder" style="--width: 540; --height: 720;">
-                                    <img src="images/f{{ $i }}.jpg" width="540" height="720" loading="lazy" alt="Shop Image" class="img-cover">
-                                    <div class="card-actions">
-                                        <button class="action-btn" aria-label="add to cart">
-                                            <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
-                                        </button>
-                                        <button class="action-btn" aria-label="add to whishlist">
-                                            <ion-icon name="heart-outline" aria-hidden="true"></ion-icon>
-                                        </button>
-                                        <button class="action-btn" aria-label="compare">
-                                            <ion-icon name="repeat-outline" aria-hidden="true"></ion-icon>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="card-content">
-                                    <div class="price">
-                                        <span class="span">Sample Shop {{ $i }}</span>
-                                    </div>
-                                    <h3>
-                                        <a href="#" class="card-title">Sample Shop {{ $i }}</a>
-                                    </h3>
-                                    <div class="card-rating">
-                                        <div class="rating-wrapper" aria-label="5 start rating">
-                                            <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                            <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                            <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                            <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                            <ion-icon name="star" aria-hidden="true"></ion-icon>
-                                        </div>
-                                        <p class="rating-text">{{ random_int(10, 500) }} reviews</p>
-                                    </div>
-                                </div>
+                    <li class="scrollbar-item">
+                        <div class="shop-card">
+                            <div class="card-content">
+                                <p>No shops available at the moment.</p>
                             </div>
-                        </li>
-                        @endfor
+                        </div>
+                    </li>
                     @endforelse
                 </ul>
             </div>
@@ -468,6 +449,382 @@
     .scrollbar-item {
         width: calc(100% - 16px);
     }
+}
+
+/* Additional styles for the Best Deals section */
+.shop-info {
+    margin: 10px 0;
+    font-size: 0.9rem;
+}
+
+.shop-link {
+    display: flex;
+    align-items: center;
+    color: var(--hoockers-green);
+    text-decoration: none;
+    margin-bottom: 5px;
+    margin:auto;
+    font-size: 16px;
+}
+
+.shop-link:hover {
+    text-decoration: underline;
+}
+
+.location-info {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #666;
+    font-size: 0.85rem;
+}
+
+.product-stats {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.quantity {
+    display: inline-block;
+    padding: 4px 8px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    font-size: 16px;
+    margin:auto;
+}
+
+.badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: var(--hoockers-green);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+/* Best Deals Card Styles */
+.shop-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.shop-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.card-banner {
+    position: relative;
+    overflow: hidden;
+}
+
+.card-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    opacity: 0;
+    transform: translateX(20px);
+    transition: all 0.3s ease;
+}
+
+.shop-card:hover .card-actions {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.action-btn {
+    background: white;
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+    background: var(--hoockers-green);
+    color: white;
+}
+#owner-name{
+    margin:50px;
+    font-size: 16px;
+}
+/* Shop Card Styles */
+.shop-stats-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+    padding: 20px;
+    color: white;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.stat-item ion-icon {
+    font-size: 20px;
+}
+
+.shop-preview {
+    margin-top: 15px;
+}
+
+.preview-products {
+    display: flex;
+    gap: 8px;
+}
+
+.preview-product {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid var(--hoockers-green);
+}
+
+.preview-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Shop Card Styles */
+.shop-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.shop-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.card-banner {
+    position: relative;
+    overflow: hidden;
+    height: 360px;
+}
+
+.card-banner img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.card-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    opacity: 0;
+    transform: translateX(20px);
+    transition: all 0.3s ease;
+}
+
+.shop-card:hover .card-actions {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.action-btn {
+    background: white;
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+    background: var(--hoockers-green);
+    color: white;
+}
+
+.card-content {
+    padding: 10px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.shop-header {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.shop-name {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.owner-name{
+    margin:auto;
+}
+
+.shop-label, .owner-label, .info-label, .description-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.shop-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--rich-black-fogra-29);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.shop-owner {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.owner-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--hoockers-green);
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.owner-avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.shop-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.info-item ion-icon {
+    font-size: 20px;
+    color: var(--hoockers-green);
+    margin-top: 2px;
+}
+
+.info-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.info-text {
+    font-size: 16px;
+    color: var(--rich-black-fogra-29);
+    line-height: 1.4;
+}
+
+.shop-description {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.description-text {
+    font-size: 15px;
+    color: #666;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.scrollbar-item {
+    width: calc(20% - 16px);
+    min-width: 300px;
+    margin-right: 16px;
+}
+
+@media (max-width: 992px) {
+    .scrollbar-item {
+        width: calc(33.333% - 16px);
+    }
+}
+
+@media (max-width: 768px) {
+    .scrollbar-item {
+        width: calc(50% - 16px);
+    }
+}
+
+@media (max-width: 480px) {
+    .scrollbar-item {
+        width: calc(100% - 16px);
+    }
+}
+
+/* Add these new styles */
+.shop-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    height: 100%;
+}
+
+.shop-card-link:hover {
+    text-decoration: none;
+    color: inherit;
+}
+
+.shop-card {
+    height: 100%;
+    cursor: pointer;
+}
+
+.shop-link {
+    position: relative;
+    z-index: 2;
 }
 </style>
 @endsection
