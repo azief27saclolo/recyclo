@@ -97,9 +97,13 @@ Route::group(['prefix' => 'admin', 'middleware' => [AdminMiddleware::class]], fu
     // Products routes
     Route::get('/products', [AdminController::class, 'products'])->name('admin.products');
     Route::get('/post-requests', [AdminController::class, 'postRequests'])->name('admin.post.requests');
-    Route::get('/products/{id}', [AdminController::class, 'getProductDetails']);
+    // Fix: Update the route to use a more specific endpoint to avoid conflicts with Laravel's route resolution
+    Route::get('/products/{id}/details', [AdminController::class, 'getProductDetails'])->name('admin.products.details');
     Route::delete('/products/{id}', [AdminController::class, 'deleteProduct'])->name('admin.products.delete');
     Route::put('/products/{id}/update', [AdminController::class, 'updateProduct'])->name('admin.products.update');
+    
+    // Add this route for retrieving product details in the admin product view
+    Route::get('/admin/products/{id}/details', [App\Http\Controllers\AdminController::class, 'getProductDetails'])->name('admin.products.details');
     
     // Fix: Add explicit route for fetching pending post details with a different name to avoid conflicts
     Route::get('/post-request/{id}', [AdminController::class, 'getPostRequestDetails'])->name('admin.post.request.details');
@@ -121,6 +125,13 @@ Route::group(['prefix' => 'admin', 'middleware' => [AdminMiddleware::class]], fu
     // User management routes
     Route::post('/users/{user}/update-role', [AdminController::class, 'updateUserRole'])->name('admin.users.update-role');
     Route::post('/shops/{shop}/activate', [AdminController::class, 'activateShop'])->name('admin.shops.activate');
+
+    // Price Guide Management Routes
+    Route::get('/price-guides/{category}', [App\Http\Controllers\AdminController::class, 'getPriceGuides']);
+    Route::get('/price-guides/item/{id}', [App\Http\Controllers\AdminController::class, 'getPriceGuideItem']);
+    Route::post('/price-guides/save', [App\Http\Controllers\AdminController::class, 'savePriceGuide']);
+    Route::delete('/price-guides/delete/{id}', [App\Http\Controllers\AdminController::class, 'deletePriceGuide']);
+    Route::delete('/price-guides/clear-all', [App\Http\Controllers\AdminController::class, 'clearAllPriceGuides']);
 });
 
 // Define the cancel user order route outside the admin group but still with the admin controller
@@ -266,3 +277,14 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::get('/orders/export/{format}', [OrderController::class, 'export'])->name('orders.export');
+
+// Add a web route version of the price guides endpoint for fallback support
+Route::get('/api/price-guides/{category}', [App\Http\Controllers\AdminController::class, 'getPriceGuides']);
+
+// Fallback route to ensure API routes are properly accessible
+Route::fallback(function () {
+    return response()->json([
+        'success' => false,
+        'message' => 'Route not found'
+    ], 404);
+});

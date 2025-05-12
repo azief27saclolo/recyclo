@@ -719,313 +719,25 @@
                 </div>
                 
                 <!-- Plastic prices table -->
-                <div id="plasticPricesTable" class="prices-table" style="overflow-x: auto; margin-top: 15px;">
-                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
-                        <thead>
-                            <tr style="background-color: var(--hoockers-green); color: white;">
-                                <th style="padding: 12px; border: 1px solid #ddd;">Type</th>
-                                <th style="padding: 12px; border: 1px solid #ddd;">Description</th>
-                                <th style="padding: 12px; border: 1px solid #ddd;">Buying Price (P/KG)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td style="padding: 12px; border: 1px solid #ddd;">PET (e.g., water bottled)</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Common beverages containers</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱6.40-₱10.00</td>
-                            </tr>
-                            <tr style="background-color: #f2f2f2;">
-                                <td style="padding: 12px; border: 1px solid #ddd;">HDPE</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Detergent bottles, milk jugs</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱16.90</td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 12px; border: 1px solid #ddd;">LDPE</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Plastic bags, film wraps</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱2.60-₱3.50</td>
-                            </tr>
-                            <tr style="background-color: #f2f2f2;">
-                                <td style="padding: 12px; border: 1px solid #ddd;">PP</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Food containers, bottle caps</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱15.22</td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 12px; border: 1px solid #ddd;">PS</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Styrofoam, disposable utensils</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱10.25</td>
-                            </tr>
-                            <tr style="background-color: #f2f2f2;">
-                                <td style="padding: 12px; border: 1px solid #ddd;">Hard Plastic (Sibak)</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Toys, basins, containers</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱14.00-₱15.00</td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Mixed Plastics</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Assorted plastic waste</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱5.00</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <div id="plasticPricesTable" class="prices-table" style="overflow-x: auto; margin-top: 15px;"></div>
                 
                 <!-- Paper prices table (initially hidden) -->
-                <div id="paperPricesTable" class="prices-table" style="overflow-x: auto; margin-top: 15px; display: none;">
-                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
-                        <thead>
-                            <tr style="background-color: var(--hoockers-green); color: white;">
-                                <th style="padding: 12px; border: 1px solid #ddd;">Type</th>
-                                <th style="padding: 12px; border: 1px solid #ddd;">Description</th>
-                                <th style="padding: 12px; border: 1px solid #ddd;">Buying Price (P/KG)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Newspaper</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Old news paper</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱7.33-₱10.00</td>
-                            </tr>
-                            <tr style="background-color: #f2f2f2;">
-                                <td style="padding: 12px; border: 1px solid #ddd;">White/Bond paper</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Office documents</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱2.50-11.00</td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Cartons/Cardboard</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Packaging materials</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱3.91-₱6.00</td>
-                            </tr>
-                            <tr style="background-color: #f2f2f2;">
-                                <td style="padding: 12px; border: 1px solid #ddd;">Magazines</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Glossy paper materials</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱5.00-₱8.00</td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Assorted/Mixed Papers</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Various paper types</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱1.43-₱8.00</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <div id="paperPricesTable" class="prices-table" style="overflow-x: auto; margin-top: 15px; display: none;"></div>
 
                 <!-- Metal prices table (initially hidden) -->
-                <div id="metalPricesTable" class="prices-table" style="overflow-x: auto; margin-top: 15px; display: none;">
-                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
-                        <thead>
-                            <tr style="background-color: var(--hoockers-green); color: white;">
-                                <th style="padding: 12px; border: 1px solid #ddd;">Type</th>
-                                <th style="padding: 12px; border: 1px solid #ddd;">Description</th>
-                                <th style="padding: 12px; border: 1px solid #ddd;">Buying Price (P/KG)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Copper</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Electrical wires, plumbing wires</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱70.00-₱323.81</td>
-                            </tr>
-                            <tr style="background-color: #f2f2f2;">
-                                <td style="padding: 12px; border: 1px solid #ddd;">Aluminum</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Cans, window frames</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱30.00-₱47.76</td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Brass</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Fixtures, decorative items</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱30.00-₱170.94</td>
-                            </tr>
-                            <tr style="background-color: #f2f2f2;">
-                                <td style="padding: 12px; border: 1px solid #ddd;">Steel/Bakal</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Construction materials</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱11.00-₱14.79</td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Tin Cans</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Food containers</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱8.00-₱11.94</td>
-                            </tr>
-                            <tr style="background-color: #f2f2f2;">
-                                <td style="padding: 12px; border: 1px solid #ddd;">GI Sheets/Yero</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Roofing materials</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱0.25-₱11.00</td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Zinc</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Galvanized products</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱8.00-₱15.00</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <div id="metalPricesTable" class="prices-table" style="overflow-x: auto; margin-top: 15px; display: none;"></div>
 
                 <!-- Batteries prices table (initially hidden) -->
-                <div id="batteriesPricesTable" class="prices-table" style="overflow-x: auto; margin-top: 15px; display: none;">
-                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
-                        <thead>
-                            <tr style="background-color: var(--hoockers-green); color: white;">
-                                <th style="padding: 12px; border: 1px solid #ddd;">Type</th>
-                                <th style="padding: 12px; border: 1px solid #ddd;">Description</th>
-                                <th style="padding: 12px; border: 1px solid #ddd;">Buying Price (P/UNIT)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Car Batteries (1SMF)</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Standard vehicle batteries</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱150.00-₱400.00</td>
-                            </tr>
-                            <tr style="background-color: #f2f2f2;">
-                                <td style="padding: 12px; border: 1px solid #ddd;">Small Batteries (1SNF)</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Motorcycle or small vehicle batteries</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱50.00-₱70.00</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <div id="batteriesPricesTable" class="prices-table" style="overflow-x: auto; margin-top: 15px; display: none;"></div>
 
                 <!-- Glass prices table (initially hidden) -->
-                <div id="glassPricesTable" class="prices-table" style="overflow-x: auto; margin-top: 15px; display: none;">
-                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
-                        <thead>
-                            <tr style="background-color: var(--hoockers-green); color: white;">
-                                <th style="padding: 12px; border: 1px solid #ddd;">Type</th>
-                                <th style="padding: 12px; border: 1px solid #ddd;">Description</th>
-                                <th style="padding: 12px; border: 1px solid #ddd;">Buying Price (KG/PC)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Whole Glass Bottles</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Beverage containers</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱0.50-₱1.50 per pc.</td>
-                            </tr>
-                            <tr style="background-color: #f2f2f2;">
-                                <td style="padding: 12px; border: 1px solid #ddd;">Broken Glass (Bubog)</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Shards or cullets</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱0.50-₱1.00 per kg</td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Colored Glass</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Tinted bottles</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱0.10-₱0.20 per pc.</td>
-                            </tr>
-                            <tr style="background-color: #f2f2f2;">
-                                <td style="padding: 12px; border: 1px solid #ddd;">White/Clear Glass</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Transparent bottles</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱0.50-₱1.00 per pc.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <div id="glassPricesTable" class="prices-table" style="overflow-x: auto; margin-top: 15px; display: none;"></div>
 
                 <!-- E-waste prices table (initially hidden) -->
-                <div id="ewastePricesTable" class="prices-table" style="overflow-x: auto; margin-top: 15px; display: none;">
-                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
-                        <thead>
-                            <tr style="background-color: var(--hoockers-green); color: white;">
-                                <th style="padding: 12px; border: 1px solid #ddd;">Type</th>
-                                <th style="padding: 12px; border: 1px solid #ddd;">Description</th>
-                                <th style="padding: 12px; border: 1px solid #ddd;">Buying Price (UNIT/KG)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Computer Motherboards</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Circuit boards from computers</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱250.00 per kg</td>
-                            </tr>
-                            <tr style="background-color: #f2f2f2;">
-                                <td style="padding: 12px; border: 1px solid #ddd;">Old Refrigerators</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Non-functional units</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱700.00 per unit</td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Washing Machines</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Non-functional units</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱300.00 per unit</td>
-                            </tr>
-                            <tr style="background-color: #f2f2f2;">
-                                <td style="padding: 12px; border: 1px solid #ddd;">Electric Fans</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Non-functional units</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱80.00 per unit</td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Televisions</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">Non-functional units</td>
-                                <td style="padding: 12px; border: 1px solid #ddd;">₱120.00 per unit</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <div id="ewastePricesTable" class="prices-table" style="overflow-x: auto; margin-top: 15px; display: none;"></div>
 
                 <div style="margin-top: 20px; font-style: italic; color: #666;">
                     <p><small>Note: Prices are subject to change based on market conditions and quality of materials.</small></p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Products Modal -->
-    <div id="productsModal" class="modal" style="display: none; position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);">
-        <div class="modal-content" style="background-color: white; margin: 50px auto; padding: 20px; width: 90%; max-width: 900px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
-            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
-                <h2 class="modal-title" style="color: var(--hoockers-green); font-size: 32px; font-weight: 600; margin: 0;">My Products</h2>
-                <span class="close" style="color: #aaa; float: right; font-size: 36px; font-weight: bold; cursor: pointer;">&times;</span>
-            </div>
-            <div class="modal-body">
-                <!-- Filters -->
-                <div class="filters" style="display: flex; gap: 15px; margin-bottom: 20px;">
-                    <div class="category-filter" style="flex: 1;">
-                        <select id="category-filter" class="form-control enhanced" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px;">
-                            <option value="all">All Categories</option>
-                            @foreach($categories as $category)
-                                <option value="{{ $category->id }}">{{ $category->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="search-box" style="flex: 2;">
-                        <input type="text" id="product-search" class="form-control enhanced" 
-                            style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px;"
-                            placeholder="Search products...">
-                    </div>
-                </div>
-
-                <!-- Products Table -->
-                <div class="products-table-container" style="max-height: 500px; overflow-y: auto; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                    <table class="products-table" style="width: 100%; border-collapse: collapse;">
-                        <thead>
-                            <tr style="background-color: var(--hoockers-green); color: white; position: sticky; top: 0; z-index: 10;">
-                                <th style="padding: 15px; text-align: left;">Image</th>
-                                <th style="padding: 15px; text-align: left;">Title</th>
-                                <th style="padding: 15px; text-align: center;">Category</th>
-                                <th style="padding: 15px; text-align: right;">Price</th>
-                                <th style="padding: 15px; text-align: center;">Stock</th>
-                                <th style="padding: 15px; text-align: center;">Status</th>
-                                <th style="padding: 15px; text-align: center;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="products-table-body">
-                            <tr>
-                                <td colspan="7" style="text-align: center; padding: 30px;">
-                                    <div style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
-                                        <i class="bi bi-arrow-repeat" style="font-size: 48px; animation: spin 1s linear infinite;"></i>
-                                        <p>Loading products...</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Pagination -->
-                <div class="pagination" style="display: flex; justify-content: center; margin-top: 20px; gap: 10px;">
-                    <button id="prev-page" class="pagination-btn" style="padding: 8px 15px; border: none; border-radius: 5px; background-color: var(--hoockers-green); color: white; cursor: pointer;">
-                        <i class="bi bi-chevron-left"></i> Previous
-                    </button>
-                    <span id="page-info" style="display: flex; align-items: center; padding: 8px 15px;">Page 1 of 1</span>
-                    <button id="next-page" class="pagination-btn" style="padding: 8px 15px; border: none; border-radius: 5px; background-color: var(--hoockers-green); color: white; cursor: pointer;">
-                        Next <i class="bi bi-chevron-right"></i>
-                    </button>
                 </div>
             </div>
         </div>
@@ -1294,6 +1006,131 @@
         const glassPricesTable = document.getElementById('glassPricesTable');
         const ewastePricesTable = document.getElementById('ewastePricesTable');
         
+        // Cache for loaded price guides
+        const priceGuidesCache = {
+            plastic: null,
+            paper: null,
+            metal: null,
+            batteries: null,
+            glass: null,
+            ewaste: null
+        };
+        
+        // Function to fetch price guides for a category
+        function loadPriceGuides(category) {
+            // Check if we already have the data cached
+            if (priceGuidesCache[category]) {
+                renderPriceGuides(category, priceGuidesCache[category]);
+                return;
+            }
+            
+            // Show loading state
+            const tableDiv = document.getElementById(`${category}PricesTable`);
+            tableDiv.innerHTML = `
+                <div style="display: flex; justify-content: center; align-items: center; padding: 30px;">
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                        <i class="bi bi-arrow-repeat" style="font-size: 32px; color: var(--hoockers-green); animation: spin 1s linear infinite;"></i>
+                        <p>Loading price guides...</p>
+                    </div>
+                </div>
+            `;
+            
+            // Fetch price guides from server
+            fetch(`/api/price-guides/${category}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Network response was not ok: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Cache the price guides
+                    priceGuidesCache[category] = data.priceGuides;
+                    // Render the price guides
+                    renderPriceGuides(category, data.priceGuides);
+                } else {
+                    throw new Error(data.message || 'Failed to load price guides');
+                }
+            })
+            .catch(error => {
+                console.error(`Error loading ${category} price guides:`, error);
+                tableDiv.innerHTML = `
+                    <div style="text-align: center; padding: 30px;">
+                        <i class="bi bi-exclamation-circle" style="font-size: 32px; color: #dc3545;"></i>
+                        <p style="margin-top: 10px;">Error loading price guides</p>
+                        <p style="color: #777; font-size: 14px;">${error.message}</p>
+                        <button onclick="loadPriceGuides('${category}')" class="btn" style="margin-top: 15px; padding: 8px 15px; background-color: var(--hoockers-green); color: white; border: none; border-radius: 5px; cursor: pointer;">
+                            <i class="bi bi-arrow-clockwise"></i> Try Again
+                        </button>
+                    </div>
+                `;
+            });
+        }
+        
+        // Function to render price guides into the table
+        function renderPriceGuides(category, priceGuides) {
+            const tableDiv = document.getElementById(`${category}PricesTable`);
+            
+            if (!priceGuides || priceGuides.length === 0) {
+                tableDiv.innerHTML = `
+                    <div style="text-align: center; padding: 30px;">
+                        <i class="bi bi-info-circle" style="font-size: 32px; color: #6c757d;"></i>
+                        <p style="margin-top: 10px;">No price guides available for ${category}</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let tableHTML = `
+                <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead>
+                        <tr style="background-color: var(--hoockers-green); color: white;">
+                            <th style="padding: 12px; border: 1px solid #ddd;">Type</th>
+                            <th style="padding: 12px; border: 1px solid #ddd;">Description</th>
+                            <th style="padding: 12px; border: 1px solid #ddd;">Buying Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            priceGuides.forEach((item, index) => {
+                const rowBg = index % 2 === 0 ? '' : 'background-color: #f2f2f2;';
+                tableHTML += `
+                    <tr style="${rowBg}">
+                        <td style="padding: 12px; border: 1px solid #ddd;">${item.type}</td>
+                        <td style="padding: 12px; border: 1px solid #ddd;">${item.description || 'N/A'}</td>
+                        <td style="padding: 12px; border: 1px solid #ddd;">${item.price}</td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+                <div style="margin-top: 20px; font-style: italic; color: #666;">
+                    <p><small>Note: Prices are subject to change based on market conditions and quality of materials.</small></p>
+                </div>
+            `;
+            
+            tableDiv.innerHTML = tableHTML;
+        }
+        
+        // Initialize with plastic price guides when the prices guide button is clicked
+        pricesGuideBtn.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent form submission
+            pricesGuideModal.style.display = 'block';
+            loadPriceGuides('plastic'); // Load plastic price guides initially
+        });
+        
+        // Modified tab click events to handle price guide loading
         plasticTabBtn.addEventListener('click', function() {
             plasticPricesTable.style.display = 'block';
             paperPricesTable.style.display = 'none';
@@ -1302,13 +1139,6 @@
             glassPricesTable.style.display = 'none';
             ewastePricesTable.style.display = 'none';
             
-            plasticTabBtn.classList.add('active-tab');
-            paperTabBtn.classList.remove('active-tab');
-            metalTabBtn.classList.remove('active-tab');
-            batteriesTabBtn.classList.remove('active-tab');
-            glassTabBtn.classList.remove('active-tab');
-            ewasteTabBtn.classList.remove('active-tab');
-            
             // Add/remove indicator line
             plasticTabBtn.innerHTML = 'Plastic <span style="position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background-color: var(--hoockers-green);"></span>';
             paperTabBtn.innerHTML = 'Paper';
@@ -1316,6 +1146,9 @@
             batteriesTabBtn.innerHTML = 'Batteries';
             glassTabBtn.innerHTML = 'Glass';
             ewasteTabBtn.innerHTML = 'E-waste';
+            
+            // Load price guides for this category
+            loadPriceGuides('plastic');
         });
         
         paperTabBtn.addEventListener('click', function() {
@@ -1326,13 +1159,6 @@
             glassPricesTable.style.display = 'none';
             ewastePricesTable.style.display = 'none';
             
-            plasticTabBtn.classList.remove('active-tab');
-            paperTabBtn.classList.add('active-tab');
-            metalTabBtn.classList.remove('active-tab');
-            batteriesTabBtn.classList.remove('active-tab');
-            glassTabBtn.classList.remove('active-tab');
-            ewasteTabBtn.classList.remove('active-tab');
-            
             // Add/remove indicator line
             plasticTabBtn.innerHTML = 'Plastic';
             paperTabBtn.innerHTML = 'Paper <span style="position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background-color: var(--hoockers-green);"></span>';
@@ -1340,6 +1166,9 @@
             batteriesTabBtn.innerHTML = 'Batteries';
             glassTabBtn.innerHTML = 'Glass';
             ewasteTabBtn.innerHTML = 'E-waste';
+            
+            // Load price guides for this category
+            loadPriceGuides('paper');
         });
         
         metalTabBtn.addEventListener('click', function() {
@@ -1350,13 +1179,6 @@
             glassPricesTable.style.display = 'none';
             ewastePricesTable.style.display = 'none';
             
-            plasticTabBtn.classList.remove('active-tab');
-            paperTabBtn.classList.remove('active-tab');
-            metalTabBtn.classList.add('active-tab');
-            batteriesTabBtn.classList.remove('active-tab');
-            glassTabBtn.classList.remove('active-tab');
-            ewasteTabBtn.classList.remove('active-tab');
-            
             // Add/remove indicator line
             plasticTabBtn.innerHTML = 'Plastic';
             paperTabBtn.innerHTML = 'Paper';
@@ -1364,6 +1186,9 @@
             batteriesTabBtn.innerHTML = 'Batteries';
             glassTabBtn.innerHTML = 'Glass';
             ewasteTabBtn.innerHTML = 'E-waste';
+            
+            // Load price guides for this category
+            loadPriceGuides('metal');
         });
         
         batteriesTabBtn.addEventListener('click', function() {
@@ -1374,13 +1199,6 @@
             glassPricesTable.style.display = 'none';
             ewastePricesTable.style.display = 'none';
             
-            plasticTabBtn.classList.remove('active-tab');
-            paperTabBtn.classList.remove('active-tab');
-            metalTabBtn.classList.remove('active-tab');
-            batteriesTabBtn.classList.add('active-tab');
-            glassTabBtn.classList.remove('active-tab');
-            ewasteTabBtn.classList.remove('active-tab');
-            
             // Add/remove indicator line
             plasticTabBtn.innerHTML = 'Plastic';
             paperTabBtn.innerHTML = 'Paper';
@@ -1388,6 +1206,9 @@
             batteriesTabBtn.innerHTML = 'Batteries <span style="position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background-color: var(--hoockers-green);"></span>';
             glassTabBtn.innerHTML = 'Glass';
             ewasteTabBtn.innerHTML = 'E-waste';
+            
+            // Load price guides for this category
+            loadPriceGuides('batteries');
         });
         
         glassTabBtn.addEventListener('click', function() {
@@ -1398,13 +1219,6 @@
             glassPricesTable.style.display = 'block';
             ewastePricesTable.style.display = 'none';
             
-            plasticTabBtn.classList.remove('active-tab');
-            paperTabBtn.classList.remove('active-tab');
-            metalTabBtn.classList.remove('active-tab');
-            batteriesTabBtn.classList.remove('active-tab');
-            glassTabBtn.classList.add('active-tab');
-            ewasteTabBtn.classList.remove('active-tab');
-            
             // Add/remove indicator line
             plasticTabBtn.innerHTML = 'Plastic';
             paperTabBtn.innerHTML = 'Paper';
@@ -1412,6 +1226,9 @@
             batteriesTabBtn.innerHTML = 'Batteries';
             glassTabBtn.innerHTML = 'Glass <span style="position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background-color: var(--hoockers-green);"></span>';
             ewasteTabBtn.innerHTML = 'E-waste';
+            
+            // Load price guides for this category
+            loadPriceGuides('glass');
         });
         
         ewasteTabBtn.addEventListener('click', function() {
@@ -1422,13 +1239,6 @@
             glassPricesTable.style.display = 'none';
             ewastePricesTable.style.display = 'block';
             
-            plasticTabBtn.classList.remove('active-tab');
-            paperTabBtn.classList.remove('active-tab');
-            metalTabBtn.classList.remove('active-tab');
-            batteriesTabBtn.classList.remove('active-tab');
-            glassTabBtn.classList.remove('active-tab');
-            ewasteTabBtn.classList.add('active-tab');
-            
             // Add/remove indicator line
             plasticTabBtn.innerHTML = 'Plastic';
             paperTabBtn.innerHTML = 'Paper';
@@ -1436,14 +1246,13 @@
             batteriesTabBtn.innerHTML = 'Batteries';
             glassTabBtn.innerHTML = 'Glass';
             ewasteTabBtn.innerHTML = 'E-waste <span style="position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background-color: var(--hoockers-green);"></span>';
+            
+            // Load price guides for this category
+            loadPriceGuides('ewaste');
         });
         
-        // Open prices guide modal when button is clicked
-        pricesGuideBtn.addEventListener('click', function(e) {
-            e.preventDefault(); // Prevent form submission
-            pricesGuideModal.style.display = 'block';
-            console.log('Price guide button clicked'); // Debug log
-        });
+        // Make loadPriceGuides available globally
+        window.loadPriceGuides = loadPriceGuides;
         
         // Close prices guide modal when X is clicked
         pricesGuideCloseBtn.addEventListener('click', function() {
@@ -1511,208 +1320,6 @@
             this.parentElement.style.transform = 'translateY(0)';
         });
     });
-
-    // Products Modal Functionality
-    const productsModal = document.getElementById('productsModal');
-    const productsTableBody = document.getElementById('products-table-body');
-    const categoryFilter = document.getElementById('category-filter');
-    const productSearch = document.getElementById('product-search');
-    const prevPageBtn = document.getElementById('prev-page');
-    const nextPageBtn = document.getElementById('next-page');
-    const pageInfo = document.getElementById('page-info');
-    let currentPage = 1;
-    let totalPages = 1;
-
-    // Function to load products
-    function loadProducts(page = 1) {
-        const category = categoryFilter.value;
-        const search = productSearch.value;
-
-        // Show loading state
-        productsTableBody.innerHTML = `
-            <tr>
-                <td colspan="7" style="text-align: center; padding: 30px;">
-                    <div style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
-                        <i class="bi bi-arrow-repeat" style="font-size: 48px; animation: spin 1s linear infinite;"></i>
-                        <p>Loading products...</p>
-                    </div>
-                </td>
-            </tr>
-        `;
-
-        // Fetch products from the server
-        fetch(`/api/products?page=${page}&category=${category}&search=${search}`, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            credentials: 'same-origin'
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Network response was not ok (Status: ${response.status})`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (!data.products || data.products.length === 0) {
-                    productsTableBody.innerHTML = `
-                        <tr>
-                            <td colspan="7" style="text-align: center; padding: 30px;">
-                                <div style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
-                                    <i class="bi bi-box" style="font-size: 48px; color: #ddd;"></i>
-                                    <h3 style="margin: 0; color: #666;">No products found</h3>
-                                    <p style="margin: 0; color: #888;">Try adjusting your filters or add a new product</p>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                    return;
-                }
-
-                // Update pagination
-                currentPage = data.current_page;
-                totalPages = data.last_page;
-                pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-                prevPageBtn.disabled = currentPage === 1;
-                nextPageBtn.disabled = currentPage === totalPages;
-
-                // Populate table
-                productsTableBody.innerHTML = data.products.map(product => `
-                    <tr>
-                        <td style="padding: 15px;">
-                            <img src="${product.image ? '/storage/' + product.image : '/images/placeholder.png'}" 
-                                 alt="${product.title}" 
-                                 style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
-                        </td>
-                        <td style="padding: 15px; font-weight: 500;">${product.title}</td>
-                        <td style="padding: 15px; text-align: center;">
-                            <span class="badge" style="background-color: ${product.category_color}; color: white; padding: 5px 10px; border-radius: 15px; font-size: 12px;">
-                                ${product.category_name}
-                            </span>
-                        </td>
-                        <td style="padding: 15px; text-align: right; font-weight: 600;">
-                            ₱${parseFloat(product.price).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                        </td>
-                        <td style="padding: 15px; text-align: center;">
-                            ${product.quantity} ${product.unit}
-                        </td>
-                        <td style="padding: 15px; text-align: center;">
-                            <span class="product-status status-${product.status.toLowerCase()}">
-                                ${product.status}
-                            </span>
-                        </td>
-                        <td style="padding: 15px;">
-                            <div class="product-actions">
-                                <button class="action-btn edit-btn" onclick="editProduct(${product.id})">
-                                    <i class="bi bi-pencil"></i> Edit
-                                </button>
-                                <button class="action-btn delete-btn" onclick="deleteProduct(${product.id})">
-                                    <i class="bi bi-trash"></i> Delete
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `).join('');
-            })
-            .catch(error => {
-                console.error('Error loading products:', error);
-                productsTableBody.innerHTML = `
-                    <tr>
-                        <td colspan="7" style="text-align: center; padding: 30px;">
-                            <div style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
-                                <i class="bi bi-exclamation-circle" style="font-size: 48px; color: #dc3545;"></i>
-                                <h3 style="margin: 0; color: #666;">Error loading products</h3>
-                                <p style="margin: 0; color: #888;">${error.message}</p>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            });
-    }
-
-    // Event Listeners for modal close
-    const closeButtons = document.querySelectorAll('.close');
-    closeButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            productsModal.style.display = 'none';
-        });
-    });
-
-    window.addEventListener('click', (e) => {
-        if (e.target === productsModal) {
-            productsModal.style.display = 'none';
-        }
-    });
-
-    // Add escape key listener to close modal
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && productsModal.style.display === 'block') {
-            productsModal.style.display = 'none';
-        }
-    });
-
-    categoryFilter.addEventListener('change', () => {
-        currentPage = 1;
-        loadProducts(currentPage);
-    });
-
-    productSearch.addEventListener('input', debounce(() => {
-        currentPage = 1;
-        loadProducts(currentPage);
-    }, 500));
-
-    prevPageBtn.addEventListener('click', () => {
-        if (currentPage > 1) {
-            loadProducts(currentPage - 1);
-        }
-    });
-
-    nextPageBtn.addEventListener('click', () => {
-        if (currentPage < totalPages) {
-            loadProducts(currentPage + 1);
-        }
-    });
-
-    // Utility function for debouncing
-    function debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
-
-    // Function to edit product
-    function editProduct(id) {
-        // Implement edit functionality
-        console.log('Edit product:', id);
-    }
-
-    // Function to delete product
-    function deleteProduct(id) {
-        if (confirm('Are you sure you want to delete this product?')) {
-            // Implement delete functionality
-            console.log('Delete product:', id);
-        }
-    }
-
-    // Add button to open products modal
-    const openProductsBtn = document.createElement('button');
-    openProductsBtn.className = 'action-btn';
-    openProductsBtn.style.cssText = 'position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; background-color: var(--hoockers-green); color: white; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);';
-    openProductsBtn.innerHTML = '<i class="bi bi-box"></i> View My Products';
-    openProductsBtn.onclick = () => {
-        productsModal.style.display = 'block';
-        loadProducts();
-    };
-    document.body.appendChild(openProductsBtn);
 
     // Add this script to enhance the category selection
     document.addEventListener('DOMContentLoaded', function() {
