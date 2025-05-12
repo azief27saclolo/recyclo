@@ -431,100 +431,176 @@ class AdminController extends Controller
     }
 
     /**
-     * Get transaction chart data
-     * 
-     * @param Request $request
+     * Get price guides for a specific category
+     *
+     * @param string $category
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getTransactionChartData(Request $request)
+    public function getPriceGuides($category)
     {
-        $period = $request->input('period', 'monthly');
-        $today = Carbon::today();
-        $labels = [];
-        $transactions = [];
-        $revenue = [];
+        try {
+            \Log::info('Fetching price guides', ['category' => $category]);
+            
+            $priceGuides = \App\Models\PriceGuide::where('category', $category)
+                ->orderBy('type')
+                ->get(['id', 'category', 'type', 'description', 'price']); // Explicitly select all needed fields
+            
+            \Log::info('Found price guides', [
+                'category' => $category, 
+                'count' => $priceGuides->count(),
+                'sample' => $priceGuides->take(1)
+            ]);
 
-        switch ($period) {
-            case 'daily':
-                // Last 14 days data
-                $startDate = $today->copy()->subDays(13);
-                $endDate = $today;
-                
-                for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
-                    $labels[] = $date->format('M d');
-                    $dayTransactions = Order::whereDate('created_at', $date->format('Y-m-d'))->count();
-                    $dayRevenue = Order::whereDate('created_at', $date->format('Y-m-d'))
-                        ->where('status', 'completed')
-                        ->sum('total_amount');
-                    $transactions[] = $dayTransactions;
-                    $revenue[] = round($dayRevenue, 2);
-                }
-                break;
+            return response()->json([
+                'success' => true,
+                'priceGuides' => $priceGuides
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching price guides', [
+                'category' => $category,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
 
-            case 'weekly':
-                // Last 12 weeks data
-                $startDate = $today->copy()->startOfWeek()->subWeeks(11);
-                
-                for ($i = 0; $i < 12; $i++) {
-                    $weekStart = $startDate->copy()->addWeeks($i);
-                    $weekEnd = $weekStart->copy()->endOfWeek();
-                    
-                    $labels[] = "Week " . ($i + 1);
-                    $weekTransactions = Order::whereBetween('created_at', [$weekStart, $weekEnd])->count();
-                    $weekRevenue = Order::whereBetween('created_at', [$weekStart, $weekEnd])
-                        ->where('status', 'completed')
-                        ->sum('total_amount');
-                    $transactions[] = $weekTransactions;
-                    $revenue[] = round($weekRevenue, 2);
-                }
-                break;
-
-            case 'yearly':
-                // Last 5 years data
-                $startYear = $today->copy()->subYears(4)->year;
-                
-                for ($year = $startYear; $year <= $today->year; $year++) {
-                    $labels[] = (string)$year;
-                    $yearTransactions = Order::whereYear('created_at', $year)->count();
-                    $yearRevenue = Order::whereYear('created_at', $year)
-                        ->where('status', 'completed')
-                        ->sum('total_amount');
-                    $transactions[] = $yearTransactions;
-                    $revenue[] = round($yearRevenue, 2);
-                }
-                break;
-
-            case 'monthly':
-            default:
-                // Last 12 months data
-                $startDate = $today->copy()->subMonths(11)->startOfMonth();
-                
-                for ($i = 0; $i < 12; $i++) {
-                    $monthStart = $startDate->copy()->addMonths($i);
-                    $monthName = $monthStart->format('M Y');
-                    
-                    $labels[] = $monthName;
-                    $monthTransactions = Order::whereYear('created_at', $monthStart->year)
-                        ->whereMonth('created_at', $monthStart->month)
-                        ->count();
-                    $monthRevenue = Order::whereYear('created_at', $monthStart->year)
-                        ->whereMonth('created_at', $monthStart->month)
-                        ->where('status', 'completed')
-                        ->sum('total_amount');
-                    $transactions[] = $monthTransactions;
-                    $revenue[] = round($monthRevenue, 2);
-                }
-                break;
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load price guides: ' . $e->getMessage()
+            ], 500);
         }
+    }
 
-        return response()->json([
-            'success' => true,
-            'chartData' => [
-                'labels' => $labels,
-                'transactions' => $transactions,
-                'revenue' => $revenue
-            ]
-        ]);
+    /**
+     * Get a specific price guide item
+     *
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getPriceGuideItem($id)
+    {
+        try {
+            $priceGuide = \App\Models\PriceGuide::findOrFail($id);
+
+            return response()->json([
+                'success' => true,
+                'priceGuide' => $priceGuide
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching price guide item', [
+                'id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load price guide: ' . $e->getMessage()
+            ], 404);
+        }
+    }
+
+    /**
+     * Save a price guide (create or update)
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function savePriceGuide(Request $request)
+    {
+        try {
+            \Log::info('Saving price guide', ['data' => $request->all()]);
+            
+            $validatedData = $request->validate([
+                'id' => 'nullable|numeric',
+                'category' => 'required|string',
+                'type' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'price' => 'required|string|max:50',
+            ]);
+
+            if (empty($validatedData['id'])) {
+                // Create new price guide
+                $priceGuide = \App\Models\PriceGuide::create([
+                    'category' => $validatedData['category'],
+                    'type' => $validatedData['type'],
+                    'description' => $validatedData['description'],
+                    'price' => $validatedData['price'],
+                ]);
+
+                \Log::info('Price guide created', ['id' => $priceGuide->id]);
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Price guide added successfully',
+                    'priceGuide' => $priceGuide
+                ]);
+            } else {
+                // Update existing price guide
+                $priceGuide = \App\Models\PriceGuide::find($validatedData['id']);
+                
+                if (!$priceGuide) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Price guide not found'
+                    ], 404);
+                }
+                
+                $priceGuide->update([
+                    'category' => $validatedData['category'],
+                    'type' => $validatedData['type'],
+                    'description' => $validatedData['description'],
+                    'price' => $validatedData['price'],
+                ]);
+
+                \Log::info('Price guide updated', ['id' => $priceGuide->id]);
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Price guide updated successfully',
+                    'priceGuide' => $priceGuide
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error saving price guide', [
+                'data' => $request->all(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to save price guide: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete a price guide
+     *
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function deletePriceGuide($id)
+    {
+        try {
+            $priceGuide = \App\Models\PriceGuide::findOrFail($id);
+            $priceGuide->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Price guide deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error deleting price guide', [
+                'id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete price guide: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function orders()
@@ -1463,14 +1539,29 @@ class AdminController extends Controller
     public function getProductDetails($id)
     {
         try {
-            $product = Post::with(['user', 'category'])->findOrFail($id);
-
+            \Log::info('Fetching product details', ['id' => $id]);
+            
+            // Explicitly find the post without using with() first to ensure it exists
+            $product = Post::findOrFail($id);
+            // Now load the relationships
+            $product->load(['user', 'category']);
+            
+            // Ensure images have the correct path
+            if ($product->image && !str_contains($product->image, '://')) {
+                // Keep the image path as is, we'll prepend storage/ in the view
+            }
+            
             // Get stored request information if available
             $requestInfo = [
                 'id' => $id,
                 'user_agent' => request()->header('User-Agent'),
                 'ip_address' => request()->ip(),
             ];
+            
+            \Log::info('Product details found', [
+                'id' => $id, 
+                'title' => $product->title
+            ]);
             
             return response()->json([
                 'success' => true,
@@ -1485,7 +1576,7 @@ class AdminController extends Controller
             ]);
             return response()->json([
                 'success' => false,
-                'message' => 'Product not found',
+                'message' => 'Product not found: ' . $e->getMessage(),
                 'error' => $e->getMessage()
             ], 404);
         }
@@ -1571,9 +1662,32 @@ class AdminController extends Controller
             // Update the product
             $product->update($validatedData);
 
+            // If it's an AJAX request, return JSON
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Product updated successfully',
+                    'product' => $product
+                ]);
+            }
+
             return redirect()->route('admin.products')
                 ->with('success', 'Product updated successfully');
         } catch (\Exception $e) {
+            \Log::error('Failed to update product', [
+                'id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            // If it's an AJAX request, return JSON error
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to update product: ' . $e->getMessage()
+                ], 422);
+            }
+
             return redirect()->route('admin.products')
                 ->with('error', 'Failed to update product: ' . $e->getMessage());
         }
@@ -1583,6 +1697,7 @@ class AdminController extends Controller
     {
         try {
             $product = Post::findOrFail($id);
+            $productTitle = $product->title; // Store this for the success message
 
             // If product has an image, delete it from storage
             if ($product->image && \Storage::exists('public/' . $product->image)) {
@@ -1591,9 +1706,30 @@ class AdminController extends Controller
             
             $product->delete();
 
+            // Check if request is AJAX
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "Product '{$productTitle}' deleted successfully"
+                ]);
+            }
+
             return redirect()->route('admin.products')
                 ->with('success', 'Product deleted successfully');
         } catch (\Exception $e) {
+            \Log::error('Failed to delete product', [
+                'id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to delete product: ' . $e->getMessage()
+                ], 500);
+            }
+
             return redirect()->route('admin.products')
                 ->with('error', 'Failed to delete product: ' . $e->getMessage());
         }
