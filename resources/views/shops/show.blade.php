@@ -38,10 +38,16 @@
                             <span>{{ $shop->number }}</span>
                         </div>
                         @endif
-                        <div class="contact-item">
-                            <i class="bi bi-envelope"></i>
-                            <span>{{ $shop->email }}</span>
-                        </div>
+                        @php
+                            $privacySettings = $shop->user ? $shop->user->privacySettings : null;
+                            $showEmail = $privacySettings ? $privacySettings->show_email : false;
+                        @endphp
+                        @if($shop->user && $shop->user->email && $showEmail)
+                            <div class="contact-item">
+                                <i class="bi bi-envelope"></i>
+                                <span>{{ $shop->user->email }}</span>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>

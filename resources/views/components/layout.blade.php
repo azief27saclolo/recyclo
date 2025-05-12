@@ -41,6 +41,153 @@
         .header-action-btn {
             position: relative;
         }
+
+        /* Mobile Menu Styles */
+        .nav-open-btn {
+            display: none;
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            background: none;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            z-index: 1001;
+        }
+
+        .nav-open-btn .line {
+            display: block;
+            width: 100%;
+            height: 2px;
+            background-color: var(--black);
+            margin: 6px 0;
+            transition: all 0.3s ease;
+            transform-origin: center;
+        }
+
+        .mobile-navbar {
+            background-color: var(--white);
+            position: fixed;
+            top: 0;
+            right: -100%;
+            bottom: 0;
+            max-width: 350px;
+            width: 100%;
+            padding: 25px 40px;
+            z-index: 1000;
+            transform: none;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .mobile-navbar.active {
+            visibility: visible;
+            right: 0;
+        }
+
+        .mobile-navbar .wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-block-end: 55px;
+        }
+
+        .mobile-navbar .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .mobile-navbar .logo h2 {
+            color: var(--hoockers-green);
+            font-size: 22px;
+        }
+
+        .nav-close-btn {
+            font-size: 28px;
+            color: var(--hoockers-green);
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .nav-close-btn ion-icon { 
+            --ionicon-stroke-width: 40px; 
+        }
+
+        .mobile-navbar .navbar-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .mobile-navbar .navbar-list li {
+            margin: 15px 0;
+        }
+
+        .mobile-navbar .navbar-link {
+            color: var(--black);
+            font-size: var(--fs-8);
+            text-transform: uppercase;
+            font-weight: var(--fw-600);
+            letter-spacing: 1px;
+            padding: 10px 0;
+            display: block;
+            transition: var(--transition-1);
+        }
+
+        .mobile-navbar .navbar-link:is(:hover, :focus) { 
+            color: var(--hoockers-green); 
+        }
+
+        .overlay {
+            background-color: transparent;
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 999;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .overlay.active {
+            background-color: rgba(0, 0, 0, 0.5);
+            pointer-events: all;
+        }
+
+        /* Burger Menu Animation */
+        .nav-open-btn.active .line-1 {
+            transform: translateY(8px) rotate(45deg);
+        }
+
+        .nav-open-btn.active .line-2 {
+            opacity: 0;
+            transform: scale(0);
+        }
+
+        .nav-open-btn.active .line-3 {
+            transform: translateY(-8px) rotate(-45deg);
+        }
+
+        @media (max-width: 768px) {
+            .nav-open-btn {
+                display: block;
+            }
+
+            .header .input-wrapper,
+            .header-action-btn:not(:first-child),
+            .navbar {
+                display: none;
+            }
+
+            .header-top .container {
+                justify-content: space-between;
+            }
+        }
     </style>
     <!-- SweetAlert2 for notifications -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -134,6 +281,45 @@
           </div>
         </div>
       </header>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-navbar" data-navbar>
+        <div class="wrapper">
+            <a href="{{ route('landingpage') }}" class="logo">
+                <img src="{{ asset('images/mainlogo.png') }}" alt="Recyclo Logo" width="40" height="40">
+                <h2>Recyclo</h2>
+            </a>
+            <button class="nav-close-btn" aria-label="close menu" data-nav-toggler>
+                <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
+            </button>
+        </div>
+        <nav>
+            <ul class="navbar-list">
+                <li>
+                    <a href="{{ route('posts') }}" class="navbar-link has-after">Selling</a>
+                </li>
+                <li>
+                    <a href="{{ route('buy.marketplace') }}" class="navbar-link has-after">Buying</a>
+                </li>
+                <li>
+                    <a href="#collection" class="navbar-link has-after">About Us</a>
+                </li>
+
+                <li>
+                    <a href="{{ route('orders.index') }}" class="navbar-link has-after">My Orders</a>
+                </li>
+                <li>
+                    <a href="#collection" class="navbar-link has-after">Goals</a>
+                </li>
+                <li>
+                    <a href="{{ route('shops') }}" class="navbar-link has-after">Shops</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" data-overlay></div>
 
     <main>
         @yield('content')
@@ -295,6 +481,70 @@
             }))
         })
     </script>
-    {{-- <script src="script.js" defer></script> --}}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navTogglers = document.querySelectorAll("[data-nav-toggler]");
+            const navbar = document.querySelector("[data-navbar]");
+            const overlay = document.querySelector("[data-overlay]");
+            const body = document.body;
+
+            function toggleNavbar() {
+                navbar.classList.toggle("active");
+                overlay.classList.toggle("active");
+                navTogglers.forEach(toggler => toggler.classList.toggle("active"));
+                
+                if (navbar.classList.contains("active")) {
+                    body.style.overflow = "hidden";
+                } else {
+                    body.style.overflow = "";
+                }
+            }
+
+            navTogglers.forEach(toggler => {
+                toggler.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleNavbar();
+                });
+            });
+
+            if (overlay) {
+                overlay.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    toggleNavbar();
+                });
+            }
+
+            const navbarLinks = navbar.querySelectorAll(".navbar-link");
+            navbarLinks.forEach(link => {
+                link.addEventListener("click", function() {
+                    if (navbar.classList.contains("active")) {
+                        toggleNavbar();
+                    }
+                });
+            });
+
+            // Close menu on window resize
+            window.addEventListener("resize", function() {
+                if (window.innerWidth > 768 && navbar.classList.contains("active")) {
+                    toggleNavbar();
+                }
+            });
+
+            // Close menu on escape key
+            document.addEventListener("keydown", function(e) {
+                if (e.key === "Escape" && navbar.classList.contains("active")) {
+                    toggleNavbar();
+                }
+            });
+
+            // Debug logging
+            console.log('Mobile menu initialized');
+            console.log('Nav togglers:', navTogglers);
+            console.log('Navbar:', navbar);
+            console.log('Overlay:', overlay);
+        });
+    </script>
 </body>
 </html>

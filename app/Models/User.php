@@ -99,6 +99,14 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Get the privacy settings associated with the user.
+     */
+    public function privacySettings()
+    {
+        return $this->hasOne(PrivacySetting::class);
+    }
+
+    /**
      * Get all orders for the user (both buying and selling)
      * Fixed to not use non-existent column
      */

@@ -17,6 +17,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminLoginController;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Controllers\InventoryHistoryController;
+use App\Http\Controllers\PrivacyController;
 
 // Landing page route
 Route::redirect('/', 'landingpage');
@@ -146,6 +147,10 @@ Route::post('/email/verification-notification', [AuthController::class, 'verifyE
 Route::middleware(['auth', 'verified'])->group(function() {
     // Add the 'verified' middleware to the dashboard route
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
+    // Privacy Settings Routes
+    Route::get('/privacy-settings', [PrivacyController::class, 'index'])->name('privacy.settings');
+    Route::put('/privacy-settings', [PrivacyController::class, 'update'])->name('privacy.settings.update');
     
     // Update logout route to accept both GET and POST methods
     Route::match(['get', 'post'], '/logout', [AuthController::class, 'logout'])->name('logout');
