@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Post;
 use App\Models\Order;
 
-class User extends Authenticatable 
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable;
 
@@ -25,11 +26,12 @@ class User extends Authenticatable
         'username',
         'email',
         'birthday',
+        'is_email_verified',
         'number',
         'password',
         'location',
         'profile_picture',
-        'status', // Add status to fillable attributes
+        'status',
     ];
 
     /**
@@ -47,13 +49,10 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+    protected $casts = [
+        'is_email_verified' => 'boolean',
+        'password' => 'hashed',
+    ];
 
     public function posts() : HasMany
     {
@@ -107,5 +106,50 @@ class User extends Authenticatable
     {
         // Use only soldOrders since there's no direct user_id in orders table
         return $this->soldOrders();
+    }
+
+    /**
+     * Check if the user's email is verified
+     */
+    public function hasVerifiedEmail()
+    {
+        return $this->is_email_verified === true;
+    }
+
+    /**
+     * Mark the user's email as verified
+     */
+    public function markEmailAsVerified()
+    {
+        \Log::info('Attempting to mark email as verified', [
+            'user_id' => $this->id,
+            'email' => $this->email
+        ]);
+
+        $this->forceFill([
+            'is_email_verified' => true
+        ])->save();
+
+        \Log::info('Email verification status updated', [
+            'user_id' => $this->id,
+            'email' => $this->email,
+            'is_verified' => $this->is_email_verified
+        ]);
+    }
+
+    /**
+     * Send the email verification notification.
+     */
+    public function sendEmailVerificationNotification()
+    {
+        $this->notify(new \Illuminate\Auth\Notifications\VerifyEmail);
+    }
+
+    /**
+     * Get the email address that should be used for verification.
+     */
+    public function getEmailForVerification()
+    {
+        return $this->email;
     }
 }

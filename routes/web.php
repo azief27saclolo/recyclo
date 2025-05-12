@@ -21,13 +21,13 @@ use App\Http\Controllers\InventoryHistoryController;
 // Landing page route
 Route::redirect('/', 'landingpage');
 
-// Define post edit routes with only plain auth middleware
+// Define post edit routes with auth and verified middleware
 Route::get('/posts/{post}/edit', [PostController::class, 'edit'])
-    ->middleware('auth')
+    ->middleware(['auth', 'verified'])
     ->name('posts.edit');
 
 Route::put('/posts/{post}', [PostController::class, 'update'])
-    ->middleware('auth')
+    ->middleware(['auth', 'verified'])
     ->name('posts.update');
 
 // Posts route
@@ -129,22 +129,25 @@ Route::post('/orders/{orderId}/cancel-user-order', [AdminController::class, 'can
 // Product Routes
 Route::get('/products', [App\Http\Controllers\PostController::class, 'index'])->name('products.index');
 
+// Email Verification Routes
+Route::get('/email/verify', [AuthController::class, 'verifyEmailNotice'])
+    ->middleware('auth')
+    ->name('verification.notice');
+
+Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmailHandler'])
+    ->name('verification.verify');
+
+Route::post('/email/verification-notification', [AuthController::class, 'verifyEmailResend'])
+    ->middleware(['auth', 'throttle:6,1'])
+    ->name('verification.send');
+
 // Routes for authenticated users
-Route::middleware('auth')->group(function() {
-    // Remove the 'verified' middleware from the dashboard route
+Route::middleware(['auth', 'verified'])->group(function() {
+    // Add the 'verified' middleware to the dashboard route
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
     // Update logout route to accept both GET and POST methods
     Route::match(['get', 'post'], '/logout', [AuthController::class, 'logout'])->name('logout');
-
-    // Email Verification Notice route
-    Route::get('/email/verify', [AuthController::class, 'verifyEmailNotice'])->name('verification.notice');
-
-    // Email Verification Handler route
-    Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmailHandler'])->middleware('signed')->name('verification.verify');
-
-    // Resending the Verification Email route
-    Route::post('/email/verification-notification', [AuthController::class, 'verifyEmailResend'])->middleware('throttle:6,1')->name('verification.send');
 
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
@@ -255,3 +258,5 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/api/inventory/export', [InventoryHistoryController::class, 'exportInventory'])->name('api.inventory.export');
     Route::get('/api/inventory/history/export', [InventoryHistoryController::class, 'exportInventoryHistory'])->name('api.inventory.history.export');
 });
+
+Route::get('/orders/export/{format}', [OrderController::class, 'export'])->name('orders.export');

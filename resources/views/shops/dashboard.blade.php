@@ -532,11 +532,11 @@
         }
 
         .inventory-action-btn.delete-btn {
-            color: #dc3545;
+            color:rgb(72, 71, 71);
         }
 
         .inventory-action-btn.delete-btn:hover {
-            background-color: #fff5f5;
+            background-color:rgb(162, 159, 159);
         }
 
         .inventory-table input[type="checkbox"] {
@@ -715,6 +715,452 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(81, 122, 91, 0.2);
         }
+
+        /* Earnings Modal Styles */
+        .earnings-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .earnings-summary-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .earnings-summary-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .earnings-summary-card .card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .total-earnings .card-icon {
+            background: linear-gradient(135deg, #517A5B 0%, #3a5c42 100%);
+            color: white;
+        }
+
+        .net-earnings .card-icon {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+        }
+
+        .commission-paid .card-icon {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+        }
+
+        .earnings-summary-card .card-content {
+            flex: 1;
+        }
+
+        .earnings-summary-card h3 {
+            margin: 0;
+            font-size: 16px;
+            color: #666;
+        }
+
+        .earnings-summary-card .amount {
+            margin: 5px 0;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .earnings-summary-card .label {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .recent-earnings {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .recent-earnings h3 {
+            margin: 0 0 20px 0;
+            color: #333;
+        }
+
+        .earnings-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .earnings-table th,
+        .earnings-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .earnings-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .earnings-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        /* Detailed Earnings Breakdown Styles */
+        .breakdown-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .summary-stat {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .summary-stat h4 {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .summary-stat .stat-value {
+            margin: 10px 0 0;
+            font-size: 24px;
+            font-weight: bold;
+            color: #517A5B;
+        }
+
+        .earnings-timeline {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .earnings-timeline h3 {
+            margin: 0 0 20px;
+            color: #333;
+        }
+
+        .timeline-container {
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .timeline-item:last-child {
+            border-bottom: none;
+        }
+
+        .timeline-date {
+            min-width: 100px;
+            text-align: right;
+        }
+
+        .timeline-date .date {
+            display: block;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .timeline-date .time {
+            display: block;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .order-header h4 {
+            margin: 0;
+            color: #333;
+        }
+
+        .order-amount {
+            font-weight: 600;
+            color: #517A5B;
+        }
+
+        .order-details {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .customer-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            color: #666;
+        }
+
+        .products-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .product-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .product-item img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .product-info {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .product-name {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .product-quantity {
+            color: #666;
+        }
+
+        .product-price {
+            font-weight: 600;
+            color: #517A5B;
+        }
+
+        .order-summary {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            color: #666;
+        }
+
+        .summary-row.total {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .no-orders {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .no-orders i {
+            font-size: 48px;
+            margin-bottom: 10px;
+            color: #ccc;
+        }
+
+        /* Scrollbar Styling */
+        .timeline-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .timeline-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .timeline-container::-webkit-scrollbar-thumb {
+            background: #517A5B;
+            border-radius: 4px;
+        }
+
+        .timeline-container::-webkit-scrollbar-thumb:hover {
+            background: #3a5c42;
+        }
+
+        /* Orders Management Modal Styles */
+        .order-status {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-completed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-cancelled {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .accept-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .reject-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .accept-btn:hover {
+            background-color: #218838;
+        }
+
+        .reject-btn:hover {
+            background-color: #c82333;
+        }
+
+        /* Export Button Styles */
+        .export-actions {
+            display: flex;
+            gap: 10px;
+            margin-right: 20px;
+        }
+
+        .export-btn {
+            background-color: #517A5B;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9em;
+        }
+
+        .export-btn:hover {
+            background-color: #446749;
+        }
+
+        /* Delete Button Styles */
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+
+        /* Inventory action buttons */
+        .inventory-action-btn {
+            padding: 6px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0 2px;
+            transition: all 0.3s ease;
+        }
+
+        .edit-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .edit-btn:hover {
+            background-color: #45a049;
+        }
+
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background-color: #da190b;
+        }
+
+        .inventory-action-btn i {
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -760,17 +1206,15 @@
                             </div>
                             <div style="color: white;">Orders</div>
                         </div>
-                        <div class="stat-card earnings-card" style="cursor: pointer;">
+                        <div class="stat-card earnings-card" id="earningsStatCard" style="cursor: pointer;">
                             <i class="bi bi-currency-dollar"></i>
                             <div class="stat-number">
                                 @php
                                     try {
-                                        // Only count earnings from completed orders
-                                        // Apply 10% commission fee deduction (multiply by 0.9)
                                         $totalEarnings = \App\Models\Order::where('seller_id', Auth::id())
                                                     ->where('status', 'completed')
                                                     ->sum('total_amount');
-                                        $netEarnings = $totalEarnings * 0.9; // Deduct 10% commission fee
+                                        $netEarnings = $totalEarnings * 0.9;
                                         echo '₱' . number_format($netEarnings ?? 0, 2);
                                     } catch (\Exception $e) {
                                         echo '₱0.00';
@@ -819,17 +1263,14 @@
                 </div>
 
                 <div class="quick-actions">
-                    <a href="{{ route('sell.item') }}" class="action-btn">
-                        <i class="bi bi-plus-circle"></i> Add Product
-                    </a>
-                    <button id="manageOrdersBtn" class="action-btn" style="border: none; display: block; width: 100%; text-align: center; cursor: pointer;">
-                        <i class="bi bi-list-check"></i> Manage Orders
+                    <button id="manageOrdersBtn" class="action-btn">
+                        <i class="bi bi-cart-check"></i> Manage Orders
+                    </button>
+                    <button id="allProductsBtn" class="action-btn">
+                        <i class="bi bi-box-seam"></i> All Products
                     </button>
                     <button id="shopSettingsBtn" class="action-btn" style="border: none; display: block; width: 100%; text-align: center; cursor: pointer;">
                         <i class="bi bi-gear"></i> Shop Settings
-                    </button>
-                    <button id="allProductsBtn" class="action-btn" style="border: none; display: block; width: 100%; text-align: center; cursor: pointer;">
-                        <i class="bi bi-grid"></i> All Products
                     </button>
                 </div>
 
@@ -1224,13 +1665,13 @@
 
         // Update inventory table with data
         function updateInventoryTable(products) {
-            inventoryTableBody.innerHTML = '';
-            selectedItems.clear();
-            updateSelectedItemsCount();
+            const tbody = document.getElementById('inventory-table-body');
+            tbody.innerHTML = '';
+            selectedItems = new Set();
 
             products.forEach(product => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
                     <td style="padding: 12px; text-align: center;">
                         <input type="checkbox" class="product-checkbox" data-id="${product.id}">
                     </td>
@@ -1256,22 +1697,20 @@
                             data-product-description="${product.description}">
                             <i class="bi bi-pencil"></i>
                         </button>
-                        <button class="inventory-action-btn" onclick="viewHistory(${product.id})">
-                            <i class="bi bi-clock-history"></i>
+                        <button class="inventory-action-btn delete-btn" onclick="deleteProduct(${product.id})">
+                            <i class="bi bi-trash"></i>
                         </button>
                     </td>
                 `;
-                inventoryTableBody.appendChild(row);
-            });
+                tbody.appendChild(tr);
 
-            // Add event listeners to checkboxes
-            document.querySelectorAll('.product-checkbox').forEach(checkbox => {
-                checkbox.addEventListener('change', (e) => {
-                    const productId = e.target.dataset.id;
-                    if (e.target.checked) {
-                        selectedItems.add(productId);
+                // Add event listener for checkbox
+                const checkbox = tr.querySelector('.product-checkbox');
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        selectedItems.add(product.id);
                     } else {
-                        selectedItems.delete(productId);
+                        selectedItems.delete(product.id);
                     }
                     updateSelectedItemsCount();
                 });
@@ -1656,6 +2095,43 @@
                 });
             });
         });
+
+        // Add delete product function
+        function deleteProduct(productId) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Create a form and submit it
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `{{ route('posts.destroy', '') }}/${productId}`;
+                    
+                    // Add CSRF token
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = '{{ csrf_token() }}';
+                    form.appendChild(csrfToken);
+                    
+                    // Add method field for DELETE
+                    const methodField = document.createElement('input');
+                    methodField.type = 'hidden';
+                    methodField.name = '_method';
+                    methodField.value = 'DELETE';
+                    form.appendChild(methodField);
+                    
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
     });
     </script>
 
@@ -3105,6 +3581,1307 @@
                 editMap.invalidateSize();
             }, 100);
         }
+    </script>
+
+    <!-- Earnings Modal -->
+    <div id="earningsModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Earnings Overview</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <!-- Earnings Summary Cards -->
+                <div class="earnings-summary-grid">
+                    <div class="earnings-summary-card total-earnings" id="totalEarningsCard" style="cursor: pointer;">
+                        <div class="card-icon">
+                            <i class="bi bi-cash-stack"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Total Earnings</h3>
+                            <p class="amount">
+                                @php
+                                    try {
+                                        $totalEarnings = \App\Models\Order::where('seller_id', Auth::id())
+                                                    ->where('status', 'completed')
+                                                    ->sum('total_amount');
+                                        echo '₱' . number_format($totalEarnings ?? 0, 2);
+                                    } catch (\Exception $e) {
+                                        echo '₱0.00';
+                                    }
+                                @endphp
+                            </p>
+                            <span class="label">Before commission</span>
+                        </div>
+                    </div>
+                    
+                    <div class="earnings-summary-card net-earnings">
+                        <div class="card-icon">
+                            <i class="bi bi-wallet2"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Net Earnings</h3>
+                            <p class="amount">
+                                @php
+                                    try {
+                                        $totalEarnings = \App\Models\Order::where('seller_id', Auth::id())
+                                                    ->where('status', 'completed')
+                                                    ->sum('total_amount');
+                                        $netEarnings = $totalEarnings * 0.9;
+                                        echo '₱' . number_format($netEarnings ?? 0, 2);
+                                    } catch (\Exception $e) {
+                                        echo '₱0.00';
+                                    }
+                                @endphp
+                            </p>
+                            <span class="label">After 10% commission</span>
+                        </div>
+                    </div>
+                    
+                    <div class="earnings-summary-card commission-paid">
+                        <div class="card-icon">
+                            <i class="bi bi-percent"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Commission Paid</h3>
+                            <p class="amount">
+                                @php
+                                    try {
+                                        $totalEarnings = \App\Models\Order::where('seller_id', Auth::id())
+                                                    ->where('status', 'completed')
+                                                    ->sum('total_amount');
+                                        $commission = $totalEarnings * 0.1;
+                                        echo '₱' . number_format($commission ?? 0, 2);
+                                    } catch (\Exception $e) {
+                                        echo '₱0.00';
+                                    }
+                                @endphp
+                            </p>
+                            <span class="label">10% of total earnings</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Earnings Table -->
+                <div class="recent-earnings">
+                    <h3>Recent Earnings</h3>
+                    <div class="table-responsive">
+                        <table class="earnings-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Order ID</th>
+                                    <th>Amount</th>
+                                    <th>Commission</th>
+                                    <th>Net Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php
+                                    $recentOrders = \App\Models\Order::where('seller_id', Auth::id())
+                                        ->where('status', 'completed')
+                                        ->latest()
+                                        ->take(5)
+                                        ->get();
+                                @endphp
+                                
+                                @forelse($recentOrders as $order)
+                                    <tr>
+                                        <td>{{ $order->created_at->format('M d, Y') }}</td>
+                                        <td>#{{ $order->id }}</td>
+                                        <td>₱{{ number_format($order->total_amount, 2) }}</td>
+                                        <td>₱{{ number_format($order->total_amount * 0.1, 2) }}</td>
+                                        <td>₱{{ number_format($order->total_amount * 0.9, 2) }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="text-center">No recent earnings</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ... existing script code ...
+
+        // Earnings Modal Functionality
+        const earningsModal = document.getElementById('earningsModal');
+        const earningsStatCard = document.getElementById('earningsStatCard');
+        const earningsCloseBtn = earningsModal.querySelector('.close');
+
+        // Open earnings modal when earnings card is clicked
+        earningsStatCard.addEventListener('click', function() {
+            earningsModal.style.display = 'block';
+        });
+
+        // Close earnings modal when X is clicked
+        earningsCloseBtn.addEventListener('click', function() {
+            earningsModal.style.display = 'none';
+        });
+
+        // Close earnings modal when clicking outside
+        window.addEventListener('click', function(e) {
+            if (e.target === earningsModal) {
+                earningsModal.style.display = 'none';
+            }
+        });
+
+        // ... rest of the existing script code ...
+    </script>
+
+    <!-- Detailed Earnings Breakdown Modal -->
+    <div id="earningsBreakdownModal" class="modal">
+        <div class="modal-content" style="max-width: 1000px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Detailed Earnings Breakdown</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <!-- Summary Stats -->
+                <div class="breakdown-summary">
+                    <div class="summary-stat">
+                        <h4>Total Orders</h4>
+                        <p class="stat-value">
+                            @php
+                                $totalOrders = \App\Models\Order::where('seller_id', Auth::id())
+                                    ->where('status', 'completed')
+                                    ->count();
+                                echo $totalOrders;
+                            @endphp
+                        </p>
+                    </div>
+                    <div class="summary-stat">
+                        <h4>Average Order Value</h4>
+                        <p class="stat-value">
+                            @php
+                                $avgOrderValue = $totalOrders > 0 ? $totalEarnings / $totalOrders : 0;
+                                echo '₱' . number_format($avgOrderValue, 2);
+                            @endphp
+                        </p>
+                    </div>
+                    <div class="summary-stat">
+                        <h4>Highest Value Order</h4>
+                        <p class="stat-value">
+                            @php
+                                $highestOrder = \App\Models\Order::where('seller_id', Auth::id())
+                                    ->where('status', 'completed')
+                                    ->orderBy('total_amount', 'desc')
+                                    ->first();
+                                echo $highestOrder ? '₱' . number_format($highestOrder->total_amount, 2) : '₱0.00';
+                            @endphp
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Earnings Timeline -->
+                <div class="earnings-timeline">
+                    <h3>Earnings Timeline</h3>
+                    <div class="timeline-container">
+                        @php
+                            $orders = \App\Models\Order::where('seller_id', Auth::id())
+                                ->where('status', 'completed')
+                                ->with(['items.post', 'buyer'])
+                                ->latest()
+                                ->get();
+                        @endphp
+
+                        @forelse($orders as $order)
+                            <div class="timeline-item">
+                                <div class="timeline-date">
+                                    <span class="date">{{ $order->created_at->format('M d, Y') }}</span>
+                                    <span class="time">{{ $order->created_at->format('h:i A') }}</span>
+                                </div>
+                                <div class="timeline-content">
+                                    <div class="order-header">
+                                        <h4>Order #{{ $order->id }}</h4>
+                                        <span class="order-amount">₱{{ number_format($order->total_amount, 2) }}</span>
+                                    </div>
+                                    <div class="order-details">
+                                        <div class="customer-info">
+                                            <i class="bi bi-person"></i>
+                                            <span>{{ $order->buyer->firstname }} {{ $order->buyer->lastname }}</span>
+                                        </div>
+                                        <div class="products-list">
+                                            @foreach($order->items as $item)
+                                                <div class="product-item">
+                                                    <img src="{{ asset('storage/' . $item->post->image) }}" 
+                                                         alt="{{ $item->post->title }}"
+                                                         onerror="this.src='https://placehold.co/100x100?text=Product'">
+                                                    <div class="product-info">
+                                                        <span class="product-name">{{ $item->post->title }}</span>
+                                                        <span class="product-quantity">x{{ $item->quantity }}</span>
+                                                        <span class="product-price">₱{{ number_format($item->price * $item->quantity, 2) }}</span>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                        <div class="order-summary">
+                                            <div class="summary-row">
+                                                <span>Subtotal</span>
+                                                <span>₱{{ number_format($order->total_amount, 2) }}</span>
+                                            </div>
+                                            <div class="summary-row">
+                                                <span>Commission (10%)</span>
+                                                <span>₱{{ number_format($order->total_amount * 0.1, 2) }}</span>
+                                            </div>
+                                            <div class="summary-row total">
+                                                <span>Net Earnings</span>
+                                                <span>₱{{ number_format($order->total_amount * 0.9, 2) }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="no-orders">
+                                <i class="bi bi-inbox"></i>
+                                <p>No completed orders yet</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* ... existing styles ... */
+
+        /* Detailed Earnings Breakdown Styles */
+        .breakdown-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .summary-stat {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .summary-stat h4 {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .summary-stat .stat-value {
+            margin: 10px 0 0;
+            font-size: 24px;
+            font-weight: bold;
+            color: #517A5B;
+        }
+
+        .earnings-timeline {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .earnings-timeline h3 {
+            margin: 0 0 20px;
+            color: #333;
+        }
+
+        .timeline-container {
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .timeline-item:last-child {
+            border-bottom: none;
+        }
+
+        .timeline-date {
+            min-width: 100px;
+            text-align: right;
+        }
+
+        .timeline-date .date {
+            display: block;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .timeline-date .time {
+            display: block;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .order-header h4 {
+            margin: 0;
+            color: #333;
+        }
+
+        .order-amount {
+            font-weight: 600;
+            color: #517A5B;
+        }
+
+        .order-details {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .customer-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            color: #666;
+        }
+
+        .products-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .product-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .product-item img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .product-info {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .product-name {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .product-quantity {
+            color: #666;
+        }
+
+        .product-price {
+            font-weight: 600;
+            color: #517A5B;
+        }
+
+        .order-summary {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            color: #666;
+        }
+
+        .summary-row.total {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .no-orders {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .no-orders i {
+            font-size: 48px;
+            margin-bottom: 10px;
+            color: #ccc;
+        }
+
+        /* Scrollbar Styling */
+        .timeline-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .timeline-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .timeline-container::-webkit-scrollbar-thumb {
+            background: #517A5B;
+            border-radius: 4px;
+        }
+
+        .timeline-container::-webkit-scrollbar-thumb:hover {
+            background: #3a5c42;
+        }
+    </style>
+
+    <script>
+        // ... existing script code ...
+
+        // Detailed Earnings Breakdown Modal Functionality
+        const earningsBreakdownModal = document.getElementById('earningsBreakdownModal');
+        const totalEarningsCard = document.getElementById('totalEarningsCard');
+        const earningsBreakdownCloseBtn = earningsBreakdownModal.querySelector('.close');
+
+        // Open detailed earnings modal when total earnings card is clicked
+        totalEarningsCard.addEventListener('click', function() {
+            earningsBreakdownModal.style.display = 'block';
+        });
+
+        // Close detailed earnings modal when X is clicked
+        earningsBreakdownCloseBtn.addEventListener('click', function() {
+            earningsBreakdownModal.style.display = 'none';
+        });
+
+        // Close detailed earnings modal when clicking outside
+        window.addEventListener('click', function(e) {
+            if (e.target === earningsBreakdownModal) {
+                earningsBreakdownModal.style.display = 'none';
+            }
+        });
+
+        // ... rest of the existing script code ...
+    </script>
+
+    <!-- Orders Management Modal -->
+    <div id="ordersModal" class="modal">
+        <div class="modal-content" style="max-width: 1000px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Orders Management</h2>
+                <div class="export-actions">
+                    <button class="export-btn" onclick="exportOrders('pdf')">
+                        <i class="bi bi-file-pdf"></i> Export PDF
+                    </button>
+                    <button class="export-btn" onclick="exportOrders('csv')">
+                        <i class="bi bi-file-earmark-spreadsheet"></i> Export CSV
+                    </button>
+                    <button class="export-btn" onclick="exportOrders('doc')">
+                        <i class="bi bi-file-word"></i> Export DOC
+                    </button>
+                </div>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <!-- Orders Summary Stats -->
+                <div class="breakdown-summary">
+                    <div class="summary-stat">
+                        <h4>Total Orders</h4>
+                        <p class="stat-value">
+                            @php
+                                $totalOrders = \App\Models\Order::where('seller_id', Auth::id())->count();
+                                echo $totalOrders;
+                            @endphp
+                        </p>
+                    </div>
+                    <div class="summary-stat">
+                        <h4>Pending Orders</h4>
+                        <p class="stat-value">
+                            @php
+                                $pendingOrders = \App\Models\Order::where('seller_id', Auth::id())
+                                    ->where('status', 'pending')
+                                    ->count();
+                                echo $pendingOrders;
+                            @endphp
+                        </p>
+                    </div>
+                    <div class="summary-stat">
+                        <h4>Completed Orders</h4>
+                        <p class="stat-value">
+                            @php
+                                $completedOrders = \App\Models\Order::where('seller_id', Auth::id())
+                                    ->where('status', 'completed')
+                                    ->count();
+                                echo $completedOrders;
+                            @endphp
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Orders Timeline -->
+                <div class="orders-timeline">
+                    <h3>Recent Orders</h3>
+                    <div class="timeline-container">
+                        @php
+                            $orders = \App\Models\Order::where('seller_id', Auth::id())
+                                ->with(['items.post', 'buyer'])
+                                ->latest()
+                                ->get();
+                        @endphp
+
+                        @forelse($orders as $order)
+                            <div class="timeline-item">
+                                <div class="timeline-date">
+                                    <span class="date">{{ $order->created_at->format('M d, Y') }}</span>
+                                    <span class="time">{{ $order->created_at->format('h:i A') }}</span>
+                                </div>
+                                <div class="timeline-content">
+                                    <div class="order-header">
+                                        <h4>Order #{{ $order->id }}</h4>
+                                        <span class="order-status status-{{ $order->status }}">
+                                            {{ ucfirst($order->status) }}
+                                        </span>
+                                    </div>
+                                    <div class="order-details">
+                                        <div class="customer-info">
+                                            <i class="bi bi-person"></i>
+                                            <span>{{ $order->buyer->firstname }} {{ $order->buyer->lastname }}</span>
+                                        </div>
+                                        <div class="products-list">
+                                            @foreach($order->items as $item)
+                                                <div class="product-item">
+                                                    <img src="{{ asset('storage/' . $item->post->image) }}" 
+                                                         alt="{{ $item->post->title }}"
+                                                         onerror="this.src='https://placehold.co/100x100?text=Product'">
+                                                    <div class="product-info">
+                                                        <span class="product-name">{{ $item->post->title }}</span>
+                                                        <span class="product-quantity">x{{ $item->quantity }}</span>
+                                                        <span class="product-price">₱{{ number_format($item->price * $item->quantity, 2) }}</span>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                        <div class="order-summary">
+                                            <div class="summary-row">
+                                                <span>Subtotal</span>
+                                                <span>₱{{ number_format($order->total_amount, 2) }}</span>
+                                            </div>
+                                            <div class="summary-row">
+                                                <span>Commission (10%)</span>
+                                                <span>₱{{ number_format($order->total_amount * 0.1, 2) }}</span>
+                                            </div>
+                                            <div class="summary-row total">
+                                                <span>Net Amount</span>
+                                                <span>₱{{ number_format($order->total_amount * 0.9, 2) }}</span>
+                                            </div>
+                                        </div>
+                                        <!-- @if($order->status === 'pending')
+                                            <div class="order-actions" style="margin-top: 15px; display: flex; gap: 10px;">
+                                                <button class="action-btn accept-btn" onclick="updateOrderStatus({{ $order->id }}, 'completed')">
+                                                    <i class="bi bi-check-circle"></i> Accept Order
+                                                </button>
+                                                <button class="action-btn reject-btn" onclick="updateOrderStatus({{ $order->id }}, 'cancelled')">
+                                                    <i class="bi bi-x-circle"></i> Reject Order
+                                                </button>
+                                            </div>
+                                        @endif -->
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="no-orders">
+                                <i class="bi bi-inbox"></i>
+                                <p>No orders yet</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* ... existing styles ... */
+
+        /* Orders Management Modal Styles */
+        .order-status {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-completed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-cancelled {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .accept-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .reject-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .accept-btn:hover {
+            background-color: #218838;
+        }
+
+        .reject-btn:hover {
+            background-color: #c82333;
+        }
+
+        /* Export Button Styles */
+        .export-actions {
+            display: flex;
+            gap: 10px;
+            margin-right: 20px;
+        }
+
+        .export-btn {
+            background-color: #517A5B;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9em;
+        }
+
+        .export-btn:hover {
+            background-color: #446749;
+        }
+
+        /* Delete Button Styles */
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
+
+    <script>
+        // ... existing script ...
+
+        // Orders Modal Functionality
+        const ordersModal = document.getElementById('ordersModal');
+        const ordersStatCard = document.getElementById('ordersStatCard');
+        const ordersCloseBtn = ordersModal.querySelector('.close');
+
+        ordersStatCard.addEventListener('click', function() {
+            ordersModal.style.display = 'block';
+        });
+
+        ordersCloseBtn.addEventListener('click', function() {
+            ordersModal.style.display = 'none';
+        });
+
+        window.addEventListener('click', function(e) {
+            if (e.target === ordersModal) {
+                ordersModal.style.display = 'none';
+            }
+        });
+
+        // Function to update order status
+        function updateOrderStatus(orderId, status) {
+            Swal.fire({
+                title: 'Update Order Status',
+                text: `Are you sure you want to ${status === 'completed' ? 'accept' : 'reject'} this order?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#517A5B',
+                cancelButtonColor: '#dc3545',
+                confirmButtonText: 'Yes, proceed',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Send AJAX request to update order status
+                    fetch(`/orders/${orderId}/status`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ status: status })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Success!',
+                                text: `Order has been ${status === 'completed' ? 'accepted' : 'rejected'}`,
+                                icon: 'success',
+                                confirmButtonColor: '#517A5B'
+                            }).then(() => {
+                                // Reload the page to show updated status
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: data.message || 'Failed to update order status',
+                                icon: 'error',
+                                confirmButtonColor: '#517A5B'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'An error occurred while updating the order status',
+                            icon: 'error',
+                            confirmButtonColor: '#517A5B'
+                        });
+                    });
+                }
+            });
+        }
+
+        // Update All Products button to use existing products modal
+        document.getElementById('allProductsBtn').addEventListener('click', function() {
+            const productsModal = document.getElementById('productsModal');
+            if (productsModal) {
+                productsModal.style.display = 'block';
+                loadProducts(); // This function is already defined in item.blade.php
+            }
+        });
+
+        // Export Orders Function
+        function exportOrders(format) {
+            Swal.fire({
+                title: 'Preparing Export',
+                text: 'Please wait while we prepare your file...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Get the current filter values
+            const status = document.getElementById('orderStatusFilter').value;
+            const search = document.getElementById('orderSearchInput').value;
+
+            // Construct the URL with filters
+            const url = `/orders/export/${format}?status=${status}&search=${search}`;
+
+            // Create a temporary link element
+            const link = document.createElement('a');
+            link.href = url;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // Show success message
+            Swal.fire({
+                title: 'Export Started',
+                text: 'Your file download should begin shortly.',
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        }
+
+        // Add delete product function to inventory management
+        function deleteProduct(productId) {
+            Swal.fire({
+                title: 'Delete Product',
+                text: 'Are you sure you want to delete this product? This action cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete it',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Create form and submit for DELETE request
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `{{ route('posts.destroy', '') }}/${productId}`;
+                    form.style.display = 'none';
+                    
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = '{{ csrf_token() }}';
+                    
+                    const methodField = document.createElement('input');
+                    methodField.type = 'hidden';
+                    methodField.name = '_method';
+                    methodField.value = 'DELETE';
+                    
+                    form.appendChild(csrfToken);
+                    form.appendChild(methodField);
+                    document.body.appendChild(form);
+                    
+                    form.submit();
+                }
+            });
+        }
+
+        // Modify the updateInventoryTable function to include delete button
+        function updateInventoryTable(products) {
+            inventoryTableBody.innerHTML = '';
+            selectedItems.clear();
+            updateSelectedItemsCount();
+
+            products.forEach(product => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="padding: 12px; text-align: center;">
+                        <input type="checkbox" class="product-checkbox" data-id="${product.id}">
+                    </td>
+                    <td style="padding: 12px;">${product.title}</td>
+                    <td style="padding: 12px;">${product.category_name}</td>
+                    <td style="padding: 12px; text-align: center;">
+                        <span class="stock-indicator ${getStockClass(product.quantity)}">
+                            ${product.quantity}
+                        </span>
+                    </td>
+                    <td style="padding: 12px; text-align: right;">₱${product.price}</td>
+                    <td style="padding: 12px; text-align: center;">
+                        <button class="inventory-action-btn edit-btn" 
+                            onclick="editProduct(${product.id})"
+                            data-product-id="${product.id}"
+                            data-product-title="${product.title}"
+                            data-product-category-id="${product.category_id}"
+                            data-product-category="${product.category_name}"
+                            data-product-location="${product.location}"
+                            data-product-unit="${product.unit}"
+                            data-product-quantity="${product.quantity}"
+                            data-product-price="${product.price}"
+                            data-product-description="${product.description}">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="inventory-action-btn" onclick="viewHistory(${product.id})">
+                            <i class="bi bi-clock-history"></i>
+                        </button>
+                        <button class="inventory-action-btn delete-btn" onclick="deleteProduct(${product.id})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                `;
+                inventoryTableBody.appendChild(row);
+            });
+
+            // Add event listeners to checkboxes
+            document.querySelectorAll('.product-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const productId = e.target.dataset.id;
+                    if (e.target.checked) {
+                        selectedItems.add(productId);
+                    } else {
+                        selectedItems.delete(productId);
+                    }
+                    updateSelectedItemsCount();
+                });
+            });
+        }
+    </script>
+
+    <!-- Orders Management Modal -->
+    <div id="ordersManagementModal" class="modal">
+        <div class="modal-content" style="max-width: 1000px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Orders Management</h2>
+                <div class="export-actions">
+                    <button class="export-btn" onclick="exportOrders('pdf')">
+                        <i class="bi bi-file-pdf"></i> Export PDF
+                    </button>
+                    <button class="export-btn" onclick="exportOrders('csv')">
+                        <i class="bi bi-file-earmark-spreadsheet"></i> Export CSV
+                    </button>
+                    <button class="export-btn" onclick="exportOrders('doc')">
+                        <i class="bi bi-file-word"></i> Export DOC
+                    </button>
+                </div>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <!-- Orders Summary Stats -->
+                <div class="breakdown-summary">
+                    <div class="summary-stat">
+                        <h4>Total Orders</h4>
+                        <p class="stat-value">
+                            @php
+                                $totalOrders = \App\Models\Order::where('seller_id', Auth::id())->count();
+                                echo $totalOrders;
+                            @endphp
+                        </p>
+                    </div>
+                    <div class="summary-stat">
+                        <h4>Pending Orders</h4>
+                        <p class="stat-value">
+                            @php
+                                $pendingOrders = \App\Models\Order::where('seller_id', Auth::id())
+                                    ->where('status', 'pending')
+                                    ->count();
+                                echo $pendingOrders;
+                            @endphp
+                        </p>
+                    </div>
+                    <div class="summary-stat">
+                        <h4>Completed Orders</h4>
+                        <p class="stat-value">
+                            @php
+                                $completedOrders = \App\Models\Order::where('seller_id', Auth::id())
+                                    ->where('status', 'completed')
+                                    ->count();
+                                echo $completedOrders;
+                            @endphp
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Orders Timeline -->
+                <div class="orders-timeline">
+                    <h3>Recent Orders</h3>
+                    <div class="orders-list">
+                        @forelse(\App\Models\Order::where('seller_id', Auth::id())->latest()->take(5)->get() as $order)
+                            <div class="order-card">
+                                <div class="order-header">
+                                    <div class="order-info">
+                                        <h4>Order #{{ $order->id }}</h4>
+                                        <span class="order-date">{{ $order->created_at->format('M d, Y') }}</span>
+                                    </div>
+                                    <span class="order-status {{ $order->status }}">
+                                        {{ ucfirst($order->status) }}
+                                    </span>
+                                </div>
+                                <div class="order-details">
+                                    <div class="customer-info">
+                                        <p><strong>Customer:</strong> {{ $order->buyer->name }}</p>
+                                        <p><strong>Total Amount:</strong> ₱{{ number_format($order->total_amount, 2) }}</p>
+                                    </div>
+                                    <div class="order-items">
+                                        @foreach($order->items as $item)
+                                            <div class="order-item">
+                                                <img src="{{ $item->post->image }}" alt="{{ $item->post->title }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">
+                                                <div class="item-details">
+                                                    <p>{{ $item->post->title }}</p>
+                                                    <p>Quantity: {{ $item->quantity }}</p>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <div class="order-actions">
+                                        <!-- @if($order->status === 'pending')
+                                            <button class="accept-btn" onclick="updateOrderStatus({{ $order->id }}, 'processing')">
+                                                <i class="bi bi-check-circle"></i> Accept Order
+                                            </button>
+                                            <button class="reject-btn" onclick="updateOrderStatus({{ $order->id }}, 'cancelled')">
+                                                <i class="bi bi-x-circle"></i> Reject Order
+                                            </button>
+                                        @elseif($order->status === 'processing')
+                                            <button class="accept-btn" onclick="updateOrderStatus({{ $order->id }}, 'delivering')">
+                                                <i class="bi bi-truck"></i> Mark as Delivering
+                                            </button>
+                                        @elseif($order->status === 'delivering')
+                                            <button class="accept-btn" onclick="updateOrderStatus({{ $order->id }}, 'completed')">
+                                                <i class="bi bi-check-circle"></i> Mark as Completed
+                                            </button>
+                                        @endif -->
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="no-orders">
+                                <i class="bi bi-inbox"></i>
+                                <p>No orders yet</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+    /* Orders Management Modal Styles */
+    .orders-timeline {
+        margin-top: 30px;
+    }
+
+    .order-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .order-info h4 {
+        margin: 0;
+        color: #333;
+    }
+
+    .order-date {
+        color: #666;
+        font-size: 0.9em;
+    }
+
+    .order-status {
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .order-status.pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .order-status.processing {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+
+    .order-status.delivering {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .order-status.completed {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .order-status.cancelled {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .order-details {
+        border-top: 1px solid #eee;
+        padding-top: 15px;
+    }
+
+    .customer-info {
+        margin-bottom: 15px;
+    }
+
+    .order-items {
+        margin-bottom: 15px;
+    }
+
+    .order-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 5px;
+        margin-bottom: 5px;
+    }
+
+    .item-details p {
+        margin: 0;
+        font-size: 0.9em;
+    }
+
+    .order-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .accept-btn {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .reject-btn {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .accept-btn:hover {
+        background-color: #218838;
+    }
+
+    .reject-btn:hover {
+        background-color: #c82333;
+    }
+
+    .no-orders {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+    }
+
+    .no-orders i {
+        font-size: 48px;
+        margin-bottom: 10px;
+    }
+    </style>
+
+    <script>
+    // ... existing code ...
+
+    // Orders Management Modal Functionality
+    const ordersManagementModal = document.getElementById('ordersManagementModal');
+    const manageOrdersBtn = document.getElementById('manageOrdersBtn');
+    const ordersManagementCloseBtn = ordersManagementModal.querySelector('.close');
+
+    // Open orders management modal when Manage Orders button is clicked
+    manageOrdersBtn.addEventListener('click', function() {
+        ordersManagementModal.style.display = 'block';
+    });
+
+    // Close orders management modal when X is clicked
+    ordersManagementCloseBtn.addEventListener('click', function() {
+        ordersManagementModal.style.display = 'none';
+    });
+
+    // Close orders management modal when clicking outside
+    window.addEventListener('click', function(e) {
+        if (e.target === ordersManagementModal) {
+            ordersManagementModal.style.display = 'none';
+        }
+    });
+
+    // Function to update order status
+    function updateOrderStatus(orderId, status) {
+        Swal.fire({
+            title: 'Update Order Status',
+            text: `Are you sure you want to ${status === 'cancelled' ? 'reject' : 'update'} this order?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#517A5B',
+            cancelButtonColor: '#dc3545',
+            confirmButtonText: 'Yes, proceed',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Send AJAX request to update order status
+                fetch(`/orders/${orderId}/status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ status: status })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: 'Order status updated successfully',
+                            icon: 'success',
+                            confirmButtonColor: '#517A5B'
+                        }).then(() => {
+                            // Reload the page to show updated status
+                            window.location.reload();
+                        });
+                    } else {
+                        throw new Error(data.message || 'Failed to update order status');
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: error.message || 'Something went wrong. Please try again.',
+                        icon: 'error',
+                        confirmButtonColor: '#517A5B'
+                    });
+                });
+            }
+        });
+    }
+
+    // ... existing code ...
     </script>
 </body>
 </html>

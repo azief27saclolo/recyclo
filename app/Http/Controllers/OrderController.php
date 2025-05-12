@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Exception;
+use App\Exports\OrdersExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class OrderController extends Controller
 {
@@ -528,6 +530,22 @@ class OrderController extends Controller
                 ], 500);
             }
             return redirect()->route('orders.index')->with('error', 'An error occurred while cancelling your order. Please try again.');
+        }
+    }
+
+    public function export($format)
+    {
+        $filename = 'orders-' . date('Y-m-d') . '.' . $format;
+        
+        switch ($format) {
+            case 'pdf':
+                return Excel::download(new OrdersExport('pdf'), $filename, \Maatwebsite\Excel\Excel::DOMPDF);
+            case 'csv':
+                return Excel::download(new OrdersExport('csv'), $filename, \Maatwebsite\Excel\Excel::CSV);
+            case 'doc':
+                return Excel::download(new OrdersExport('doc'), $filename, \Maatwebsite\Excel\Excel::XLSX);
+            default:
+                return Excel::download(new OrdersExport('xlsx'), $filename, \Maatwebsite\Excel\Excel::XLSX);
         }
     }
 }

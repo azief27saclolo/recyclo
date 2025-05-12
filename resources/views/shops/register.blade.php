@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Register a Shop - Recyclo</title>
     
-    <!-- Required imports as specified -->
+    <!-- Required imports -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,51 +32,91 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
-        /* Base styles matching profile.php */
-        .profile-container {
+        :root {
+            --primary-color: #517A5B;
+            --secondary-color: #3c5c44;
+            --accent-color: #8BA888;
+            --background-color: #f8f9fa;
+            --text-color: #333;
+            --text-light: #666;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 0;
+            font-family: 'Urbanist', sans-serif;
+            color: var(--text-color);
+        }
+
+        .page-container {
             display: flex;
             min-height: 100vh;
-            background-color: #f5f5f5;
+            background-color: var(--background-color);
         }
 
         .main-content {
             flex: 1;
-            margin-left: 250px;
             padding: 40px;
+            margin-left: 250px;
+            max-width: calc(100% - 250px);
+            min-height: 100vh;
+            background-color: var(--background-color);
         }
 
-        /* Updated seller form styles to match profile.php */
         .profile-header {
             background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 40px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
             margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 120px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            z-index: 0;
         }
 
         .profile-header h1 {
             margin: 0;
-            color: var(--hoockers-green);
+            color: white;
             font-size: 32px;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
         }
 
         .profile-header p {
+            color: rgba(255, 255, 255, 0.9);
             font-size: 16px;
+            position: relative;
+            z-index: 1;
         }
 
         .requirements {
             background: white;
             padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
             margin-bottom: 30px;
         }
 
         .requirements h3 {
-            color: var(--hoockers-green);
+            color: var(--primary-color);
             font-size: 24px;
             margin-bottom: 20px;
+            font-weight: 600;
         }
 
         .requirements ul {
@@ -88,22 +128,32 @@
             display: flex;
             align-items: center;
             margin-bottom: 15px;
-            color: #333;
-            font-size: 18px;
+            color: var(--text-color);
+            font-size: 16px;
+            padding: 12px;
+            background: var(--background-color);
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        .requirements li:hover {
+            transform: translateX(5px);
+            background: #f0f0f0;
         }
 
         .requirements li:before {
-            content: "\F26B"; /* Bootstrap Icons check-circle */
+            content: "\F26B";
             font-family: "Bootstrap Icons";
             margin-right: 10px;
-            color: var(--hoockers-green);
+            color: var(--primary-color);
+            font-size: 18px;
         }
 
         .seller-form {
             background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 40px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
         }
 
         .form-group {
@@ -112,19 +162,28 @@
 
         .form-group label {
             display: block;
-            color: #666;
+            color: var(--text-color);
             margin-bottom: 8px;
-            font-size: 16px;
+            font-size: 15px;
+            font-weight: 600;
         }
 
-        .form-group input[type="text"],
-        .form-group textarea {
+        .form-input {
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 14px 16px;
             width: 100%;
-            padding: 10px;
-            background: #f8f9fa;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 18px;
+            font-size: 15px;
+            transition: var(--transition);
+            color: var(--text-color);
+        }
+
+        .form-input:focus {
+            border-color: var(--primary-color);
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(81, 122, 91, 0.1);
+            outline: none;
         }
 
         .file-input-wrapper {
@@ -133,44 +192,72 @@
 
         .file-label {
             display: block;
-            padding: 12px;
-            background: #f8f9fa;
+            padding: 16px;
+            background: #f9f9f9;
             border: 2px dashed #ddd;
-            border-radius: 8px;
+            border-radius: 10px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 16px;
+            transition: var(--transition);
+            font-size: 15px;
+            color: var(--text-color);
         }
 
         .file-label:hover {
-            border-color: var(--hoockers-green);
+            border-color: var(--primary-color);
             background: #f0f0f0;
         }
 
         .file-label.has-file {
             border-style: solid;
-            border-color: var(--hoockers-green);
-            color: var(--hoockers-green);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
         }
 
         .submit-btn {
-            background: var(--hoockers-green);
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
             color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
+            padding: 16px 25px;
+            border-radius: 10px;
             cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             width: 100%;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn i {
+            margin-right: 10px;
             font-size: 18px;
-            transition: all 0.3s ease;
         }
 
         .submit-btn:hover {
-            background: #3c5c44; /* Using direct color instead of variable */
-            color: white !important; /* Using !important to override any other styles */
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 7px 14px rgba(0,0,0,0.1);
+        }
+
+        .submit-btn:after {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 200px;
+            background: rgba(255,255,255,0.1);
+            transform: rotate(45deg);
+            left: -85px;
+            animation: shine 3s ease-in-out infinite;
+        }
+
+        @keyframes shine {
+            0% { left: -85px; }
+            20% { left: 120%; }
+            100% { left: 120%; }
         }
 
         .required {
@@ -180,12 +267,90 @@
 
         .input-hint {
             display: block;
-            color: #666;
+            color: var(--text-light);
             font-size: 14px;
             margin-top: 5px;
         }
 
-        /* Application status styles */
+        .error-message {
+            color: #dc3545;
+            font-size: 13px;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+
+        /* Map Related Styles */
+        #map-container {
+            height: 300px;
+            width: 100%;
+            border-radius: 10px;
+            border: 1px solid #eee;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .search-results {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 100%;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 10;
+            display: none;
+        }
+
+        .search-result-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: var(--transition);
+            font-size: 14px;
+        }
+
+        .search-result-item:hover {
+            background-color: #f9f9f9;
+        }
+
+        .selected-location {
+            background-color: #f9f9f9;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+            color: var(--text-color);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .loader {
+            display: none;
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: translateY(-50%) rotate(0deg); }
+            100% { transform: translateY(-50%) rotate(360deg); }
+        }
+
+        /* Application Status Styles */
         .application-status-container {
             max-width: 800px;
             margin: 40px auto;
@@ -194,21 +359,32 @@
         .status-box {
             background: white;
             padding: 40px;
-            border-radius: 15px;
+            border-radius: var(--border-radius);
             text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: var(--box-shadow);
+            position: relative;
+            overflow: hidden;
         }
 
-        .status-box.pending {
-            border-top: 5px solid #ffc107;
+        .status-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
         }
 
-        .status-box.approved {
-            border-top: 5px solid #28a745;
+        .status-box.pending::before {
+            background: #ffc107;
         }
 
-        .status-box.rejected {
-            border-top: 5px solid #dc3545;
+        .status-box.approved::before {
+            background: #28a745;
+        }
+
+        .status-box.rejected::before {
+            background: #dc3545;
         }
 
         .status-icon {
@@ -230,16 +406,17 @@
 
         .status-details {
             margin: 25px 0;
-            padding: 15px;
-            background: #f8f9fa;
+            padding: 20px;
+            background: #f9f9f9;
             border-radius: 10px;
             font-size: 16px;
         }
 
         .status-badge {
-            padding: 5px 15px;
+            padding: 8px 20px;
             border-radius: 20px;
             font-weight: 500;
+            display: inline-block;
         }
 
         .status-badge.pending {
@@ -262,13 +439,13 @@
             align-items: center;
             gap: 10px;
             padding: 15px;
-            background: #e9ecef;
+            background: #f9f9f9;
             border-radius: 10px;
             margin-top: 20px;
         }
 
         .info-message i {
-            color: #517A5B;
+            color: var(--primary-color);
             font-size: 1.2rem;
         }
 
@@ -276,24 +453,26 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: #517A5B;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
             color: white;
-            padding: 12px 25px;
-            border-radius: 8px;
+            padding: 14px 28px;
+            border-radius: 10px;
             text-decoration: none;
             margin-top: 20px;
-            transition: all 0.3s ease;
+            transition: var(--transition);
+            font-weight: 600;
         }
 
         .btn-primary:hover {
-            background: #3c5c44;
             transform: translateY(-2px);
+            box-shadow: 0 7px 14px rgba(0,0,0,0.1);
         }
 
         .alert {
-            padding: 12px 20px;
-            border-radius: 8px;
+            padding: 16px 20px;
+            border-radius: 10px;
             margin-bottom: 20px;
+            font-weight: 500;
         }
 
         .alert-success {
@@ -308,75 +487,26 @@
             border: 1px solid #f5c6cb;
         }
 
-        .error-message {
-            color: #dc3545;
-            font-size: 14px;
-            margin-top: 5px;
-            text-decoration: underline;
-        }
-        
-        /* Map Related Styles */
-        #map-container {
-            height: 300px;
-            width: 100%;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            margin-top: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .search-container {
-            margin-bottom: 15px;
-        }
-        
-        #location-search {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-        
-        .search-results {
-            max-height: 200px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            display: none;
-        }
-        
-        .search-result-item {
-            padding: 10px;
-            cursor: pointer;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .search-result-item:hover {
-            background-color: #f0f0f0;
-        }
-        
-        .selected-location {
-            padding: 10px;
-            background-color: #e8f4ea;
-            border-radius: 8px;
-            margin-top: 10px;
-            border-left: 4px solid var(--hoockers-green);
-        }
-        
-        .loader {
-            display: none;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid var(--hoockers-green);
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
-            margin-left: 10px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        @media screen and (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                max-width: 100%;
+                padding: 20px;
+            }
+
+            .profile-header,
+            .requirements,
+            .seller-form {
+                padding: 25px;
+            }
+
+            .profile-header h1 {
+                font-size: 28px;
+            }
+
+            .requirements h3 {
+                font-size: 22px;
+            }
         }
     </style>
 </head>

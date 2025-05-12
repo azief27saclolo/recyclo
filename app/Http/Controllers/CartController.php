@@ -56,33 +56,31 @@ class CartController extends Controller
                 ], 422);
             }
 
+            // Get the current user's cart to check existing quantities
+            $cart = $this->getOrCreateCart();
+            $existingCartItem = CartItem::where('cart_id', $cart->id)
+                                      ->where('product_id', $product->id)
+                                      ->first();
+            
+            // Calculate total available stock (current stock + any items in current user's cart)
+            $totalAvailableStock = $product->stock;
+            if ($existingCartItem) {
+                $totalAvailableStock += $existingCartItem->quantity;
+            }
+
             // Check if requested quantity is available
-            if ($product->stock < $request->quantity) {
+            if ($totalAvailableStock < $request->quantity) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Not enough stock available. Only ' . $product->stock . ' items left.'
+                    'message' => 'Not enough stock available. Only ' . $totalAvailableStock . ' items left.'
                 ], 422);
             }
 
-            $cart = $this->getOrCreateCart();
-            
-            // Check if product already exists in cart
-            $cartItem = CartItem::where('cart_id', $cart->id)
-                                ->where('product_id', $product->id)
-                                ->first();
-            
             $newQuantity = $request->quantity;
-            if ($cartItem) {
-                // Check if total quantity (existing + new) exceeds stock
-                if ($product->stock < ($cartItem->quantity + $newQuantity)) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Not enough stock available. Only ' . $product->stock . ' items left.'
-                    ], 422);
-                }
+            if ($existingCartItem) {
                 // Update quantity if product already exists
-                $cartItem->quantity += $newQuantity;
-                $cartItem->save();
+                $existingCartItem->quantity += $newQuantity;
+                $existingCartItem->save();
                 $message = "{$product->name} quantity updated in your cart!";
             } else {
                 // Add new item to cart

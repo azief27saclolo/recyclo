@@ -39,52 +39,139 @@ class AuthController extends Controller
         ]);
         
         try {
-        // Remove terms from form fields as it's not a database column
-        unset($formFields['terms']);
-        
-        // Set default value for number field to prevent SQL error
-        $formFields['number'] = $request->input('number', '');
-        
-        // Hash Password
-        $formFields['password'] = bcrypt($formFields['password']);
-        
-        // Create User
-        $user = User::create($formFields);
-        
-        // Explicitly regenerate the session to ensure the CSRF token is refreshed
-        $request->session()->regenerate();
-        
-        // Redirect to login page with success message
-        return redirect()->route('login')->with('message', 'Account created successfully! Please log in to continue.');
+            // Remove terms from form fields as it's not a database column
+            unset($formFields['terms']);
+            
+            // Set default value for number field to prevent SQL error
+            $formFields['number'] = $request->input('number', '');
+            
+            // Hash Password
+            $formFields['password'] = bcrypt($formFields['password']);
+            
+            // Create User
+            $user = User::create($formFields);
+            
+            // Send verification email
+            event(new Registered($user));
+            
+            // Explicitly regenerate the session to ensure the CSRF token is refreshed
+            $request->session()->regenerate();
+            
+            // Login the user immediately
+            Auth::login($user);
+            
+            // Redirect to verification notice
+            return redirect()->route('verification.notice')
+                ->with('message', 'Account created successfully! Please check your email to verify your account.');
         } catch (\Exception $e) {
             // If there's an error, redirect back to registration form with error
             return redirect()->route('login', ['form' => 'register'])
                 ->withInput()
-                ->withErrors(['error' => 'Registration failed. Please try again.']);
+                ->withErrors(['error' => 'Registration failed. Please try again. ' . ($e->getMessage() ?? '')]);
         }
     }
 
-    // Verify Email Notice Handler - Modified to redirect to dashboard
+    // Verify Email Notice Handler
     public function verifyEmailNotice()
     {
-        // Bypass verification by redirecting to dashboard
-        return redirect('/dashboard');
+        return view('auth.verify-email');
     }
 
-    // Email Verification Handler - kept for future use if needed
-    public function verifyEmailHandler(EmailVerificationRequest $request)
+    // Email Verification Handler
+    public function verifyEmailHandler(Request $request, $id, $hash)
     {
-        $request->fulfill();
+        try {
+            // Find the user by ID - without requiring authentication
+            $user = User::findOrFail($id);
+            
+            \Log::info('Starting email verification process', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'current_verified_status' => $user->is_email_verified
+            ]);
+            
+            // Check if the user is already verified
+            if ($user->hasVerifiedEmail()) {
+                \Log::info('User already verified', [
+                    'user_id' => $user->id,
+                    'email' => $user->email
+                ]);
+                
+                // If user is not logged in, redirect to login page
+                if (!Auth::check()) {
+                    return redirect()->route('login')
+                        ->with('message', 'Your email is already verified. You can now log in.');
+                }
+                
+                return redirect()->route('landingpage')
+                    ->with('message', 'Your email is already verified.');
+            }
+            
+            // Check if the verification URL is valid
+            $verifies = hash_equals(
+                sha1($user->getEmailForVerification()),
+                (string) $hash
+            );
+            
+            if (!$verifies) {
+                throw new \Exception('Invalid verification link');
+            }
+            
+            // Mark as verified
+            $user->markEmailAsVerified();
+            
+            // Verify the update was successful
+            $user->refresh();
+            if (!$user->hasVerifiedEmail()) {
+                throw new \Exception('Email verification status was not updated');
+            }
 
-        return redirect()->route('dashboard');
+            \Log::info('Email verified successfully', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'is_verified' => $user->is_email_verified
+            ]);
+
+            // If user is not logged in, redirect to login page
+            if (!Auth::check()) {
+                return redirect()->route('login')
+                    ->with('verified', 'Your email has been successfully verified! You can now log in.');
+            }
+            
+            return redirect()->route('landingpage')
+                ->with('verified', 'Your email has been successfully verified! You can now log in.');
+        } catch (\Exception $e) {
+            \Log::error('Email verification failed', [
+                'error' => $e->getMessage(),
+                'user_id' => $id,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->route('verification.notice')
+                ->with('error', 'The verification link is invalid or has expired. Please request a new verification email.');
+        }
     }
 
-    // Resending the Verification Email Handler - kept for future use if needed
+    // Add a helper method to get the verification email for a user
+    public function getEmailForVerification($user)
+    {
+        return $user->email;
+    }
+
+    // Resending the Verification Email Handler
     public function verifyEmailResend(Request $request)
     {
-        $request->user()->sendEmailVerificationNotification();
+        if ($request->user()->hasVerifiedEmail()) {
+            return redirect()->route('landingpage')
+                ->with('message', 'Your email is already verified.');
+        }
 
-        return back()->with('message', 'Verification link sent!');
+        try {
+            $request->user()->sendEmailVerificationNotification();
+            return back()->with('message', 'Verification link sent! Please check your email.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to send verification email. Please try again later.');
+        }
     }
 
     // Login User
@@ -107,8 +194,25 @@ class AuthController extends Controller
             return redirect('/admin/dashboard');
         }
         
-        // Regular user authentication
+        // Check if user exists but is not verified
+        $user = User::where('email', $credentials['email'])->first();
+        if ($user && !$user->hasVerifiedEmail() && Hash::check($credentials['password'], $user->password)) {
+            return back()->withErrors([
+                'email' => 'You need to verify your email before logging in. Please check your inbox.',
+            ])->with('verification_needed', true);
+        }
+        
+        // Regular user authentication with verified email check
         if (Auth::attempt($credentials)) {
+            $user = Auth::user();
+            
+            if (!$user->hasVerifiedEmail()) {
+                Auth::logout();
+                return back()->withErrors([
+                    'email' => 'You need to verify your email before logging in.',
+                ])->with('verification_needed', true);
+            }
+            
             $request->session()->regenerate();
             return redirect()->intended('posts');
         }
