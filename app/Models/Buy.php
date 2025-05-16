@@ -15,6 +15,8 @@ class Buy extends Model
         'quantity',
         'unit',
         'description',
+        'location',
+        'number'
     ];
 
     public function user()

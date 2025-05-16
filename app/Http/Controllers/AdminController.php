@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Storage;
+use App\Models\UserReport;
 
 class AdminController extends Controller
 {
@@ -864,19 +865,33 @@ class AdminController extends Controller
 
     public function users()
     {
-        // Get users with their shop information and ensure status is properly set
-        $users = User::with('shop')
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($user) {
-                // Ensure status is set, default to 'active' if not set
-                if (!isset($user->status)) {
-                    $user->status = 'active';
-                }
-                return $user;
-            });
+        $users = User::orderBy('created_at', 'desc')->get();
+        $reportedUsers = User::whereHas('reports')
+            ->with(['reports' => function($query) {
+                $query->with('reporter')->orderBy('created_at', 'desc');
+            }])
+            ->get();
+        $reportedUsersCount = $reportedUsers->count();
+        
+        return view('admin.users', compact('users', 'reportedUsers', 'reportedUsersCount'));
+    }
+
+    public function getReportDetails($id)
+    {
+        try {
+            $report = UserReport::with(['reporter', 'reported'])
+                ->findOrFail($id);
             
-        return view('admin.users', compact('users'));
+            return response()->json([
+                'success' => true,
+                'report' => $report
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Report not found'
+            ], 404);
+        }
     }
 
     public function updateUserStatus(Request $request, User $user)
@@ -1879,6 +1894,145 @@ class AdminController extends Controller
                 'success' => false,
                 'message' => 'Failed to activate shop: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function getTransactionChartData(Request $request)
+    {
+        $period = $request->input('period', 'monthly');
+        $today = Carbon::today();
+        $labels = [];
+        $transactions = [];
+        $revenue = [];
+
+        switch ($period) {
+            case 'daily':
+                // Last 14 days data
+                $startDate = $today->copy()->subDays(13);
+                $endDate = $today;
+                
+                for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
+                    $labels[] = $date->format('M d');
+                    $dayData = Order::whereDate('created_at', $date->format('Y-m-d'))
+                        ->selectRaw('COUNT(*) as count, SUM(total_amount) as total')
+                        ->first();
+                    $transactions[] = $dayData->count ?? 0;
+                    $revenue[] = $dayData->total ?? 0;
+                }
+                break;
+
+            case 'weekly':
+                // Last 12 weeks data
+                $startDate = $today->copy()->startOfWeek()->subWeeks(11);
+                
+                for ($i = 0; $i < 12; $i++) {
+                    $weekStart = $startDate->copy()->addWeeks($i);
+                    $weekEnd = $weekStart->copy()->endOfWeek();
+                    
+                    $labels[] = "Week " . ($i + 1);
+                    $weekData = Order::whereBetween('created_at', [$weekStart, $weekEnd])
+                        ->selectRaw('COUNT(*) as count, SUM(total_amount) as total')
+                        ->first();
+                    $transactions[] = $weekData->count ?? 0;
+                    $revenue[] = $weekData->total ?? 0;
+                }
+                break;
+
+            case 'yearly':
+                // Last 5 years data
+                $startYear = $today->copy()->subYears(4)->year;
+                
+                for ($year = $startYear; $year <= $today->year; $year++) {
+                    $labels[] = (string)$year;
+                    $yearData = Order::whereYear('created_at', $year)
+                        ->selectRaw('COUNT(*) as count, SUM(total_amount) as total')
+                        ->first();
+                    $transactions[] = $yearData->count ?? 0;
+                    $revenue[] = $yearData->total ?? 0;
+                }
+                break;
+
+            case 'monthly':
+            default:
+                // Last 12 months data
+                $startDate = $today->copy()->subMonths(11)->startOfMonth();
+                
+                for ($i = 0; $i < 12; $i++) {
+                    $monthStart = $startDate->copy()->addMonths($i);
+                    $monthName = $monthStart->format('M Y');
+                    
+                    $labels[] = $monthName;
+                    $monthData = Order::whereYear('created_at', $monthStart->year)
+                        ->whereMonth('created_at', $monthStart->month)
+                        ->selectRaw('COUNT(*) as count, SUM(total_amount) as total')
+                        ->first();
+                    $transactions[] = $monthData->count ?? 0;
+                    $revenue[] = $monthData->total ?? 0;
+                }
+                break;
+        }
+
+        return response()->json([
+            'success' => true,
+            'chartData' => [
+                'labels' => $labels,
+                'transactions' => $transactions,
+                'revenue' => $revenue
+            ]
+        ]);
+    }
+
+    public function restrictUser($id)
+    {
+        try {
+            $user = User::findOrFail($id);
+            $user->status = 'restricted';
+            $user->save();
+
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'User has been restricted successfully.'
+                ]);
+            }
+
+            return back()->with('success', 'User has been restricted successfully.');
+        } catch (\Exception $e) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An error occurred while restricting the user.'
+                ], 500);
+            }
+
+            return back()->with('error', 'An error occurred while restricting the user.');
+        }
+    }
+
+    public function unrestrictUser($id)
+    {
+        try {
+            $user = User::findOrFail($id);
+            $user->status = 'active';
+            $user->save();
+
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'User has been unrestricted successfully.'
+                ]);
+            }
+
+            return back()->with('success', 'User has been unrestricted successfully.');
+        } catch (\Exception $e) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An error occurred while unrestricting the user.'
+                ], 500);
+            }
+
+            return back()->with('error', 'An error occurred while unrestricting the user.');
         }
     }
 }

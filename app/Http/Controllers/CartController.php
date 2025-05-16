@@ -62,17 +62,11 @@ class CartController extends Controller
                                       ->where('product_id', $product->id)
                                       ->first();
             
-            // Calculate total available stock (current stock + any items in current user's cart)
-            $totalAvailableStock = $product->stock;
-            if ($existingCartItem) {
-                $totalAvailableStock += $existingCartItem->quantity;
-            }
-
             // Check if requested quantity is available
-            if ($totalAvailableStock < $request->quantity) {
+            if ($product->stock < $request->quantity) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Not enough stock available. Only ' . $totalAvailableStock . ' items left.'
+                    'message' => 'Not enough stock available. Only ' . $product->stock . ' items left.'
                 ], 422);
             }
 

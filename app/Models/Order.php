@@ -10,13 +10,15 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'post_id',
-        'buyer_id',  // This should be a foreign key to users.id
-        'seller_id', // This should be a foreign key to users.id
         'quantity',
         'total_amount',
         'status',
-        'receipt_image', // Add receipt_image field
+        'cancellation_reason',
+        'receipt_image',
+        'buyer_id',
+        'seller_id'
     ];
 
     /**

@@ -201,6 +201,12 @@ class AuthController extends Controller
                 'email' => 'You need to verify your email before logging in. Please check your inbox.',
             ])->with('verification_needed', true);
         }
+
+        // Check if user exists and is restricted
+        if ($user && $user->status === 'restricted' && Hash::check($credentials['password'], $user->password)) {
+            Auth::logout();
+            return redirect()->route('account.restricted');
+        }
         
         // Regular user authentication with verified email check
         if (Auth::attempt($credentials)) {
@@ -211,6 +217,12 @@ class AuthController extends Controller
                 return back()->withErrors([
                     'email' => 'You need to verify your email before logging in.',
                 ])->with('verification_needed', true);
+            }
+
+            // Check if user is restricted
+            if ($user->status === 'restricted') {
+                Auth::logout();
+                return redirect()->route('account.restricted');
             }
             
             $request->session()->regenerate();
@@ -235,5 +247,11 @@ class AuthController extends Controller
 
         // Redirect to home
         return redirect('/');
+    }
+
+    // Add new method for restricted account page
+    public function showRestrictedAccount()
+    {
+        return view('auth.restricted-account');
     }
 }

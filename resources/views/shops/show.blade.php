@@ -2,53 +2,66 @@
 
 @section('content')
 <div class="container">
-    @if(isset($shop))
+    @php
+        $shop = \App\Models\Shop::where('user_id', $user->id)
+            ->where('status', 'approved')
+            ->first();
+    @endphp
+
+    @if($shop)
         <div class="shop-header">
             <div class="shop-info">
                 {{-- Use a simple fallback image with full URL --}}
                 <img src="{{ $shop->profile_picture ? asset('storage/' . $shop->profile_picture) : asset('images/default-shop.jpg') }}" 
-                     alt="{{ $shop->username }}'s Shop" 
+                     alt="{{ $shop->shop_name }}" 
                      class="shop-image"
                      onerror="this.onerror=null; this.src='https://placehold.co/300x300?text=Shop';">
                 
                 <div class="shop-details">
-                    <h1 class="shop-name">{{ $shop->username }}'s Shop</h1>
+                    <div class="shop-header">
+                        <h2 class="shop-name">{{ $shop->shop_name }}</h2>
+                        <div class="shop-owner">
+                            <i class="fas fa-user"></i>
+                            <span>Shop Owner: {{ $shop->user->username }}</span>
+                        </div>
+                    </div>
                     
-                    <div class="shop-stats">
-                        <div class="stat-item">
-                            <i class="bi bi-box"></i>
-                            <span>{{ $posts->count() }} products</span>
+                    <div class="shop-info">
+                        <div class="info-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div class="info-content">
+                                <span class="info-label">Shop Location:</span>
+                                <span class="info-value">{{ $shop->shop_address }}</span>
+                            </div>
                         </div>
-                        <div class="stat-item">
-                            <i class="bi bi-calendar"></i>
-                            <span>Joined {{ $shop->created_at->format('M Y') }}</span>
+                        
+                        @if($shop->contact_number)
+                        <div class="info-item">
+                            <i class="fas fa-phone"></i>
+                            <div class="info-content">
+                                <span class="info-label">Contact Number:</span>
+                                <span class="info-value">{{ $shop->contact_number }}</span>
+                            </div>
                         </div>
+                        @endif
+                        
+                        @if($shop->business_hours)
+                        <div class="info-item">
+                            <i class="fas fa-clock"></i>
+                            <div class="info-content">
+                                <span class="info-label">Business Hours:</span>
+                                <span class="info-value">{{ $shop->business_hours }}</span>
+                            </div>
+                        </div>
+                        @endif
                     </div>
 
-                    <div class="contact-info">
-                        @if($shop->location)
-                        <div class="contact-item">
-                            <i class="bi bi-geo-alt"></i>
-                            <span>{{ $shop->location }}</span>
-                        </div>
-                        @endif
-                        @if($shop->number)
-                        <div class="contact-item">
-                            <i class="bi bi-telephone"></i>
-                            <span>{{ $shop->number }}</span>
-                        </div>
-                        @endif
-                        @php
-                            $privacySettings = $shop->user ? $shop->user->privacySettings : null;
-                            $showEmail = $privacySettings ? $privacySettings->show_email : false;
-                        @endphp
-                        @if($shop->user && $shop->user->email && $showEmail)
-                            <div class="contact-item">
-                                <i class="bi bi-envelope"></i>
-                                <span>{{ $shop->user->email }}</span>
-                            </div>
-                        @endif
+                    @if($shop->description)
+                    <div class="shop-description">
+                        <h3>About the Shop</h3>
+                        <p>{{ $shop->description }}</p>
                     </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -98,8 +111,10 @@
             </section>
         @endif
     @else
-        <div class="alert alert-danger">
-            Shop information could not be loaded.
+        <div class="no-shop-message">
+            <i class="bi bi-shop" style="font-size: 48px; color: #dee2e6; display: block; margin-bottom: 15px;"></i>
+            <h2>Shop Not Registered</h2>
+            <p>This seller has not registered a shop yet.</p>
         </div>
     @endif
 </div>
@@ -135,36 +150,125 @@
     }
 
     .shop-details {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .shop-header {
+        margin-bottom: 20px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 15px;
     }
 
     .shop-name {
-        font-size: 2.2rem;
-        color: #333;
-        margin-bottom: 10px;
+        font-size: 24px;
+        color: #2c3e50;
+        margin: 0 0 10px 0;
     }
 
-    .shop-stats {
+    .shop-owner {
         display: flex;
-        gap: 20px;
-        margin-bottom: 15px;
+        align-items: center;
+        gap: 8px;
+        color: #666;
+        font-size: 16px;
+        margin-top: 8px;
+    }
+
+    .shop-owner i {
+        color: #3498db;
+    }
+
+    .shop-owner span {
+        font-weight: 500;
+    }
+
+    .shop-info {
+        display: grid;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: flex-start;
+        color: #555;
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
+    }
+
+    .info-item i {
+        width: 24px;
+        margin-right: 12px;
+        color: #3498db;
+        font-size: 16px;
+        margin-top: 4px;
+    }
+
+    .info-content {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 8px 0;
+        width: 100%;
+    }
+
+    .info-label {
+        font-size: 13px;
+        color: #666;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-value {
+        color: #2c3e50;
+        font-size: 15px;
+        line-height: 1.4;
+        padding-left: 2px;
+    }
+
+    .info-item:hover {
+        background-color: #f8f9fa;
+        border-radius: 6px;
+        padding: 8px 12px;
+        margin: 0 -12px;
+    }
+
+    .info-item:hover .info-label {
+        color: #3498db;
+    }
+
+    .shop-description {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 6px;
+        margin-top: 20px;
+    }
+
+    .shop-description h3 {
+        color: #2c3e50;
+        font-size: 18px;
+        margin: 0 0 10px 0;
+    }
+
+    .shop-description p {
+        color: #666;
+        line-height: 1.6;
+        margin: 0;
     }
 
     .section-title {
         font-size: 1.8rem;
         margin: 20px 0;
         color: #1e6f31;
-    }
-
-    .contact-info {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        padding: 15px 0;
-        border-top: 1px solid #eee;
-        border-bottom: 1px solid #eee;
     }
 
     .products-container {
@@ -316,6 +420,27 @@
         font-weight: 700;
         color: #1e6f31;
         margin: 10px 0; /* Reduced top/bottom margin */
+    }
+
+    /* Add new styles for no-shop message */
+    .no-shop-message {
+        text-align: center;
+        padding: 60px 20px;
+        background: #fff;
+        border-radius: 15px;
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+        margin: 30px 0;
+    }
+
+    .no-shop-message h2 {
+        color: #1e6f31;
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+
+    .no-shop-message p {
+        color: #666;
+        font-size: 16px;
     }
 </style>
 @endsection

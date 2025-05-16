@@ -66,14 +66,40 @@
                                 <div class="status-badge active">Active</div>
                             </div>
                             
+                            <div class="request-details">
+                                <div class="request-main-info">
                             <h3 class="request-title">{{ $request->category }}</h3>
-                            <p class="request-meta">
-                                <i class="bi bi-box-seam"></i> {{ $request->quantity }} {{ $request->unit }}
-                                @if($request->user->address)
-                                <i class="bi bi-geo-alt"></i> {{ $request->user->address }}
-                                @endif
-                            </p>
+                                    <div class="quantity-badge">
+                                        <i class="bi bi-box-seam"></i>
+                                        <span>{{ $request->quantity }} {{ $request->unit }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="request-description-box">
                             <p class="request-description">{{ $request->description }}</p>
+                                    <button class="read-more-btn" onclick="toggleDescription(this)">
+                                        <span>Read More</span>
+                                        <i class="bi bi-chevron-down"></i>
+                                    </button>
+                                </div>
+
+                                <div class="contact-info">
+                                    <div class="contact-item">
+                                        <i class="bi bi-telephone"></i>
+                                        <div class="contact-details">
+                                            <span class="contact-label">Contact Number</span>
+                                            <span class="contact-value">{{ $request->number }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="contact-item">
+                                        <i class="bi bi-geo-alt"></i>
+                                        <div class="contact-details">
+                                            <span class="contact-label">Location</span>
+                                            <span class="contact-value">{{ $request->location }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             
                             <div class="request-actions">
                                 <button class="action-btn like-btn" data-likes="0">
@@ -109,7 +135,7 @@
                     <h3>No buy requests available</h3>
                     <p>Be the first to post a buy request!</p>
                     @if(Auth::check())
-                        <a href="{{ route('buy.create') }}" class="create-btn">Create Buy Request</a>
+                        <a href="{{ route('buy.create') }}" class="create-btn">  Request</a>
                     @else
                         <a href="{{ route('login') }}" class="create-btn">Login to Create</a>
                     @endif
@@ -167,26 +193,57 @@
 <div id="contactModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2 class="modal-title">Notify Buyer</h2>
+            <h2 class="modal-title">
+                <i class="bi bi-bell"></i>
+                Notify Buyer
+            </h2>
             <span class="close">&times;</span>
         </div>
-        <div id="contactModalContent">
+        <div class="modal-body">
             <form id="contactForm" action="{{ route('marketplace.notify') }}" method="POST">
                 @csrf
                 <input type="hidden" id="requestId" name="request_id">
                 <div class="form-group">
-                    <label for="message">Your Message to <span id="buyerName"></span></label>
-                    <textarea name="message" id="message" class="form-control" rows="4" placeholder="Describe what you can offer..." required></textarea>
+                    <label for="message" class="form-label">
+                        <i class="bi bi-chat-text"></i>
+                        Your Message to <span id="buyerName" class="buyer-name"></span>
+                    </label>
+                    <textarea name="message" id="message" class="form-control" rows="4" 
+                              placeholder="Describe what you can offer and how you can help..." required></textarea>
+                    <div class="help-text">Be specific about your offer and include any relevant details</div>
                 </div>
                 <div class="form-group">
-                    <label for="contact_method">Preferred Contact Method</label>
-                    <select name="contact_method" id="contact_method" class="form-control" required>
-                        <option value="">--Select--</option>
+                    <label for="contact_method" class="form-label">
+                        <i class="bi bi-telephone"></i>
+                        Preferred Contact Method
+                    </label>
+                    <div class="contact-method-container">
+                        <select name="contact_method" id="contact_method" class="form-control" required onchange="toggleContactInput()">
+                            <option value="">Select your preferred contact method</option>
                         <option value="email">Email</option>
                         <option value="phone">Phone</option>
                     </select>
+                        <div id="emailInputGroup" class="contact-input-group" style="display: none;">
+                            <input type="email" name="contact_email" id="contact_email" class="form-control" 
+                                   placeholder="Enter your email address...">
                 </div>
-                <button type="submit" class="submit-btn">Send Notification</button>
+                        <div id="phoneInputGroup" class="contact-input-group" style="display: none;">
+                            <input type="tel" name="contact_phone" id="contact_phone" class="form-control" 
+                                   placeholder="Enter your phone number...">
+                        </div>
+                    </div>
+                    <div class="help-text">Choose how you'd like the buyer to contact you</div>
+                </div>
+                <div class="form-footer">
+                    <button type="button" class="cancel-btn" onclick="closeContactModal()">
+                        <i class="bi bi-x-circle"></i>
+                        Cancel
+                    </button>
+                    <button type="submit" class="submit-btn">
+                        <i class="bi bi-send"></i>
+                        Send Notification
+                    </button>
+                </div>
             </form>
         </div>
     </div>
@@ -311,79 +368,211 @@
     .request-category.rubber { background: rgba(44, 62, 80, 0.9); }
 
     .request-content {
-        padding: 20px;
+        padding: 25px;
         display: flex;
         flex-direction: column;
         flex-grow: 1;
+        gap: 20px;
     }
 
     .request-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 15px;
+        margin-bottom: 5px;
     }
 
     .user-info {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
     }
 
     .user-avatar {
-        width: 40px;
-        height: 40px;
+        width: 45px;
+        height: 45px;
         border-radius: 50%;
         object-fit: cover;
+        border: 2px solid var(--hoockers-green);
     }
 
     .user-info h4 {
         margin: 0;
-        font-size: 17px; /* Increased from 1rem */
-        color: #333;
+        font-size: 18px;
+        color: #2c3e50;
+        font-weight: 600;
     }
 
     .post-date {
-        font-size: 15px; /* Increased from 0.85rem */
-        color: #666;
+        font-size: 14px;
+        color: #6c757d;
     }
 
     .status-badge {
-        padding: 5px 12px;
-        border-radius: 15px;
-        font-size: 15px; /* Increased from 0.85rem */
+        padding: 6px 15px;
+        border-radius: 20px;
+        font-size: 14px;
         font-weight: 500;
+        background: #e8f5e9;
+        color: #2e7d32;
     }
 
-    .status-badge.active {
-        background: #d4edda;
-        color: #155724;
+    .request-details {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .request-main-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 5px;
     }
 
     .request-title {
-        font-size: 22px; /* Increased from 1.3rem */
-        color: #333;
-        margin: 15px 0;
+        font-size: 24px;
+        color: #2c3e50;
+        margin: 0;
+        font-weight: 700;
     }
 
-    .request-meta {
+    .quantity-badge {
+        background: rgba(81, 122, 91, 0.1);
+        padding: 8px 15px;
+        border-radius: 20px;
         display: flex;
-        gap: 20px;
-        color: #666;
-        font-size: 16px; /* Increased from 0.95rem */
-        margin-bottom: 15px;
+        align-items: center;
+        gap: 8px;
+        color: var(--hoockers-green);
+        font-weight: 500;
     }
 
-    .request-meta i {
-        margin-right: 5px;
+    .quantity-badge i {
+        font-size: 16px;
+    }
+
+    .request-description-box {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 12px;
+        border-left: 4px solid var(--hoockers-green);
+        position: relative;
+        max-height: 40px; /* Height for two lines */
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+
+    .request-description-box.expanded {
+        max-height: 200px; /* Allow full content height when expanded */
+        overflow-y: auto;
     }
 
     .request-description {
-        color: #555;
-        font-size: 16px; /* Increased from 0.95rem */
-        line-height: 1.5;
-        margin-bottom: 20px;
-        flex-grow: 1;
+        color: #495057;
+        font-size: 15px;
+        line-height: 1.6;
+        margin: 0;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        text-align: justify;
+        padding-right: 100px;
+        margin-bottom: 5px;
+    }
+
+    .read-more-btn {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background: linear-gradient(90deg, 
+            rgba(248, 249, 250, 0) 0%,
+            rgba(248, 249, 250, 0.8) 20%,
+            rgba(248, 249, 250, 1) 100%
+        );
+        padding: 5px 15px;
+        color: var(--hoockers-green);
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        display: none;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.3s ease;
+        height: 30px;
+        min-width: 100px;
+    }
+
+    .read-more-btn.visible {
+        display: flex;
+    }
+
+    .read-more-btn:hover {
+        color: #3c5c44;
+    }
+
+    .read-more-btn i {
+        transition: transform 0.3s ease;
+    }
+
+    .read-more-btn.expanded i {
+        transform: rotate(180deg);
+    }
+
+    /* Add fade effect for expanded state */
+    .request-description-box.expanded::after {
+        display: none; /* Remove fade effect when expanded */
+    }
+
+    .request-description-box:not(.expanded)::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 30px;
+        background: linear-gradient(transparent, #f8f9fa);
+        pointer-events: none;
+    }
+
+    .contact-info {
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .contact-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .contact-item i {
+        color: var(--hoockers-green);
+        font-size: 18px;
+        margin-top: 2px;
+    }
+
+    .contact-details {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .contact-label {
+        font-size: 13px;
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    .contact-value {
+        font-size: 15px;
+        color: #2c3e50;
+        font-weight: 500;
     }
 
     .request-actions {
@@ -391,46 +580,51 @@
         align-items: center;
         gap: 15px;
         padding-top: 15px;
-        border-top: 1px solid #eee;
+        border-top: 1px solid #e9ecef;
         margin-top: auto;
     }
 
     .action-btn {
         display: flex;
         align-items: center;
-        gap: 5px;
-        padding: 8px 12px;
-        border: none;
-        background: none;
-        color: #666;
-        font-size: 16px; /* Increased from 0.9rem */
+        gap: 6px;
+        padding: 8px 15px;
+        border: 1px solid #e9ecef;
+        background: #fff;
+        color: #495057;
+        font-size: 14px;
+        border-radius: 20px;
         cursor: pointer;
         transition: all 0.2s ease;
     }
 
     .action-btn:hover {
+        background: #f8f9fa;
         color: var(--hoockers-green);
+        border-color: var(--hoockers-green);
     }
 
     .like-btn.active {
+        background: #fff5f5;
         color: #e74c3c;
-    }
-
-    .like-btn.active i {
-        animation: likeEffect 0.3s ease;
+        border-color: #e74c3c;
     }
 
     .contact-btn {
         margin-left: auto;
         background: var(--hoockers-green);
         color: white;
-        padding: 8px 20px;
+        padding: 10px 20px;
         border: none;
         border-radius: 20px;
-        font-size: 16px; /* Increased from 0.9rem */
+        font-size: 14px;
+        font-weight: 500;
         cursor: pointer;
         transition: all 0.3s ease;
         text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
 
     .contact-btn:hover {
@@ -440,208 +634,12 @@
         color: white;
     }
 
-    @keyframes likeEffect {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.2); }
-        100% { transform: scale(1); }
-    }
-
-    /* Guide Steps */
-    .guide-steps {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 30px;
-        margin-top: 20px;
-    }
-
-    .step {
-        background: white;
-        padding: 30px 20px;
-        border-radius: 20px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-        text-align: center;
-        position: relative;
-    }
-
-    .step-icon {
-        width: 70px;
-        height: 70px;
-        background: rgba(81, 122, 91, 0.1);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 20px;
-    }
-
-    .step-icon i {
-        font-size: 32px; /* Increased from 2rem */
-        color: var(--hoockers-green);
-    }
-
-    .step-number {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        font-size: 24px; /* Increased from 1.5rem */
-        font-weight: 700;
-        color: rgba(81, 122, 91, 0.2);
-    }
-
-    .pagination-container {
-        margin-top: 40px;
-        display: flex;
-        justify-content: center;
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: 50px 20px;
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    }
-
-    .empty-state h3 {
-        font-size: 24px; /* Increased from 1.5rem */
-        color: #333;
-        margin-bottom: 10px;
-    }
-
-    .empty-state p {
-        color: #666;
-        font-size: 18px; /* Added font size */
-        margin-bottom: 20px;
-    }
-
-    .empty-state i {
-        font-size: 60px; /* Increased from 48px */
-        color: #dee2e6;
-        display: block;
-        margin-bottom: 15px;
-    }
-
-    .create-btn {
-        background: var(--hoockers-green);
-        color: white;
-        padding: 10px 20px;
-        border-radius: 25px;
-        text-decoration: none;
-        display: inline-block;
-        font-weight: 500;
-        font-size: 16px; /* Added font size */
-        transition: all 0.3s ease;
-    }
-
-    .create-btn:hover {
-        background: #3c5c44;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-
-    /* Modal Styling */
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1050;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0,0,0,0.5);
-        justify-content: center;
-        align-items: center;
-    }
-
-    .modal-content {
-        background-color: white;
-        margin: 50px auto;
-        padding: 30px;
-        width: 90%;
-        max-width: 600px;
-        border-radius: 15px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    }
-
-    .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        border-bottom: 1px solid #eee;
-        padding-bottom: 15px;
-    }
-
-    .modal-title {
-        color: var(--hoockers-green);
-        font-size: 28px; /* Increased from 24px */
-        font-weight: 600;
-        margin: 0;
-    }
-
-    .close {
-        color: #aaa;
-        float: right;
-        font-size: 32px; /* Increased from 28px */
-        font-weight: bold;
-        cursor: pointer;
-    }
-
-    .close:hover,
-    .close:focus {
-        color: #000;
-        text-decoration: none;
-        cursor: pointer;
-    }
-
-    .form-group {
-        margin-bottom: 20px;
-    }
-
-    .form-group label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 600;
-        font-size: 18px; /* Added font size */
-        color: #333;
-    }
-
-    .form-control {
-        width: 100%;
-        padding: 12px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        font-size: 18px; /* Increased from 16px */
-    }
-
-    .form-control:focus {
-        border-color: var(--hoockers-green);
-        outline: none;
-    }
-
-    .submit-btn {
-        background: var(--hoockers-green);
-        color: white;
-        border: none;
-        padding: 12px 25px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 18px; /* Increased from 16px */
-        width: 100%;
-        transition: background-color 0.3s ease;
-    }
-
-    .submit-btn:hover {
-        background: #3c5c44;
-    }
-
     @media (max-width: 768px) {
         .requests-grid {
             grid-template-columns: 1fr;
         }
 
-        .guide-steps {
+    .guide-steps {
             grid-template-columns: 1fr;
         }
         
@@ -653,6 +651,30 @@
         /* Pagination responsiveness */
         .pagination-container {
             flex-wrap: wrap;
+        }
+
+        .request-main-info {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .quantity-badge {
+            align-self: flex-start;
+        }
+
+        .contact-info {
+            padding: 12px;
+        }
+
+        .request-description-box,
+        .description-box {
+            max-height: 180px;
+        }
+        
+        .request-description,
+        .description-text {
+            font-size: 14px;
         }
     }
     
@@ -680,7 +702,7 @@
         display: flex;
         justify-content: center;
     }
-    
+
     /* Make pagination info display horizontally and larger */
     .pagination-container > div {
         width: 100%;
@@ -739,143 +761,661 @@
         font-size: 17px !important; 
         padding: 8px 14px !important;
     }
+
+    /* Add these styles in the <style> section */
+    .contact-info {
+        background: #f8f9fa;
+        padding: 12px 15px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+    }
+
+    .contact-info p {
+        margin: 5px 0;
+        color: #495057;
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .contact-info i {
+        color: var(--hoockers-green);
+        font-size: 16px;
+    }
+
+    /* Add these styles for the contact modal */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1050;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.5);
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(5px);
+    }
+
+    .modal-content {
+        background-color: white;
+        margin: 20px auto;
+        padding: 0;
+        width: 90%;
+        max-width: 600px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        transform: translateY(0);
+        transition: transform 0.3s ease;
+    }
+
+    .modal-header {
+        background: var(--hoockers-green);
+        color: white;
+        padding: 20px 25px;
+        border-radius: 20px 20px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-title {
+        color: white;
+        font-size: 24px;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .modal-title i {
+        font-size: 24px;
+    }
+
+    .modal-body {
+        padding: 25px;
+    }
+
+    .close {
+        color: white;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        opacity: 0.8;
+        transition: opacity 0.3s ease;
+    }
+
+    .close:hover {
+        opacity: 1;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 16px;
+    }
+
+    .form-label i {
+        color: var(--hoockers-green);
+    }
+
+    .buyer-name {
+        color: var(--hoockers-green);
+        font-weight: 700;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        font-size: 15px;
+        transition: all 0.3s ease;
+        background-color: #f8f9fa;
+    }
+
+    .form-control:focus {
+        border-color: var(--hoockers-green);
+        background-color: #fff;
+        box-shadow: 0 0 0 4px rgba(81, 122, 91, 0.1);
+        outline: none;
+    }
+
+    .help-text {
+        font-size: 13px;
+        color: #6c757d;
+        margin-top: 6px;
+    }
+
+    .form-footer {
+        display: flex;
+        gap: 15px;
+        margin-top: 25px;
+    }
+
+    .cancel-btn {
+        flex: 1;
+        padding: 12px;
+        border: 2px solid #e9ecef;
+        background: #f8f9fa;
+        color: #6c757d;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .cancel-btn:hover {
+        background: #e9ecef;
+        color: #495057;
+    }
+
+    .submit-btn {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        background: var(--hoockers-green);
+        color: white;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .submit-btn:hover {
+        background: #3c5c44;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    @media (max-width: 768px) {
+        .modal-content {
+            width: 95%;
+            margin: 10px auto;
+        }
+        
+        .form-footer {
+            flex-direction: column;
+        }
+        
+        .cancel-btn, .submit-btn {
+            width: 100%;
+        }
+    }
+
+    /* Update the overview modal description box */
+    .description-box {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid #e9ecef;
+        margin-top: 10px;
+        max-height: 250px;
+        overflow-y: auto;
+    }
+
+    .description-box::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .description-box::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+
+    .description-box::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
+    }
+
+    .description-box::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+
+    .description-text {
+        color: #2c3e50;
+        line-height: 1.6;
+        margin: 0;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+
+    /* Update the form textarea styles */
+    textarea.form-control {
+        min-height: 150px;
+        max-height: 300px;
+        resize: vertical;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+
+    /* Add a fade effect to indicate scrollable content */
+    .request-description-box::after,
+    .description-box::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 30px;
+        background: linear-gradient(transparent, #f8f9fa);
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .request-description-box:hover::after,
+    .description-box:hover::after {
+        opacity: 1;
+    }
+
+    /* Add these styles */
+    .contact-method-container {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .contact-method-container select {
+        flex: 1;
+    }
+
+    .contact-input-group {
+        flex: 2;
+    }
+
+    .contact-input-group input {
+        width: 100%;
+    }
+    
+    .response-meta span {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .response-meta i {
+        color: var(--hoockers-green);
+    }
+
+    /* Add these styles for the map and marker */
+    #map-container {
+        height: 300px;
+        width: 100%;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid #eee;
+        margin-bottom: 20px;
+    }
+
+    .custom-marker {
+        background-color: #517A5B;
+        border: 2px solid white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .description-box {
+        position: relative;
+        margin-bottom: 15px;
+    }
+
+    .description-text {
+        margin: 0;
+        line-height: 1.5;
+        color: #495057;
+        font-size: 15px;
+    }
+
+    .expand-button {
+        display: none;
+        align-items: center;
+        gap: 5px;
+        color: #517A5B;
+        background: none;
+        border: none;
+        padding: 5px 0;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .expand-button:hover {
+        color: #3c5c44;
+    }
+
+    .description-box.expanded .description-text {
+        white-space: normal;
+    }
 </style>
 
 <script>
-    // Contact Modal Functionality
-    document.addEventListener('DOMContentLoaded', function() {
-        // Make sure we have SweetAlert2
-        if (typeof Swal === 'undefined') {
-            console.error('SweetAlert2 is not loaded. Loading it now...');
-            // Dynamically load SweetAlert2 if it's not already loaded
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
-            document.head.appendChild(script);
-        }
-        
-        let contactModal = document.getElementById('contactModal');
-        let closeBtn = contactModal.querySelector('.close');
-        let contactForm = document.getElementById('contactForm');
-        
-        // Add notify buyer function to window
-        window.notifyBuyer = function(requestId, buyerName) {
-            document.getElementById('requestId').value = requestId;
-            document.getElementById('buyerName').textContent = buyerName;
-            contactModal.style.display = 'flex'; // Changed from 'block' to 'flex' for better centering
-            document.body.style.overflow = 'hidden';
-        }
+    // Initialize map and marker
+    let map, marker;
+    let geocoder;
 
-        closeBtn.addEventListener('click', function() {
-            contactModal.style.display = 'none';
-            document.body.style.overflow = 'auto';
+    function initMap() {
+        // Default to Zamboanga City coordinates
+        const initialLat = 6.9214;
+        const initialLng = 122.0790;
+        const initialZoom = 13;
+
+        // Initialize the map
+        map = L.map('map-container').setView([initialLat, initialLng], initialZoom);
+
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Create custom icon for marker
+        const customIcon = L.divIcon({
+            className: 'custom-marker',
+            html: '<i class="bi bi-geo-alt-fill" style="color: white; font-size: 16px;"></i>',
+            iconSize: [30, 30],
+            iconAnchor: [15, 15],
+            popupAnchor: [0, -15]
         });
 
-        window.addEventListener('click', function(e) {
-            if (e.target === contactModal) {
-                contactModal.style.display = 'none';
-                document.body.style.overflow = 'auto';
+        // Initialize marker
+        marker = L.marker([initialLat, initialLng], {
+            icon: customIcon,
+            draggable: true
+        }).addTo(map);
+
+        // Initialize geocoder
+        geocoder = L.Control.geocoder({
+            defaultMarkGeocode: false,
+            placeholder: 'Search for a location...',
+            errorMessage: 'Nothing found.'
+        }).on('markgeocode', function(e) {
+            const latlng = e.geocode.center;
+            marker.setLatLng(latlng);
+            map.setView(latlng, 16);
+            document.getElementById('location-input').value = e.geocode.name;
+        }).addTo(map);
+
+        // Add click event to map
+        map.on('click', function(e) {
+            marker.setLatLng(e.latlng);
+            reverseGeocode(e.latlng.lat, e.latlng.lng);
+        });
+
+        // Add marker drag end event
+        marker.on('dragend', function(e) {
+            const position = marker.getLatLng();
+            reverseGeocode(position.lat, position.lng);
+        });
+    }
+
+    // Function to handle description box expansion
+    function handleDescriptionBox(descriptionBox) {
+        if (!descriptionBox) return;
+        
+        const description = descriptionBox.querySelector('.description-text');
+        const expandButton = descriptionBox.querySelector('.expand-button');
+        
+        if (!description || !expandButton) return;
+        
+        // Get the line height
+        const lineHeight = parseInt(window.getComputedStyle(description).lineHeight);
+        // Get the actual height of the content
+        const contentHeight = description.scrollHeight;
+        
+        // Show read more button only if content exceeds 2 lines
+        if (contentHeight > lineHeight * 2) {
+            expandButton.style.display = 'flex';
+        } else {
+            expandButton.style.display = 'none';
+        }
+    }
+
+    // Initialize description boxes and map when document is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize map
+        initMap();
+
+        // Initialize description boxes
+        const descriptionBoxes = document.querySelectorAll('.description-box');
+        descriptionBoxes.forEach(box => {
+            if (box) {
+                handleDescriptionBox(box);
             }
         });
+    });
 
-        // Completely rewritten form submission handler
-        if (contactForm) {
+    // Handle expand/collapse
+    function toggleDescription(button) {
+        if (!button) return;
+        
+        const descriptionBox = button.closest('.description-box');
+        if (!descriptionBox) return;
+        
+        const isExpanded = descriptionBox.classList.contains('expanded');
+        
+        if (isExpanded) {
+            descriptionBox.classList.remove('expanded');
+            button.innerHTML = '<span>Read More</span><i class="bi bi-chevron-down"></i>';
+        } else {
+            descriptionBox.classList.add('expanded');
+            button.innerHTML = '<span>Show Less</span><i class="bi bi-chevron-up"></i>';
+        }
+    }
+
+    // Update the notify buyer functionality
+    function notifyBuyer(requestId, buyerName) {
+        // Set the request ID and buyer name
+            document.getElementById('requestId').value = requestId;
+            document.getElementById('buyerName').textContent = buyerName;
+        
+        // Reset the form
+        document.getElementById('contactForm').reset();
+        
+        // Show the modal
+        const modal = document.getElementById('contactModal');
+        modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        
+        // Focus on the message textarea
+        setTimeout(() => {
+            document.getElementById('message').focus();
+        }, 100);
+        }
+
+    function closeContactModal() {
+        const modal = document.getElementById('contactModal');
+        modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        
+        // Reset the form
+        document.getElementById('contactForm').reset();
+    }
+
+    // Add event listeners when the document is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('contactModal');
+        const closeBtn = modal.querySelector('.close');
+        const contactForm = document.getElementById('contactForm');
+        
+        // Close modal when clicking the X button
+        closeBtn.addEventListener('click', closeContactModal);
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeContactModal();
+            }
+        });
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.style.display === 'flex') {
+                closeContactModal();
+            }
+        });
+        
+        // Handle form submission
             contactForm.addEventListener('submit', function(e) {
                 e.preventDefault();
-                console.log('Form submission started');
-                
-                // Get the CSRF token from meta tag
-                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                
-                // Create form data object
+            
+            const contactMethod = document.getElementById('contact_method').value;
+            const contactEmail = document.getElementById('contact_email').value;
+            const contactPhone = document.getElementById('contact_phone').value;
+            
+            // Validate contact details based on selected method
+            if (contactMethod === 'email' && !contactEmail) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Please provide your email address',
+                    icon: 'error',
+                    confirmButtonColor: '#517A5B'
+                });
+                return;
+            }
+            
+            if (contactMethod === 'phone' && !contactPhone) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Please provide your phone number',
+                    icon: 'error',
+                    confirmButtonColor: '#517A5B'
+                });
+                return;
+            }
+            
                 const formData = new FormData(this);
                 
-                // Debug: Log the form data
-                for (const pair of formData.entries()) {
-                    console.log(`${pair[0]}: ${pair[1]}`);
-                }
-                
-                // Send the AJAX request
+            // Ensure contact details are included in formData
+            if (contactMethod === 'email') {
+                formData.set('contact_email', contactEmail);
+                formData.delete('contact_phone');
+            } else {
+                formData.set('contact_phone', contactPhone);
+                formData.delete('contact_email');
+            }
+            
+            const submitBtn = this.querySelector('.submit-btn');
+            
+            // Disable submit button and show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Sending...';
+            
                 fetch(this.action, {
                     method: 'POST',
                     body: formData,
                     headers: {
-                        'X-CSRF-TOKEN': csrfToken,
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                         'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    credentials: 'same-origin' // Send cookies
+                }
                 })
                 .then(response => {
-                    console.log('Response status:', response.status);
                     if (!response.ok) {
                         return response.json().then(data => {
-                            throw new Error(data.message || 'Server error occurred');
+                        throw new Error(data.message || 'Something went wrong');
                         });
                     }
                     return response.json();
                 })
                 .then(data => {
-                    console.log('Response data:', data);
-                    if (data.success) {
-                        // Success message
+                // Show success message
                         Swal.fire({
                             title: 'Success!',
-                            text: data.message || 'Your notification has been sent!',
+                    text: data.message || 'Your notification has been sent successfully!',
                             icon: 'success',
                             confirmButtonColor: '#517A5B'
                         });
                         
                         // Close modal and reset form
-                        contactModal.style.display = 'none';
-                        document.body.style.overflow = 'auto';
-                        contactForm.reset();
-                    } else {
-                        throw new Error(data.message || 'An error occurred');
-                    }
+                closeContactModal();
                 })
                 .catch(error => {
-                    console.error('Error:', error);
+                // Show error message with custom styling for the "silly" message
+                const isSillyMessage = error.message.includes("Hey silly");
                     Swal.fire({
-                        title: 'Error!',
-                        text: error.message || 'Something went wrong. Please try again.',
-                        icon: 'error',
-                        confirmButtonColor: '#517A5B'
-                    });
+                    title: isSillyMessage ? 'Oops!' : 'Error!',
+                    text: error.message || 'Failed to send notification. Please try again.',
+                    icon: isSillyMessage ? 'warning' : 'error',
+                    confirmButtonColor: '#517A5B',
+                    customClass: {
+                        popup: 'bigger-modal'
+                    }
+                });
+            })
+            .finally(() => {
+                // Re-enable submit button and restore original text
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="bi bi-send"></i> Send Notification';
                 });
             });
-        } else {
-            console.error('Contact form not found!');
-        }
-        
-        // Like button functionality
-        document.querySelectorAll('.like-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                this.classList.toggle('active');
-                const likesSpan = this.querySelector('span');
-                const currentLikes = parseInt(likesSpan.textContent);
-                
-                if (this.classList.contains('active')) {
-                    likesSpan.textContent = currentLikes + 1;
-                } else {
-                    likesSpan.textContent = Math.max(0, currentLikes - 1);
+
+        // Check each description box for content length
+        document.querySelectorAll('.request-description-box').forEach(box => {
+            const description = box.querySelector('.request-description');
+            const readMoreBtn = box.querySelector('.read-more-btn');
+            
+            // Get the line height
+            const lineHeight = parseInt(window.getComputedStyle(description).lineHeight);
+            // Get the actual height of the content
+            const contentHeight = description.scrollHeight;
+            
+            // Show read more button only if content exceeds 2 lines
+            if (contentHeight > lineHeight * 2) {
+                readMoreBtn.classList.add('visible');
                 }
             });
         });
 
-        // Share button functionality
-        document.querySelectorAll('.share-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                // Basic share implementation
-                if (navigator.share) {
-                    navigator.share({
-                        title: 'Buy Request on Recyclo',
-                        text: 'Check out this buy request on Recyclo!',
-                        url: window.location.href
-                    });
-                } else {
-                    alert('Sharing is not supported on this browser');
-                }
-            });
-        });
-    });
+    // Add this function to handle the contact method selection
+    function toggleContactInput() {
+        const contactMethod = document.getElementById('contact_method').value;
+        const emailGroup = document.getElementById('emailInputGroup');
+        const phoneGroup = document.getElementById('phoneInputGroup');
+        const emailInput = document.getElementById('contact_email');
+        const phoneInput = document.getElementById('contact_phone');
+
+        // Hide both groups first
+        emailGroup.style.display = 'none';
+        phoneGroup.style.display = 'none';
+
+        // Clear both inputs
+        emailInput.value = '';
+        phoneInput.value = '';
+
+        // Show the selected group
+        if (contactMethod === 'email') {
+            emailGroup.style.display = 'block';
+            emailInput.setAttribute('required', 'required');
+            phoneInput.removeAttribute('required');
+        } else if (contactMethod === 'phone') {
+            phoneGroup.style.display = 'block';
+            phoneInput.setAttribute('required', 'required');
+            emailInput.removeAttribute('required');
+        }
+    }
 </script>
 @endsection

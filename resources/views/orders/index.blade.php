@@ -309,18 +309,149 @@
         </div>
     </div>
 
+    <!-- Add Cancellation Reason Modal -->
+    <div id="cancellationReasonModal" class="modal" style="display: none; position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+        <div class="modal-content" style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 8px; position: relative;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+                <h2 style="margin: 0; color: #333; font-size: 1.5rem;">Cancel Order</h2>
+                <span class="close" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="cancellationReasonForm">
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label for="cancellationReason" style="display: block; margin-bottom: 8px; color: #333;">Please select a reason for cancellation:</label>
+                        <select id="cancellationReason" class="form-control" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="">Select a reason</option>
+                            <option value="no_longer_want">I don't want to buy anymore</option>
+                            <option value="wrong_order">I made a mistake in ordering</option>
+                            <option value="found_better">Found a better deal elsewhere</option>
+                            <option value="other">Other reason</option>
+                        </select>
+                    </div>
+                    <div id="otherReasonDiv" class="form-group" style="display: none; margin-bottom: 20px;">
+                        <label for="otherReason" style="display: block; margin-bottom: 8px; color: #333;">Please specify your reason:</label>
+                        <textarea id="otherReason" class="form-control" rows="3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></textarea>
+                    </div>
+                    <div class="form-group" style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button type="button" class="btn btn-secondary" onclick="closeCancellationModal()" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
+                        <button type="submit" class="btn btn-danger" style="padding: 8px 16px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Confirm Cancellation</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Include SweetAlert2 CSS and JS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
 
     <!-- Add custom SweetAlert2 styles -->
     <style>
-        // ...existing code...
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1050;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+            position: relative;
+            animation: modalFadeIn 0.3s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #333;
+            font-size: 1.5rem;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
     </style>
 
     <script>
-        // Tab switching functionality
         document.addEventListener('DOMContentLoaded', function() {
+            // Tab switching functionality
             document.querySelectorAll('.tab-btn').forEach(button => {
                 button.addEventListener('click', () => {
                     // Remove active class from all buttons
@@ -340,98 +471,168 @@
                         cards.style.display = 'none';
                     });
                     
-                    // Show selected tab's cards - using flex instead of grid
+                    // Show selected tab's cards
                     let tabId = button.getAttribute('data-tab');
                     const targetElement = document.getElementById(`${tabId}-orders`);
                     if (targetElement) {
                         targetElement.style.display = 'flex';
-                    } else {
-                        console.error(`Tab content not found for: ${tabId}-orders`);
                     }
                 });
             });
 
-            // Initial tab check - if URL has hash for specific tab
+            // Initial tab check
             const hash = window.location.hash.substring(1);
             if (hash) {
                 const tabBtn = document.querySelector(`.tab-btn[data-tab="${hash}"]`);
                 if (tabBtn) tabBtn.click();
             }
 
-            // Track Location button click handlers
-            // ...existing code...
-
-            // Cancel Order Functionality
+            // Cancel Order Functionality - Single event listener for all cancel buttons
             document.querySelectorAll('.cancel-order-btn').forEach(button => {
                 button.addEventListener('click', function() {
                     const orderId = this.getAttribute('data-order-id');
+                    const orderStatus = this.closest('.order-card').querySelector('.status-badge').textContent.trim().toLowerCase();
                     
-                    Swal.fire({
-                        title: 'Cancel Order?',
-                        text: "Are you sure you want to cancel this order? This action cannot be undone.",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#dc3545',
-                        cancelButtonColor: '#6c757d',
-                        confirmButtonText: 'Yes, cancel it!',
-                        cancelButtonText: 'No, keep it'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            // Create a form data object with CSRF token
-                            const formData = new FormData();
-                            formData.append('_token', '{{ csrf_token() }}');
-                            
-                            // Send AJAX request to cancel the order - fixed URL to match route definition
-                            fetch(`/orders/${orderId}/cancel-user-order`, {
-                                method: 'POST',
-                                body: formData,
-                                headers: {
-                                    'X-Requested-With': 'XMLHttpRequest',
-                                    'Accept': 'application/json'
-                                },
-                                credentials: 'same-origin'
-                            })
-                            .then(response => {
-                                if (!response.ok) {
-                                    return response.json().then(err => {
-                                        throw new Error(err.message || response.statusText);
-                                    });
-                                }
-                                return response.json();
-                            })
-                            .then(data => {
-                                if (data.success) {
-                                    Swal.fire({
-                                        title: 'Cancelled!',
-                                        text: data.message,
-                                        icon: 'success',
-                                        confirmButtonColor: '#517a5b'
-                                    }).then(() => {
-                                        // Reload the page to reflect the changes
-                                        window.location.reload();
-                                    });
-                                } else {
-                                    Swal.fire({
-                                        title: 'Error!',
-                                        text: data.message,
-                                        icon: 'error',
-                                        confirmButtonColor: '#dc3545'
-                                    });
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error:', error);
-                                Swal.fire({
-                                    title: 'Error!',
-                                    text: error.message || 'Something went wrong while cancelling the order.',
-                                    icon: 'error',
-                                    confirmButtonColor: '#dc3545'
-                                });
-                            });
-                        }
-                    });
+                    if (orderStatus === 'processing') {
+                        showCancellationModal(orderId);
+                    } else {
+                        // For non-processing orders, use the existing confirmation
+                        Swal.fire({
+                            title: 'Cancel Order?',
+                            text: "Are you sure you want to cancel this order? This action cannot be undone.",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#dc3545',
+                            cancelButtonColor: '#6c757d',
+                            confirmButtonText: 'Yes, cancel it!',
+                            cancelButtonText: 'No, keep it'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                cancelOrder(orderId);
+                            }
+                        });
+                    }
                 });
             });
+        });
+
+        // Modal functions
+        function showCancellationModal(orderId) {
+            const modal = document.getElementById('cancellationReasonModal');
+            modal.style.display = 'block';
+            modal.setAttribute('data-order-id', orderId);
+            
+            // Reset form
+            document.getElementById('cancellationReasonForm').reset();
+            document.getElementById('otherReasonDiv').style.display = 'none';
+            
+            // Prevent body scrolling when modal is open
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCancellationModal() {
+            const modal = document.getElementById('cancellationReasonModal');
+            modal.style.display = 'none';
+            document.getElementById('cancellationReasonForm').reset();
+            document.getElementById('otherReasonDiv').style.display = 'none';
+            
+            // Restore body scrolling
+            document.body.style.overflow = 'auto';
+        }
+
+        // Handle cancellation reason form submission
+        document.getElementById('cancellationReasonForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const modal = document.getElementById('cancellationReasonModal');
+            const orderId = modal.getAttribute('data-order-id');
+            const reason = document.getElementById('cancellationReason').value;
+            const otherReason = document.getElementById('otherReason').value;
+            
+            if (reason === 'other' && !otherReason.trim()) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Please specify your reason for cancellation.',
+                    icon: 'error',
+                    confirmButtonColor: '#dc3545'
+                });
+                return;
+            }
+            
+            const cancellationReason = reason === 'other' ? otherReason : reason;
+            cancelOrder(orderId, cancellationReason);
+            closeCancellationModal();
+        });
+
+        // Cancel order function
+        function cancelOrder(orderId, reason = null) {
+            const formData = new FormData();
+            formData.append('_token', '{{ csrf_token() }}');
+            if (reason) {
+                formData.append('cancellation_reason', reason);
+            }
+            
+            fetch(`/orders/${orderId}/cancel-user-order`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw new Error(err.message || response.statusText);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Cancelled!',
+                        text: data.message,
+                        icon: 'success',
+                        confirmButtonColor: '#517a5b'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: data.message,
+                        icon: 'error',
+                        confirmButtonColor: '#dc3545'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: error.message || 'Something went wrong while cancelling the order.',
+                    icon: 'error',
+                    confirmButtonColor: '#dc3545'
+                });
+            });
+        }
+
+        // Handle the "Other" reason selection
+        document.getElementById('cancellationReason').addEventListener('change', function() {
+            const otherReasonDiv = document.getElementById('otherReasonDiv');
+            otherReasonDiv.style.display = this.value === 'other' ? 'block' : 'none';
+        });
+
+        // Close modal when clicking the X
+        document.querySelector('#cancellationReasonModal .close').addEventListener('click', closeCancellationModal);
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(e) {
+            const modal = document.getElementById('cancellationReasonModal');
+            if (e.target === modal) {
+                closeCancellationModal();
+            }
         });
     </script>
 

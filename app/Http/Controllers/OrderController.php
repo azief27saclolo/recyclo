@@ -193,23 +193,7 @@ class OrderController extends Controller
                                 'price' => $item->price,
                             ]);
                             
-                            // Update product stock and post quantity
-                            if ($item->product) {
-                                if ($item->product->stock < $item->quantity) {
-                                    throw new Exception("Not enough stock available for product: {$item->product->name}");
-                                }
-                                
-                                // Update product stock
-                                $item->product->stock -= $item->quantity;
-                                $item->product->save();
-                                
-                                // Update post quantity
-                                $post = $item->product->post;
-                                if ($post) {
-                                    $post->quantity -= $item->quantity;
-                                    $post->save();
-                                }
-                            }
+                            // No need to update stock here since it was already decreased when adding to cart
                         }
                         $shopOrders[] = $order;
                     }
@@ -444,56 +428,82 @@ class OrderController extends Controller
             return redirect()->route('orders.index')->with('error', 'You are not authorized to cancel this order.');
         }
 
-        // Only allow cancelling orders that are in 'pending' status
-        if ($order->status !== 'pending') {
+        // Only allow cancelling orders that are in 'pending' or 'processing' status
+        if (!in_array($order->status, ['pending', 'processing'])) {
             if ($isAjax) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Only pending orders can be cancelled.'
+                    'message' => 'Only pending or processing orders can be cancelled.'
                 ], 400);
             }
-            return redirect()->route('orders.index')->with('error', 'Only pending orders can be cancelled.');
+            return redirect()->route('orders.index')->with('error', 'Only pending or processing orders can be cancelled.');
         }
 
         try {
             DB::beginTransaction();
 
+            // Get cancellation reason if provided
+            $cancellationReason = request()->input('cancellation_reason');
+            
             // Update order status to cancelled
             $order->status = 'cancelled';
+            if ($cancellationReason) {
+                $order->cancellation_reason = $cancellationReason;
+            }
             $order->save();
 
             // Restore quantities for post and product
-            // Get all order items (if using order items)
             if ($order->items()->exists()) {
                 foreach ($order->items as $item) {
+                    // Get the post
                     $post = Post::find($item->post_id);
                     if ($post) {
-                        // Restore the quantity back to the post
+                        // Restore post quantity
                         $post->quantity += $item->quantity;
                         $post->save();
 
-                        // Restore the associated product stock if exists
+                        // Restore product stock if it exists
                         $product = Product::where('post_id', $post->id)->first();
                         if ($product) {
                             $product->stock += $item->quantity;
                             $product->save();
                         }
+                        
+                        Log::info('Stock restored for order cancellation', [
+                            'order_id' => $order->id,
+                            'post_id' => $post->id,
+                            'product_id' => $product ? $product->id : null,
+                            'quantity_restored' => $item->quantity,
+                            'new_post_quantity' => $post->quantity,
+                            'new_product_stock' => $product ? $product->stock : null,
+                            'cancellation_reason' => $cancellationReason
+                        ]);
                     }
                 }
             } else {
-                // If using direct post_id on orders (legacy behavior)
+                // Handle legacy orders without items
                 $post = Post::find($order->post_id);
                 if ($post) {
-                    // Restore quantity
+                    // Restore post quantity
                     $post->quantity += $order->quantity;
                     $post->save();
 
-                    // Restore associated product stock if exists
+                    // Restore product stock if it exists
                     $product = Product::where('post_id', $post->id)->first();
                     if ($product) {
                         $product->stock += $order->quantity;
                         $product->save();
                     }
+                    
+                    Log::info('Stock restored for legacy order cancellation', [
+                        'order_id' => $order->id,
+                        'post_id' => $post->id,
+                        'product_id' => $product ? $product->id : null,
+                        'quantity_restored' => $order->quantity,
+                        'new_post_quantity' => $post->quantity,
+                        'new_product_stock' => $product ? $product->stock : null,
+                        'cancellation_reason' => $cancellationReason
+                    ]);
                 }
             }
 
@@ -501,7 +511,8 @@ class OrderController extends Controller
 
             Log::info('Order cancelled successfully', [
                 'order_id' => $order->id,
-                'user_id' => Auth::id()
+                'user_id' => Auth::id(),
+                'cancellation_reason' => $cancellationReason
             ]);
 
             if ($isAjax) {

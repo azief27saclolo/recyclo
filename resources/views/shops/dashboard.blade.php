@@ -1,7 +1,9 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $shop->shop_name }} - Shop Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1160,6 +1162,91 @@
 
         .inventory-action-btn i {
             font-size: 14px;
+        }
+
+        .report-btn {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .report-btn:hover {
+            background-color: #fff3f3;
+        }
+
+        .report-btn i {
+            font-size: 0.9em;
+        }
+
+        #reportUserModal .modal-content {
+            padding: 20px;
+        }
+
+        #reportUserModal .form-group {
+            margin-bottom: 20px;
+        }
+
+        #reportUserModal label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        #reportUserModal select,
+        #reportUserModal textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        #reportUserModal textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        #reportUserModal .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        #reportUserModal .cancel-btn,
+        #reportUserModal .submit-btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        #reportUserModal .cancel-btn {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            color: #333;
+        }
+
+        #reportUserModal .submit-btn {
+            background: #dc3545;
+            border: none;
+            color: white;
+        }
+
+        #reportUserModal .cancel-btn:hover {
+            background: #e9ecef;
+        }
+
+        #reportUserModal .submit-btn:hover {
+            background: #c82333;
         }
     </style>
 </head>
@@ -4168,6 +4255,29 @@
                                             <i class="bi bi-person"></i>
                                             <span>{{ $order->buyer->firstname }} {{ $order->buyer->lastname }}</span>
                                         </div>
+                                        @if($order->status === 'cancelled' && $order->cancellation_reason)
+                                            <div class="cancellation-info" style="background: #fff3f3; padding: 10px; border-radius: 5px; margin: 10px 0; border-left: 3px solid #dc3545;">
+                                                <i class="bi bi-info-circle" style="color: #dc3545;"></i>
+                                                <span style="margin-left: 5px; color: #721c24;">
+                                                    <strong>Cancellation Reason:</strong> 
+                                                    @if(in_array($order->cancellation_reason, ['no_longer_want', 'wrong_order', 'found_better']))
+                                                        @switch($order->cancellation_reason)
+                                                            @case('no_longer_want')
+                                                                I don't want to buy anymore
+                                                                @break
+                                                            @case('wrong_order')
+                                                                I made a mistake in ordering
+                                                                @break
+                                                            @case('found_better')
+                                                                Found a better deal elsewhere
+                                                                @break
+                                                        @endswitch
+                                                    @else
+                                                        {{ $order->cancellation_reason }}
+                                                    @endif
+                                                </span>
+                                            </div>
+                                        @endif
                                         <div class="products-list">
                                             @foreach($order->items as $item)
                                                 <div class="product-item">
@@ -4606,50 +4716,77 @@
                 <div class="orders-timeline">
                     <h3>Recent Orders</h3>
                     <div class="orders-list">
-                        @forelse(\App\Models\Order::where('seller_id', Auth::id())->latest()->take(5)->get() as $order)
+                        @forelse(\App\Models\Order::where('seller_id', Auth::id())->with(['buyer', 'items.post'])->latest()->get() as $order)
                             <div class="order-card">
                                 <div class="order-header">
                                     <div class="order-info">
                                         <h4>Order #{{ $order->id }}</h4>
-                                        <span class="order-date">{{ $order->created_at->format('M d, Y') }}</span>
+                                        <div class="order-meta">
+                                            <span class="order-date">{{ $order->created_at->format('M d, Y') }}</span>
+                                            <span class="buyer-info">
+                                                <i class="bi bi-person"></i>
+                                                {{ $order->buyer->username }}
+                                            </span>
+                                            <button class="report-btn" data-user-id="{{ $order->buyer->id }}" data-order-id="{{ $order->id }}">
+    <i class="fas fa-flag"></i> Report User
+</button>
+                                        </div>
                                     </div>
                                     <span class="order-status {{ $order->status }}">
                                         {{ ucfirst($order->status) }}
                                     </span>
                                 </div>
                                 <div class="order-details">
-                                    <div class="customer-info">
-                                        <p><strong>Customer:</strong> {{ $order->buyer->name }}</p>
-                                        <p><strong>Total Amount:</strong> ₱{{ number_format($order->total_amount, 2) }}</p>
-                                    </div>
-                                    <div class="order-items">
+                                    @if($order->status === 'cancelled' && $order->cancellation_reason)
+                                        <div class="cancellation-info" style="background: #fff3f3; padding: 10px; border-radius: 5px; margin: 10px 0; border-left: 3px solid #dc3545;">
+                                            <i class="bi bi-info-circle" style="color: #dc3545;"></i>
+                                            <span style="margin-left: 5px; color: #721c24;">
+                                                <strong>Cancellation Reason:</strong> 
+                                                @if(in_array($order->cancellation_reason, ['no_longer_want', 'wrong_order', 'found_better']))
+                                                    @switch($order->cancellation_reason)
+                                                        @case('no_longer_want')
+                                                            I don't want to buy anymore
+                                                            @break
+                                                        @case('wrong_order')
+                                                            I made a mistake in ordering
+                                                            @break
+                                                        @case('found_better')
+                                                            Found a better deal elsewhere
+                                                            @break
+                                                    @endswitch
+                                                @else
+                                                    {{ $order->cancellation_reason }}
+                                                @endif
+                                            </span>
+                                        </div>
+                                    @endif
+                                    <div class="products-list">
                                         @foreach($order->items as $item)
-                                            <div class="order-item">
-                                                <img src="{{ $item->post->image }}" alt="{{ $item->post->title }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">
-                                                <div class="item-details">
-                                                    <p>{{ $item->post->title }}</p>
-                                                    <p>Quantity: {{ $item->quantity }}</p>
+                                            <div class="product-item">
+                                                <img src="{{ asset('storage/' . $item->post->image) }}" 
+                                                     alt="{{ $item->post->title }}"
+                                                     onerror="this.src='https://placehold.co/100x100?text=Product'">
+                                                <div class="product-info">
+                                                    <span class="product-name">{{ $item->post->title }}</span>
+                                                    <span class="product-quantity">x{{ $item->quantity }}</span>
+                                                    <span class="product-price">₱{{ number_format($item->price * $item->quantity, 2) }}</span>
                                                 </div>
                                             </div>
                                         @endforeach
                                     </div>
-                                    <div class="order-actions">
-                                        <!-- @if($order->status === 'pending')
-                                            <button class="accept-btn" onclick="updateOrderStatus({{ $order->id }}, 'processing')">
-                                                <i class="bi bi-check-circle"></i> Accept Order
-                                            </button>
-                                            <button class="reject-btn" onclick="updateOrderStatus({{ $order->id }}, 'cancelled')">
-                                                <i class="bi bi-x-circle"></i> Reject Order
-                                            </button>
-                                        @elseif($order->status === 'processing')
-                                            <button class="accept-btn" onclick="updateOrderStatus({{ $order->id }}, 'delivering')">
-                                                <i class="bi bi-truck"></i> Mark as Delivering
-                                            </button>
-                                        @elseif($order->status === 'delivering')
-                                            <button class="accept-btn" onclick="updateOrderStatus({{ $order->id }}, 'completed')">
-                                                <i class="bi bi-check-circle"></i> Mark as Completed
-                                            </button>
-                                        @endif -->
+                                    <div class="order-summary">
+                                        <div class="summary-row">
+                                            <span>Subtotal</span>
+                                            <span>₱{{ number_format($order->total_amount, 2) }}</span>
+                                        </div>
+                                        <div class="summary-row">
+                                            <span>Commission (10%)</span>
+                                            <span>₱{{ number_format($order->total_amount * 0.1, 2) }}</span>
+                                        </div>
+                                        <div class="summary-row total">
+                                            <span>Net Amount</span>
+                                            <span>₱{{ number_format($order->total_amount * 0.9, 2) }}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -4804,6 +4941,47 @@
         font-size: 48px;
         margin-bottom: 10px;
     }
+
+    .order-meta {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-top: 5px;
+        color: #666;
+        font-size: 0.9em;
+    }
+
+    .buyer-info {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .buyer-info i {
+        color: #517A5B;
+    }
+
+    .cancellation-info {
+        background: #fff3f3;
+        padding: 10px;
+        border-radius: 5px;
+        margin: 10px 0;
+        border-left: 3px solid #dc3545;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .cancellation-info i {
+        color: #dc3545;
+        font-size: 1.1em;
+        margin-top: 2px;
+    }
+
+    .cancellation-info span {
+        color: #721c24;
+        flex: 1;
+    }
     </style>
 
     <script>
@@ -4882,6 +5060,382 @@
     }
 
     // ... existing code ...
+    </script>
+
+    <script>
+        // ... existing scripts ...
+
+        function showReportModal(orderId, username, userId) {
+            console.log('Opening report modal for:', { orderId, username, userId }); // Debug log
+            const modal = document.getElementById('reportUserModal');
+            document.getElementById('reportedUserId').value = userId;
+            document.getElementById('orderId').value = orderId;
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeReportModal() {
+            const modal = document.getElementById('reportUserModal');
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+            document.getElementById('reportUserForm').reset();
+        }
+
+        function submitReport(event) {
+            event.preventDefault();
+            const form = event.target;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            
+            // Disable submit button and show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+            
+            // Get form data
+            const formData = new FormData(form);
+            const reportData = {
+                reported_id: formData.get('reported_id'),
+                order_id: formData.get('order_id'),
+                reason: formData.get('reason'),
+                description: formData.get('description')
+            };
+            
+            console.log('Submitting report:', reportData);
+            
+            // Get CSRF token
+            const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            if (!token) {
+                console.error('CSRF token not found');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Security token not found. Please refresh the page and try again.'
+                });
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+                return;
+            }
+            
+            // Submit the report
+            fetch('/reports', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': token,
+                    'Accept': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify(reportData)
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json().then(data => {
+                    if (!response.ok) {
+                        throw { status: response.status, data };
+                    }
+                    return data;
+                });
+            })
+            .then(data => {
+                console.log('Report submitted successfully:', data);
+                // Close the modal
+                const modal = document.getElementById('reportUserModal');
+                const modalInstance = bootstrap.Modal.getInstance(modal);
+                modalInstance.hide();
+                
+                // Show success message
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: 'Report submitted successfully.'
+                });
+                
+                // Reset the form
+                form.reset();
+            })
+            .catch(error => {
+                console.error('Error submitting report:', error);
+                let errorMessage = 'An error occurred while submitting the report.';
+                
+                if (error.status === 422 && error.data?.errors) {
+                    // Handle validation errors
+                    const errors = error.data.errors;
+                    errorMessage = Object.values(errors).flat().join('\n');
+                } else if (error.data?.message) {
+                    errorMessage = error.data.message;
+                }
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: errorMessage
+                });
+            })
+            .finally(() => {
+                // Re-enable submit button and restore original text
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            });
+        }
+        // ... existing code ...
+    </script>
+
+    <!-- Report User Modal -->
+    <div id="reportUserModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Report User</h2>
+                <span class="close" onclick="closeReportModal()">&times;</span>
+            </div>
+            <form action="{{ route('reports.store') }}" method="POST" id="reportUserForm">
+                @csrf
+                <div class="modal-body">
+                    <input type="hidden" name="reported_id" id="reportedUserId">
+                    <input type="hidden" name="order_id" id="reportedOrderId">
+                    
+                    <div class="form-group">
+                        <label for="reason">Reason for Report</label>
+                        <select class="form-control" id="reason" name="reason" required>
+                            <option value="">Select a reason</option>
+                            <option value="fraudulent_activity">Fraudulent Activity</option>
+                            <option value="inappropriate_behavior">Inappropriate Behavior</option>
+                            <option value="scam_attempt">Scam Attempt</option>
+                            <option value="harassment">Harassment</option>
+                            <option value="other">Other</option>
+                        </select>
+                        @error('reason')
+                            <div class="text-danger">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" required 
+                            placeholder="Please provide details about the issue..."></textarea>
+                        @error('description')
+                            <div class="text-danger">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn" onclick="closeReportModal()">Cancel</button>
+                    <button type="submit" class="submit-btn">Submit Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <style>
+        /* ... existing styles ... */
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            animation: modalFadeIn 0.3s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .modal-title {
+            margin: 0;
+            color: #333;
+            font-size: 1.5em;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: #517A5B;
+            outline: none;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .cancel-btn,
+        .submit-btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .cancel-btn {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            color: #333;
+        }
+
+        .submit-btn {
+            background: #dc3545;
+            border: none;
+            color: white;
+        }
+
+        .cancel-btn:hover {
+            background: #e9ecef;
+        }
+
+        .submit-btn:hover {
+            background: #c82333;
+        }
+
+        .submit-btn:disabled {
+            background: #dc354580;
+            cursor: not-allowed;
+        }
+    </style>
+
+    // ... existing code ...
+
+    <script>
+        // Function to open the report modal
+        function openReportModal(userId, orderId) {
+            document.getElementById('reportedUserId').value = userId;
+            document.getElementById('reportedOrderId').value = orderId;
+            const modal = document.getElementById('reportUserModal');
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Add event listeners when the document is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click handlers for report buttons
+            const reportButtons = document.querySelectorAll('.report-btn');
+            reportButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const userId = this.getAttribute('data-user-id');
+                    const orderId = this.getAttribute('data-order-id');
+                    openReportModal(userId, orderId);
+                });
+            });
+
+            // Add submit handler for the report form
+            const reportForm = document.getElementById('reportUserForm');
+            if (reportForm) {
+                reportForm.addEventListener('submit', function(e) {
+                    e.preventDefault(); // Prevent default form submission
+                    
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+
+                    // Get form data
+                    const formData = new FormData(this);
+                    
+                    // Submit the form using fetch
+                    fetch(this.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: data.message || 'Report submitted successfully.'
+                            });
+                            closeReportModal();
+                        } else {
+                            throw new Error(data.message || 'Failed to submit report');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error submitting report:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: error.message || 'An error occurred while submitting the report.'
+                        });
+                    })
+                    .finally(() => {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = 'Submit Report';
+                    });
+                });
+            }
+
+            // Close modal when clicking outside
+            window.addEventListener('click', function(event) {
+                const modal = document.getElementById('reportUserModal');
+                if (event.target === modal) {
+                    closeReportModal();
+                }
+            });
+        });
     </script>
 </body>
 </html>

@@ -42,6 +42,8 @@ class BuyMarketplaceController extends Controller
                 'request_id' => 'required|exists:buys,id',
                 'message' => 'required|string|max:1000',
                 'contact_method' => 'required|string|in:email,phone',
+                'contact_email' => 'required_if:contact_method,email|email|nullable',
+                'contact_phone' => 'required_if:contact_method,phone|string|nullable',
             ]);
             
             if ($validator->fails()) {
@@ -59,6 +61,17 @@ class BuyMarketplaceController extends Controller
                 ], 403);
             }
 
+            // Get the buy request
+            $buyRequest = Buy::findOrFail($request->request_id);
+
+            // Check if user is trying to notify their own request
+            if ($buyRequest->user_id === Auth::id()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Hey silly, you can\'t notify on your own request!'
+                ], 403);
+            }
+
             // Check if seller already responded to this request
             $existingResponse = BuyResponse::where('buy_id', $request->request_id)
                                           ->where('seller_id', Auth::id())
@@ -69,6 +82,8 @@ class BuyMarketplaceController extends Controller
                 $existingResponse->update([
                     'message' => $request->message,
                     'contact_method' => $request->contact_method,
+                    'contact_email' => $request->contact_method === 'email' ? $request->contact_email : null,
+                    'contact_phone' => $request->contact_method === 'phone' ? $request->contact_phone : null,
                     'status' => 'pending', // Reset to pending as it's a new message
                 ]);
                 
@@ -86,6 +101,8 @@ class BuyMarketplaceController extends Controller
                 'seller_id' => Auth::id(),
                 'message' => $request->message,
                 'contact_method' => $request->contact_method,
+                'contact_email' => $request->contact_method === 'email' ? $request->contact_email : null,
+                'contact_phone' => $request->contact_method === 'phone' ? $request->contact_phone : null,
                 'status' => 'pending',
             ]);
             

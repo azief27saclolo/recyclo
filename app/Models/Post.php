@@ -34,6 +34,12 @@ class Post extends Model
     // Default attribute values
     protected $attributes = [
         'status' => self::STATUS_PENDING, // Default status is pending
+        'quantity' => 1,
+    ];
+
+    // Cast quantity to integer
+    protected $casts = [
+        'quantity' => 'integer',
     ];
 
     public function user() : BelongsTo 
@@ -157,5 +163,57 @@ class Post extends Model
     public function isRejected(): bool
     {
         return $this->status === self::STATUS_REJECTED;
+    }
+
+    /**
+     * Update the quantity and sync with product stock
+     */
+    public function updateQuantity($quantity)
+    {
+        $this->quantity = $quantity;
+        $this->save();
+
+        // Sync with product if exists
+        if ($this->product) {
+            $this->product->update(['stock' => $quantity]);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Decrease quantity and sync with product stock
+     */
+    public function decreaseQuantity($amount = 1)
+    {
+        if ($this->quantity >= $amount) {
+            $this->quantity -= $amount;
+            $this->save();
+
+            // Sync with product if exists
+            if ($this->product) {
+                $this->product->update(['stock' => $this->quantity]);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Increase quantity and sync with product stock
+     */
+    public function increaseQuantity($amount = 1)
+    {
+        $this->quantity += $amount;
+        $this->save();
+
+        // Sync with product if exists
+        if ($this->product) {
+            $this->product->update(['stock' => $this->quantity]);
+        }
+
+        return $this;
     }
 }
