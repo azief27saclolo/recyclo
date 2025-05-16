@@ -16,6 +16,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Storage;
 use App\Models\UserReport;
+use Dompdf\Dompdf;
 
 class AdminController extends Controller
 {
@@ -1397,6 +1398,7 @@ class AdminController extends Controller
         $toDate = $request->input('to_date');
         $status = $request->input('status', 'all');
         $search = $request->input('search');
+        $format = $request->input('format', 'csv');
 
         // Build transaction query with the same filters as the report page
         $query = Order::with(['buyer', 'seller', 'post']);
@@ -1436,8 +1438,25 @@ class AdminController extends Controller
         $transactions = $query->latest()->get();
 
         // Create a filename
-        $filename = 'recyclo_transactions_report_' . Carbon::now()->format('Y-m-d') . '.csv';
+        $filename = 'recyclo_transactions_report_' . Carbon::now()->format('Y-m-d');
 
+        switch ($format) {
+            case 'pdf':
+                return $this->generatePdfExport($transactions, $filename);
+            case 'excel':
+                return $this->generateExcelExport($transactions, $filename);
+            case 'docx':
+                return $this->generateDocxExport($transactions, $filename);
+            case 'csv':
+            default:
+                return $this->generateCsvExport($transactions, $filename);
+        }
+    }
+
+    private function generateCsvExport($transactions, $filename)
+    {
+        $filename .= '.csv';
+        
         // Create a temporary file
         $handle = fopen('php://temp', 'w+');
         
@@ -1477,13 +1496,206 @@ class AdminController extends Controller
         fclose($handle);
 
         // Create response with CSV content
-        $response = response($content)
+        return response($content)
             ->withHeaders([
                 'Content-Type' => 'text/csv',
                 'Content-Disposition' => 'attachment; filename="' . $filename . '"',
             ]);
-            
-        return $response;
+    }
+
+    private function generateExcelExport($transactions, $filename)
+    {
+        $filename .= '.xlsx';
+        
+        // Create a new Spreadsheet object
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        
+        // Set headers
+        $headers = [
+            'Transaction ID',
+            'Date',
+            'Buyer',
+            'Seller',
+            'Product',
+            'Quantity',
+            'Unit',
+            'Amount',
+            'Status'
+        ];
+        
+        $column = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($column . '1', $header);
+            $sheet->getStyle($column . '1')->getFont()->setBold(true);
+            $column++;
+        }
+        
+        // Add data rows
+        $row = 2;
+        foreach ($transactions as $transaction) {
+            $sheet->setCellValue('A' . $row, $transaction->id);
+            $sheet->setCellValue('B' . $row, $transaction->created_at->format('Y-m-d H:i:s'));
+            $sheet->setCellValue('C' . $row, $transaction->buyer ? $transaction->buyer->firstname . ' ' . $transaction->buyer->lastname : 'N/A');
+            $sheet->setCellValue('D' . $row, $transaction->seller ? $transaction->seller->firstname . ' ' . $transaction->seller->lastname : 'N/A');
+            $sheet->setCellValue('E' . $row, $transaction->post ? $transaction->post->title : 'N/A');
+            $sheet->setCellValue('F' . $row, $transaction->quantity);
+            $sheet->setCellValue('G' . $row, $transaction->post ? $transaction->post->unit : 'N/A');
+            $sheet->setCellValue('H' . $row, $transaction->total_amount);
+            $sheet->setCellValue('I' . $row, ucfirst($transaction->status));
+            $row++;
+        }
+        
+        // Auto-size columns
+        foreach (range('A', 'I') as $column) {
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+        }
+        
+        // Create Excel file
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        
+        // Set headers for download
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+        
+        // Save file to PHP output
+        $writer->save('php://output');
+        exit;
+    }
+
+    private function generateDocxExport($transactions, $filename)
+    {
+        $filename .= '.docx';
+        
+        // Create a new Word document
+        $phpWord = new \PhpOffice\PhpWord\PhpWord();
+        
+        // Add a section
+        $section = $phpWord->addSection();
+        
+        // Add title
+        $section->addText('Transaction Report - ' . Carbon::now()->format('Y-m-d'), ['bold' => true, 'size' => 16]);
+        $section->addTextBreak();
+        
+        // Create table
+        $table = $section->addTable();
+        
+        // Add headers
+        $headers = [
+            'Transaction ID',
+            'Date',
+            'Buyer',
+            'Seller',
+            'Product',
+            'Quantity',
+            'Unit',
+            'Amount',
+            'Status'
+        ];
+        
+        $table->addRow();
+        foreach ($headers as $header) {
+            $table->addCell()->addText($header, ['bold' => true]);
+        }
+        
+        // Add data rows
+        foreach ($transactions as $transaction) {
+            $table->addRow();
+            $table->addCell()->addText($transaction->id);
+            $table->addCell()->addText($transaction->created_at->format('Y-m-d H:i:s'));
+            $table->addCell()->addText($transaction->buyer ? $transaction->buyer->firstname . ' ' . $transaction->buyer->lastname : 'N/A');
+            $table->addCell()->addText($transaction->seller ? $transaction->seller->firstname . ' ' . $transaction->seller->lastname : 'N/A');
+            $table->addCell()->addText($transaction->post ? $transaction->post->title : 'N/A');
+            $table->addCell()->addText($transaction->quantity);
+            $table->addCell()->addText($transaction->post ? $transaction->post->unit : 'N/A');
+            $table->addCell()->addText('₱' . number_format($transaction->total_amount, 2));
+            $table->addCell()->addText(ucfirst($transaction->status));
+        }
+        
+        // Add footer
+        $section->addTextBreak();
+        $section->addText('Generated by Recyclo on ' . Carbon::now()->format('Y-m-d H:i:s'), ['italic' => true, 'size' => 10]);
+        
+        // Create Word file
+        $writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
+        
+        // Set headers for download
+        header('Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+        
+        // Save file to PHP output
+        $writer->save('php://output');
+        exit;
+    }
+
+    private function generatePdfExport($transactions, $filename)
+    {
+        $filename .= '.pdf';
+        
+        // Generate HTML content for PDF
+        $html = '<html><head><title>Transaction Report</title>';
+        $html .= '<style>
+            body { font-family: Arial, sans-serif; font-size: 12px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #517A5B; color: white; }
+            tr:nth-child(even) { background-color: #f2f2f2; }
+            h1 { color: #517A5B; }
+            .footer { margin-top: 20px; font-size: 10px; color: #666; text-align: center; }
+        </style></head>';
+        
+        $html .= '<body><h1>Transaction Report - ' . Carbon::now()->format('Y-m-d') . '</h1>';
+        $html .= '<table><thead><tr>';
+        
+        // Add headers
+        $headers = [
+            'Transaction ID',
+            'Date',
+            'Buyer',
+            'Seller',
+            'Product',
+            'Quantity',
+            'Unit',
+            'Amount',
+            'Status'
+        ];
+        
+        foreach ($headers as $header) {
+            $html .= '<th>' . htmlspecialchars($header) . '</th>';
+        }
+        
+        $html .= '</tr></thead><tbody>';
+        
+        // Add data rows
+        foreach ($transactions as $transaction) {
+            $html .= '<tr>';
+            $html .= '<td>' . $transaction->id . '</td>';
+            $html .= '<td>' . $transaction->created_at->format('Y-m-d H:i:s') . '</td>';
+            $html .= '<td>' . ($transaction->buyer ? htmlspecialchars($transaction->buyer->firstname . ' ' . $transaction->buyer->lastname) : 'N/A') . '</td>';
+            $html .= '<td>' . ($transaction->seller ? htmlspecialchars($transaction->seller->firstname . ' ' . $transaction->seller->lastname) : 'N/A') . '</td>';
+            $html .= '<td>' . ($transaction->post ? htmlspecialchars($transaction->post->title) : 'N/A') . '</td>';
+            $html .= '<td>' . $transaction->quantity . '</td>';
+            $html .= '<td>' . ($transaction->post ? htmlspecialchars($transaction->post->unit) : 'N/A') . '</td>';
+            $html .= '<td>₱' . number_format($transaction->total_amount, 2) . '</td>';
+            $html .= '<td>' . ucfirst($transaction->status) . '</td>';
+            $html .= '</tr>';
+        }
+        
+        $html .= '</tbody></table>';
+        $html .= '<div class="footer">Generated by Recyclo on ' . Carbon::now()->format('Y-m-d H:i:s') . '</div>';
+        $html .= '</body></html>';
+        
+        // Use Dompdf to convert HTML to PDF
+        $dompdf = new Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+        
+        return $dompdf->stream($filename, [
+            'Attachment' => true
+        ]);
     }
 
     public function products()
