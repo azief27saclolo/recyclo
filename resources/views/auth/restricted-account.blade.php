@@ -72,9 +72,23 @@
             Your account has been restricted by the administrator. This action may have been taken due to violations of our terms of service or community guidelines.
         </p>
         <p class="restricted-message">
-            If you believe this is a mistake or would like to appeal this decision, please contact our support team.
+            If you believe this is a mistake or would like to appeal this decision, please contact our support team with the following information:
         </p>
-        <a href="mailto:support@recyclo.com" class="contact-support">Contact Support</a>
+        <div class="support-info mb-4">
+            <ul class="list-unstyled text-start">
+                <li><i class="bi bi-envelope me-2"></i>Email: jamzmeel@gmail.com</li>
+                <li><i class="bi bi-clock me-2"></i>Response Time: Within 24-48 hours</li>
+                <li><i class="bi bi-info-circle me-2"></i>Please include your account email and reason for appeal</li>
+            </ul>
+        </div>
+        <div class="support-actions">
+            <a href="https://mail.google.com/mail/?view=cm&fs=1&to=jamzmeel@gmail.com" target="_blank" class="btn btn-primary me-2">
+                <i class="bi bi-envelope me-2"></i>Contact Support
+            </a>
+            <a href="/" class="btn btn-outline-secondary">
+                <i class="bi bi-house me-2"></i>Return Home
+            </a>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>

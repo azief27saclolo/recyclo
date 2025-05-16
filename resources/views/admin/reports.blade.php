@@ -405,6 +405,44 @@
             position: relative;
         }
 
+        /* Export dropdown styles */
+        .export-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .export-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            z-index: 1000;
+        }
+
+        .export-menu.show {
+            display: block;
+        }
+
+        .export-menu a {
+            color: #333;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            transition: background-color 0.3s;
+        }
+
+        .export-menu a:hover {
+            background-color: #f5f5f5;
+        }
+
+        .export-menu i {
+            margin-right: 8px;
+        }
+
         /* Add responsive styling for smaller screens */
         @media (max-width: 768px) {
             .main-content {
@@ -451,9 +489,17 @@
                         </div>
                         <div class="filter-group button-group">
                             <button type="submit" class="btn-filter">Filter</button>
-                            <a href="{{ route('admin.reports.export', request()->all()) }}" class="export-btn">
-                                <i class="bi bi-download"></i> Export
-                            </a>
+                            <div class="export-dropdown">
+                                <button type="button" class="export-btn" id="exportBtn">
+                                    <i class="bi bi-download"></i> Export <i class="bi bi-chevron-down"></i>
+                                </button>
+                                <div class="export-menu" id="exportMenu">
+                                    <a href="javascript:void(0);" onclick="exportReport('csv')"><i class="bi bi-filetype-csv"></i> CSV</a>
+                                    <a href="javascript:void(0);" onclick="exportReport('excel')"><i class="bi bi-file-earmark-excel"></i> Excel</a>
+                                    <a href="javascript:void(0);" onclick="exportReport('pdf')"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+                                    <a href="javascript:void(0);" onclick="exportReport('docx')"><i class="bi bi-file-earmark-word"></i> Word Doc</a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </form>
@@ -863,6 +909,41 @@
                     }
                 });
             }
+        });
+
+        // Function to export report in different formats
+        function exportReport(format) {
+            // Get current URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            // Add format parameter
+            urlParams.set('format', format);
+            
+            // Redirect to export route with all parameters
+            window.location.href = "{{ route('admin.reports.export') }}?" + urlParams.toString();
+        }
+
+        // Add click event listener for export dropdown
+        document.addEventListener('DOMContentLoaded', function() {
+            const exportBtn = document.getElementById('exportBtn');
+            const exportMenu = document.getElementById('exportMenu');
+
+            // Toggle dropdown on button click
+            exportBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                exportMenu.classList.toggle('show');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!exportMenu.contains(e.target) && !exportBtn.contains(e.target)) {
+                    exportMenu.classList.remove('show');
+                }
+            });
+
+            // Prevent dropdown from closing when clicking inside
+            exportMenu.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
         });
     </script>
 </body>
