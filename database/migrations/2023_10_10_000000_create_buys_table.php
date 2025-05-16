@@ -20,6 +20,8 @@ return new class extends Migration
             $table->integer('quantity');
             $table->string('unit', 10);
             $table->text('description');
+            $table->string('location')->nullable();
+            $table->string('number')->nullable();
             $table->timestamps();
         });
     }

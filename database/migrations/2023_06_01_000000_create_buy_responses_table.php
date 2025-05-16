@@ -23,6 +23,8 @@ return new class extends Migration
             $table->foreignId('seller_id')->constrained('users')->onDelete('cascade');
             $table->text('message');
             $table->string('contact_method'); // email, phone
+            $table->string('contact_email')->nullable(); // Store email if contact_method is email
+            $table->string('contact_phone')->nullable(); // Store phone if contact_method is phone
             $table->string('status')->default('pending'); // pending, read, replied
             $table->timestamps();
             

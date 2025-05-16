@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
 use App\Models\PriceGuide;
+use App\Http\Controllers\UserReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -57,3 +58,8 @@ Route::get('/price-guides/{category}', function ($category) {
 // Add this route to get products for the user's "View My Products" modal
 Route::get('/products', [PostController::class, 'getUserProducts'])
     ->middleware(['auth:sanctum']);
+
+// User Reports routes
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::post('/reports', [UserReportController::class, 'store']);
+});

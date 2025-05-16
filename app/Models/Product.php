@@ -20,6 +20,12 @@ class Product extends Model
         'post_id'
     ];
 
+    // Cast stock to integer
+    protected $casts = [
+        'stock' => 'integer',
+        'is_active' => 'boolean',
+    ];
+
     /**
      * Get the user that owns the product.
      */
@@ -42,5 +48,57 @@ class Product extends Model
     public function cartItems()
     {
         return $this->hasMany(CartItem::class);
+    }
+
+    /**
+     * Update the stock and sync with post quantity
+     */
+    public function updateStock($stock)
+    {
+        $this->stock = $stock;
+        $this->save();
+
+        // Sync with post if exists
+        if ($this->post) {
+            $this->post->update(['quantity' => $stock]);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Decrease stock and sync with post quantity
+     */
+    public function decreaseStock($amount = 1)
+    {
+        if ($this->stock >= $amount) {
+            $this->stock -= $amount;
+            $this->save();
+
+            // Sync with post if exists
+            if ($this->post) {
+                $this->post->update(['quantity' => $this->stock]);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Increase stock and sync with post quantity
+     */
+    public function increaseStock($amount = 1)
+    {
+        $this->stock += $amount;
+        $this->save();
+
+        // Sync with post if exists
+        if ($this->post) {
+            $this->post->update(['quantity' => $this->stock]);
+        }
+
+        return $this;
     }
 }

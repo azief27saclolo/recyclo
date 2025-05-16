@@ -117,6 +117,14 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Get reports where this user is the reported person
+     */
+    public function reports()
+    {
+        return $this->hasMany(UserReport::class, 'reported_id');
+    }
+
+    /**
      * Check if the user's email is verified
      */
     public function hasVerifiedEmail()

@@ -14,6 +14,8 @@ class BuyResponse extends Model
         'seller_id',
         'message',
         'contact_method',
+        'contact_email',
+        'contact_phone',
         'status' // pending, read, replied, etc.
     ];
 

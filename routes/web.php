@@ -18,6 +18,7 @@ use App\Http\Controllers\AdminLoginController;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Controllers\InventoryHistoryController;
 use App\Http\Controllers\PrivacyController;
+use App\Http\Controllers\UserReportController;
 
 // Landing page route
 Route::redirect('/', 'landingpage');
@@ -89,6 +90,7 @@ Route::group(['prefix' => 'admin', 'middleware' => [AdminMiddleware::class]], fu
     Route::get('/reports/seller/{id}', [AdminController::class, 'getSellerDetails']);
     Route::get('/reports/transaction/{id}', [AdminController::class, 'getTransactionDetails']);
     Route::get('/reports/chart-data', [AdminController::class, 'getTransactionChartData']);
+    Route::get('/reports/{id}', [AdminController::class, 'getReportDetails'])->name('admin.reports.details');
     
     // Ensure the post-request endpoint is correctly defined 
     // and placed BEFORE the more generic products/{id} route to avoid route conflicts
@@ -132,11 +134,16 @@ Route::group(['prefix' => 'admin', 'middleware' => [AdminMiddleware::class]], fu
     Route::post('/price-guides/save', [App\Http\Controllers\AdminController::class, 'savePriceGuide']);
     Route::delete('/price-guides/delete/{id}', [App\Http\Controllers\AdminController::class, 'deletePriceGuide']);
     Route::delete('/price-guides/clear-all', [App\Http\Controllers\AdminController::class, 'clearAllPriceGuides']);
+
+    // User management routes
+    Route::get('/users', [AdminController::class, 'users'])->name('admin.users');
+    Route::post('/users/{id}/restrict', [AdminController::class, 'restrictUser'])->name('admin.users.restrict');
+    Route::post('/users/{id}/unrestrict', [AdminController::class, 'unrestrictUser'])->name('admin.users.unrestrict');
 });
 
 // Define the cancel user order route outside the admin group but still with the admin controller
-Route::post('/orders/{orderId}/cancel-user-order', [AdminController::class, 'cancelUserOrder'])
-    ->name('admin.orders.cancel-user')
+Route::post('/orders/{order}/cancel-user-order', [OrderController::class, 'cancelOrder'])
+    ->name('orders.cancel-user')
     ->middleware('web');
 
 // Product Routes
@@ -225,6 +232,9 @@ Route::middleware(['auth', 'verified'])->group(function() {
     Route::get('/api/products/history/export', [App\Http\Controllers\ShopController::class, 'exportInventoryHistory']);
     Route::get('/api/products/{id}', [App\Http\Controllers\ShopController::class, 'getProduct']);
     Route::post('/api/products/{id}', [App\Http\Controllers\ShopController::class, 'updateProduct']);
+
+    // User Reports routes
+    Route::post('/reports', [UserReportController::class, 'store'])->name('reports.store');
 });
 
 // Routes for guests users
@@ -288,3 +298,5 @@ Route::fallback(function () {
         'message' => 'Route not found'
     ], 404);
 });
+
+Route::get('/account/restricted', [AuthController::class, 'showRestrictedAccount'])->name('account.restricted');

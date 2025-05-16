@@ -50,7 +50,7 @@ class ShopsController extends Controller
                 'latestPosts_count' => $latestPosts->count(),
             ]));
             
-            return view('shops.show', compact('shop', 'posts', 'latestPosts'));
+            return view('shops.show', compact('user', 'posts', 'latestPosts'));
         } catch (\Exception $e) {
             // Log the error
             Log::error("Error in shop view: " . $e->getMessage());
@@ -59,7 +59,7 @@ class ShopsController extends Controller
             // Return a view with error information
             return view('shops.show', [
                 'error' => $e->getMessage(),
-                'shop' => isset($user) ? $user : null,
+                'user' => isset($user) ? $user : null,
                 'posts' => collect([]),
                 'latestPosts' => collect([])
             ]);

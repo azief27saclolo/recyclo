@@ -22,6 +22,8 @@ class BuyController extends Controller
             'quantity' => 'required|integer|min:1',
             'unit' => 'required|string|max:10',
             'description' => 'required|string|max:1000',
+            'location' => 'required|string|max:255',
+            'number' => 'required|string|max:20',
         ]);
 
         Buy::create([
@@ -30,6 +32,8 @@ class BuyController extends Controller
             'quantity' => $request->quantity,
             'unit' => $request->unit,
             'description' => $request->description,
+            'location' => $request->location,
+            'number' => $request->number,
         ]);
 
         // Get the previous URL (referrer)
@@ -100,6 +104,8 @@ class BuyController extends Controller
             'quantity' => 'required|integer|min:1',
             'unit' => 'required|string|max:10',
             'description' => 'required|string|max:1000',
+            'location' => 'required|string|max:255',
+            'number' => 'required|string|max:20',
         ]);
 
         $buyRequest = Buy::findOrFail($id);
@@ -114,6 +120,8 @@ class BuyController extends Controller
             'quantity' => $request->quantity,
             'unit' => $request->unit,
             'description' => $request->description,
+            'location' => $request->location,
+            'number' => $request->number,
         ]);
 
         return redirect()->route('buy.index')->with('success', 'Buy request updated successfully.');
