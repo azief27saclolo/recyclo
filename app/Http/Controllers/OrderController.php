@@ -338,8 +338,8 @@ class OrderController extends Controller
      */
     public function updateStatus(Request $request, Order $order)
     {
-        // Validate seller owns this order
-        if ($order->seller_id !== Auth::id()) {
+        // Validate that the user is either the seller or the buyer
+        if ($order->seller_id !== Auth::id() && $order->buyer_id !== Auth::id()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized action.'
@@ -353,6 +353,16 @@ class OrderController extends Controller
                    
         $newStatus = $validStatus['status'];
         $orderAmount = null;
+
+        // If buyer is marking as completed, only allow if current status is 'for_pickup'
+        if ($order->buyer_id === Auth::id() && $newStatus === 'completed') {
+            if ($order->status !== 'for_pickup') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You can only mark orders as completed when they are ready for pickup.'
+                ], 400);
+            }
+        }
         
         // If status is being changed to cancelled, restore the product quantities
         if ($newStatus === 'cancelled') {

@@ -195,6 +195,13 @@
                                             <span class="status-badge for_pickup" style="background: #6610f2; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">For Pick Up</span>
                                         </div>
                                     </div>
+                                    <div class="order-footer" style="background: #f8f9fa; padding: 15px; position: relative;">
+                                        <button class="btn btn-success complete-order-btn" 
+                                                data-order-id="{{ $order->id }}" 
+                                                style="background: #198754; color: white; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer;">
+                                            <i class="bi bi-check-circle"></i> Mark as Completed
+                                        </button>
+                                    </div>
                                 </div>
                             @endforeach
                         @else
@@ -506,6 +513,61 @@
                     icon.style.transform = 'rotate(0deg)';
                 }
             }
+
+            // Add event listeners for complete order buttons
+            document.querySelectorAll('.complete-order-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const orderId = this.getAttribute('data-order-id');
+                    
+                    Swal.fire({
+                        title: 'Complete Order?',
+                        text: "Are you sure you want to mark this order as completed?",
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#198754',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, complete it!',
+                        cancelButtonText: 'No, cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Send AJAX request to update order status
+                            fetch(`/orders/${orderId}/status`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({ status: 'completed' })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire({
+                                        title: 'Completed!',
+                                        text: 'Order has been marked as completed.',
+                                        icon: 'success',
+                                        confirmButtonColor: '#198754'
+                                    }).then(() => {
+                                        window.location.reload();
+                                    });
+                                } else {
+                                    throw new Error(data.message || 'Failed to update order status');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: error.message || 'Something went wrong while updating the order status.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#198754'
+                                });
+                            });
+                        }
+                    });
+                });
+            });
         });
 
         // Modal functions

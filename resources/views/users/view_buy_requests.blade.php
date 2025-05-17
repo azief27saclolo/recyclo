@@ -1113,7 +1113,7 @@
                                 <div class="response-actions">
                                     @php
                                         $sellerShop = \App\Models\Shop::where('user_id', $response->seller_id)
-                                            ->where('status', 'approved')
+                                            ->where('status', 'approved')a
                                             ->first();
                                     @endphp
                                     
