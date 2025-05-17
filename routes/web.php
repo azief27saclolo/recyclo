@@ -235,6 +235,9 @@ Route::middleware(['auth', 'verified'])->group(function() {
 
     // User Reports routes
     Route::post('/reports', [UserReportController::class, 'store'])->name('reports.store');
+
+    // Add new route for getting the product ID of a post
+    Route::get('/api/posts/{post}/product', [PostController::class, 'getProductId'])->name('posts.product');
 });
 
 // Routes for guests users
