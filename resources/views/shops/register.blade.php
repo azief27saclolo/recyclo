@@ -1036,8 +1036,8 @@
                             <button type="button" class="close-modal" onclick="closeRegisterModal()">&times;</button>
                         </div>
                         <div class="modal-body">
-                            <form method="POST" action="{{ route('shop.store') }}" enctype="multipart/form-data">
-                                @csrf
+                    <form method="POST" action="{{ route('shop.store') }}" enctype="multipart/form-data">
+                        @csrf
                                 <!-- Progress Bar -->
                                 <div class="progress-bar">
                                     <div class="step active" data-step="1">
@@ -1059,13 +1059,13 @@
                                     <h3>Shop Information</h3>
                                     <p class="step-description">Let's start with the basic information about your shop.</p>
                                     
-                                    <div class="form-group">
-                                        <label>Shop Name</label>
+                        <div class="form-group">
+                            <label>Shop Name</label>
                                         <input type="text" name="shop_name" required placeholder="Enter your shop name" value="{{ old('shop_name') }}" class="form-input">
-                                        @error('shop_name')
-                                            <span class="error-message">{{ $message }}</span>
-                                        @enderror
-                                    </div>
+                            @error('shop_name')
+                                <span class="error-message">{{ $message }}</span>
+                            @enderror
+                        </div>
 
                                     <div class="form-group">
                                         <label>Shop Description</label>
@@ -1082,22 +1082,22 @@
                                     <h3>Shop Location</h3>
                                     <p class="step-description">Help customers find your shop by providing its location.</p>
 
-                                    <div class="form-group">
-                                        <label>Shop Address</label>
-                                        <div class="search-container">
-                                            <input type="text" id="location-search" placeholder="Search for a location..." value="{{ $user->location }}" class="form-control">
-                                            <div class="loader" id="search-loader"></div>
-                                            <div class="search-results" id="search-results"></div>
-                                        </div>
-                                        <div id="map-container"></div>
-                                        <div class="selected-location" id="selected-location">
-                                            <strong>Selected:</strong> <span id="location-display">{{ $user->location }}</span>
-                                        </div>
+                        <div class="form-group">
+                            <label>Shop Address</label>
+                            <div class="search-container">
+                                <input type="text" id="location-search" placeholder="Search for a location..." value="{{ $user->location }}" class="form-control">
+                                <div class="loader" id="search-loader"></div>
+                                <div class="search-results" id="search-results"></div>
+                            </div>
+                            <div id="map-container"></div>
+                            <div class="selected-location" id="selected-location">
+                                <strong>Selected:</strong> <span id="location-display">{{ $user->location }}</span>
+                            </div>
                                         <textarea name="shop_address" id="shop-address-input" rows="3" required placeholder="Enter your complete shop address" class="form-input">{{ old('shop_address', $user->location) }}</textarea>
-                                        @error('shop_address')
-                                            <span class="error-message">{{ $message }}</span>
-                                        @enderror
-                                    </div>
+                            @error('shop_address')
+                                <span class="error-message">{{ $message }}</span>
+                            @enderror
+                        </div>
 
                                     <div class="step-buttons">
                                         <button type="button" class="prev-btn" onclick="prevStep(2)"><i class="bi bi-arrow-left"></i> Previous</button>
@@ -1110,19 +1110,19 @@
                                     <h3>Verification</h3>
                                     <p class="step-description">Please provide a valid government ID for verification.</p>
 
-                                    <div class="form-group">
-                                        <label>Valid ID <span class="required">*</span></label>
-                                        <div class="file-input-wrapper">
-                                            <label class="file-label">
-                                                <i class="bi bi-upload"></i> Upload Valid ID
-                                                <input type="file" name="valid_id" accept=".jpg,.jpeg,.png,.pdf" style="display: none;" required>
-                                            </label>
-                                        </div>
-                                        <small class="input-hint">Upload a valid government-issued ID (Max: 5MB)</small>
-                                        @error('valid_id')
-                                            <span class="error-message">{{ $message }}</span>
-                                        @enderror
-                                    </div>
+                        <div class="form-group">
+                            <label>Valid ID <span class="required">*</span></label>
+                            <div class="file-input-wrapper">
+                                <label class="file-label">
+                                    <i class="bi bi-upload"></i> Upload Valid ID
+                                    <input type="file" name="valid_id" accept=".jpg,.jpeg,.png,.pdf" style="display: none;" required>
+                                </label>
+                            </div>
+                            <small class="input-hint">Upload a valid government-issued ID (Max: 5MB)</small>
+                            @error('valid_id')
+                                <span class="error-message">{{ $message }}</span>
+                            @enderror
+                        </div>
 
                                     <div class="verification-note">
                                         <i class="bi bi-info-circle"></i>
@@ -1131,10 +1131,10 @@
 
                                     <div class="step-buttons">
                                         <button type="button" class="prev-btn" onclick="prevStep(3)"><i class="bi bi-arrow-left"></i> Previous</button>
-                                        <button type="submit" class="submit-btn">Submit Application</button>
+                        <button type="submit" class="submit-btn">Submit Application</button>
                                     </div>
                                 </div>
-                            </form>
+                    </form>
                         </div>
                     </div>
                 </div>

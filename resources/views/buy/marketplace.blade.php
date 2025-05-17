@@ -135,7 +135,7 @@
                     <h3>No buy requests available</h3>
                     <p>Be the first to post a buy request!</p>
                     @if(Auth::check())
-                        <a href="{{ route('buy.create') }}" class="create-btn">  Request</a>
+                        <a href="{{ route('buy.create') }}" class="create-btn"> Request</a>
                     @else
                         <a href="{{ route('login') }}" class="create-btn">Login to Create</a>
                     @endif

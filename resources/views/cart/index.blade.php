@@ -35,6 +35,40 @@
         padding: 25px;
         box-shadow: 0 2px 10px rgba(0,0,0,0.08);
     }
+ 
+    /* Enhanced SweetAlert2 styling */
+    .swal2-popup.bigger-modal {
+        width: 42em !important;
+        max-width: 95% !important;
+        font-size: 1.3rem !important;
+        padding: 2.5em !important;
+        border-radius: 15px !important;
+    }
+    
+    .swal2-title {
+        font-size: 28px !important;
+        margin-bottom: 20px !important;
+    }
+    
+    .swal2-html-container {
+        font-size: 1.2rem !important;
+    }
+    
+    .swal2-confirm, .swal2-cancel {
+        border-radius: 30px !important;
+        font-size: 18px !important;
+        padding: 14px 28px !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.5px !important;
+    }
+
+    /* Add specific button styling */
+    .swal2-confirm.swal2-styled,
+    .swal2-cancel.swal2-styled {
+        border-radius: 30px !important;
+        padding: 14px 28px !important;
+    }
+
 
     .cart-item {
         display: flex;
@@ -239,7 +273,7 @@
                 </div>
                 <div class="summary-total">
                     <span>Total</span>
-                    <span id="cart-total">₱{{ number_format($cart->total, 2) }}</span>
+                      <span id="cart-total">₱{{ number_format($cart->total, 2) }}</span>
                 </div>
                 <button class="checkout-btn" onclick="window.location.href='{{ route('checkout') }}'">
                     Proceed to Checkout
@@ -282,7 +316,7 @@
     
     .swal2-html-container {
         font-size: 1.2rem !important;
-    }
+    }i
     
     .swal2-confirm, .swal2-cancel {
         border-radius: 30px !important;

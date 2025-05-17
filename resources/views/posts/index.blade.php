@@ -11,7 +11,6 @@
               <h2 class="h2 card-title">Recyclable Materials</h2>
               <p class="card-text">All sorts of solid waste awaits!</p>
               <a href="#" class="btn-link">
-                <span class="span">Shop Now</span>
                 <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
               </a>
               <div class="has-bg-image" style="background-image: url('images/bos.jpg')"></div>
@@ -22,7 +21,7 @@
               <h2 class="h2 card-title">Thrash?</h2>
               <p class="card-text">No. They are treasures!</p>
               <a href="#" class="btn-link">
-                <span class="span">Shop Now</span>
+                
                 <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
               </a>
               <div class="has-bg-image" style="background-image: url('images/plastic.jpg')"></div>
@@ -33,7 +32,7 @@
               <h2 class="h2 card-title">Shop in Recyclo</h2>
               <p class="card-text">Budget-friendly & Economic Growth</p>
               <a href="#" class="btn-link">
-                <span class="span">Shop Now</span>
+               
                 <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
               </a>
               <div class="has-bg-image" style="background-image: url('images/glass.jpg')"></div>

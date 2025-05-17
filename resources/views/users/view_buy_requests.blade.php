@@ -1113,14 +1113,44 @@
                                 <div class="response-actions">
                                     @php
                                         $sellerShop = \App\Models\Shop::where('user_id', $response->seller_id)
-                                            ->where('status', 'approved')a
+                                            ->where('status', 'approved')
                                             ->first();
+                                        $approvedPosts = \App\Models\Post::where('user_id', $response->seller_id)
+                                            ->where('status', 'approved')
+                                            ->get();
                                     @endphp
                                     
                                     @if($sellerShop)
                                         <a href="{{ route('shops.show', $response->seller->id) }}" class="response-button view-shop-btn">
                                             <i class="bi bi-shop"></i> View Seller's Shop
                                         </a>
+                                        @if($approvedPosts->count())
+                                            <div class="seller-products-section" style="margin-top: 20px; background: #f8f9fa; border-radius: 10px; padding: 15px;">
+                                                <h4 style="color: var(--hoockers-green); margin-bottom: 15px; font-size: 16px;">
+                                                    <i class="bi bi-box-seam"></i> Available Products
+                                                </h4>
+                                                <div class="products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;">
+                                                    @foreach($approvedPosts as $post)
+                                                        <div class="product-card" style="background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                                                            <h5 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 15px;">{{ $post->title }}</h5>
+                                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                                                <span style="color: #666; font-size: 14px;">
+                                                                    {{ $post->quantity }} {{ $post->unit }}
+                                                                </span>
+                                                                <span style="color: var(--hoockers-green); font-weight: 600; font-size: 15px;">
+                                                                    ₱{{ number_format($post->price, 2) }}
+                                                                </span>
+                                                            </div>
+                                                            <button onclick="addToCart({{ $post->id }})" 
+                                                                    class="add-to-cart-btn" 
+                                                                    style="display: block; text-align: center; background: var(--hoockers-green); color: white; padding: 8px; border-radius: 6px; text-decoration: none; font-size: 14px; transition: all 0.3s ease; border: none; width: 100%; cursor: pointer;">
+                                                                <i class="bi bi-cart-plus"></i> Add to Cart
+                                                            </button>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        @endif
                                     @else
                                         <div class="shop-info" style="margin-top: 10px; font-size: 14px; color: #666;">
                                             <p><i class="bi bi-shop"></i> Shop not registered</p>
@@ -2356,6 +2386,57 @@
             descriptionBox.classList.add('expanded');
             button.innerHTML = '<span>Show Less</span><i class="bi bi-chevron-up"></i>';
         }
+    }
+
+    // Add this JavaScript function at the end of your file
+    function addToCart(postId) {
+        // Show loading state
+        Swal.fire({
+            title: 'Adding to Cart...',
+            text: 'Please wait',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            willOpen: () => {
+                Swal.showLoading();
+            },
+            customClass: {
+                popup: 'bigger-modal'
+            }
+        });
+
+        // Send AJAX request to add to cart
+        fetch('{{ route("cart.add") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                product_id: postId,
+                quantity: 1
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Redirect to cart view
+                window.location.href = '{{ route("cart.index") }}';
+            } else {
+                throw new Error(data.message || 'Failed to add item to cart');
+            }
+        })
+        .catch(error => {
+            Swal.fire({
+                title: 'Error!',
+                text: error.message || 'Something went wrong. Please try again.',
+                icon: 'error',
+                confirmButtonColor: '#517A5B',
+                customClass: {
+                    popup: 'bigger-modal'
+                }
+            });
+        });
     }
     </script>
 </body>

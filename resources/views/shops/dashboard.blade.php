@@ -4473,7 +4473,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     // Send AJAX request to update order status
-                    fetch(`/orders/${orderId}/status`, {
+                    fetch(`/orders/${orderId}/update-status`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -4728,8 +4728,13 @@
                                                 {{ $order->buyer->username }}
                                             </span>
                                             <button class="report-btn" data-user-id="{{ $order->buyer->id }}" data-order-id="{{ $order->id }}">
-    <i class="fas fa-flag"></i> Report User
-</button>
+                                                <i class="fas fa-flag"></i> Report User
+                                            </button>
+                                            @if($order->status === 'processing')
+                                                <button onclick="updateOrderStatus({{ $order->id }}, 'delivering')" class="delivery-btn" style="background-color: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                                    <i class="bi bi-truck"></i> For Delivery
+                                                </button>
+                                            @endif
                                         </div>
                                     </div>
                                     <span class="order-status {{ $order->status }}">
@@ -5023,7 +5028,7 @@
         }).then((result) => {
             if (result.isConfirmed) {
                 // Send AJAX request to update order status
-                fetch(`/orders/${orderId}/status`, {
+                fetch(`/orders/${orderId}/update-status`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -5436,6 +5441,74 @@
                 }
             });
         });
+    </script>
+
+    <script>
+        // ... existing code ...
+
+        function updateOrderStatus(orderId, newStatus) {
+            Swal.fire({
+                title: 'Update Order Status',
+                text: `Are you sure you want to mark this order as ${newStatus}?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#517A5B',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, update it',
+                customClass: {
+                    popup: 'bigger-modal'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // AJAX call to update the order status
+                    fetch(`/orders/${orderId}/update-status`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ status: newStatus })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update the status badge in the UI
+                            const statusBadge = document.querySelector(`[data-order-id="${orderId}"]`).closest('.order-card').querySelector('.order-status');
+                            if (statusBadge) {
+                                statusBadge.textContent = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
+                                statusBadge.className = `order-status ${newStatus}`;
+                            }
+
+                            // Update the For Delivery button visibility
+                            const deliveryBtn = document.querySelector(`[data-order-id="${orderId}"]`).closest('.order-meta').querySelector('.delivery-btn');
+                            if (deliveryBtn) {
+                                deliveryBtn.style.display = newStatus === 'processing' ? 'flex' : 'none';
+                            }
+
+                            Swal.fire({
+                                title: 'Success!',
+                                text: 'Order status updated successfully',
+                                icon: 'success',
+                                confirmButtonColor: '#517A5B'
+                            });
+                        } else {
+                            throw new Error(data.message || 'Failed to update order status');
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: error.message || 'Something went wrong. Please try again.',
+                            icon: 'error',
+                            confirmButtonColor: '#517A5B'
+                        });
+                    });
+                }
+            });
+        }
+
+        // ... existing code ...
     </script>
 </body>
 </html>

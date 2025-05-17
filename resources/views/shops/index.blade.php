@@ -5,17 +5,23 @@
   <section class="section shop" id="shop" aria-label="shop">
     <div class="container">
       <div class="title-wrapper">
-        <h2 class="h2 section-title">All Shops</h2>
+        <h2 class="h2 section-title">Available shops for you to check out</h2>
+        <p class="section-subtitle">Discover our verified sellers and their products</p>
       </div>
     </div>
   </section>
 
   @foreach($shops as $shop)
-    @if(!$shop->shop || $shop->shop->status !== 'rejected')
     <section class="section shop" id="shop-{{ $shop->id }}" aria-label="shop">
       <div class="container">
         <div class="shop-title-wrapper">
-          <h2 class="h2 shop-name">{{ $shop->username }}'s Shop</h2>
+          <div class="shop-info">
+            <h2 class="h2 shop-name">{{ $shop->shop->shop_name ?? $shop->username }}'s Shop</h2>
+            <p class="shop-location">
+              <ion-icon name="location-outline"></ion-icon>
+              {{ $shop->shop->shop_address ?? 'Location not specified' }}
+            </p>
+          </div>
           <a href="{{ route('shops.show', $shop) }}" class="btn-link">
             <span class="span">View Shop</span>
             <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
@@ -31,6 +37,7 @@
           @if($shop->posts->isEmpty())
             <li class="scrollbar-item">
               <div class="empty-shop-card">
+                <ion-icon name="alert-circle-outline" class="empty-icon"></ion-icon>
                 <p>No products available in this shop yet.</p>
               </div>
             </li>
@@ -45,13 +52,15 @@
         </ul>
       </div>
     </section>
-    @endif
   @endforeach
 
   @if($shops->isEmpty())
     <div class="container text-center py-8">
-      <h3 class="mb-4">No shops available at the moment.</h3>
-      <p>Be the first to create a shop and start selling!</p>
+      <div class="empty-state">
+        <ion-icon name="storefront-outline" class="empty-icon"></ion-icon>
+        <h3 class="mb-4">No shops available at the moment.</h3>
+        <p>Be the first to create a shop and start selling!</p>
+      </div>
     </div>
   @endif
 </div>
@@ -64,7 +73,8 @@
     scroll-snap-type: x mandatory;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
-    margin-top: 5px; /* Reduced to bring slider closer to title */
+    margin-top: 5px;
+    padding: 10px 0;
   }
 
   /* Custom shop title styling */
@@ -72,36 +82,58 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px; /* Reduced from default to bring slider closer */
+    margin-bottom: 8px;
     border-bottom: 2px solid #e7e7e7;
-    padding-bottom: 6px;
+    padding-bottom: 12px;
+  }
+
+  .shop-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
   }
 
   .shop-name {
-    font-size: 2.2rem !important; /* Bigger font size */
+    font-size: 2.2rem !important;
     font-weight: 700;
-    color: #1e6f31; /* Green to match Recyclo theme */
+    color: #1e6f31;
     margin-bottom: 0;
     text-transform: capitalize;
+  }
+
+  .shop-location {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #666;
+    font-size: 0.9rem;
+    margin: 0;
+  }
+
+  .section-subtitle {
+    color: #666;
+    text-align: center;
+    margin-top: 8px;
   }
 
   /* Keep other styles */
   .shop-slider .scrollbar-item {
     flex: 0 0 auto;
-    width: 220px; /* reduced from 300px */
-    margin-right: 12px; /* reduced from 15px */
+    width: 220px;
+    margin-right: 12px;
     scroll-snap-align: start;
   }
 
   .shop-slider .placeholder-item {
     visibility: hidden;
-    min-width: 200px; /* reduced from 270px */
+    min-width: 200px;
   }
 
   .empty-shop-card {
-    width: 200px; /* reduced from 270px */
-    height: 280px; /* reduced from 360px */
+    width: 200px;
+    height: 280px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     border: 1px dashed #ccc;
@@ -109,28 +141,50 @@
     text-align: center;
     padding: 20px;
     background-color: #f9f9f9;
+    gap: 8px;
+  }
+
+  .empty-icon {
+    font-size: 2rem;
+    color: #999;
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 40px 20px;
+    background: #f9f9f9;
+    border-radius: 12px;
+    margin: 20px 0;
+  }
+
+  .empty-state .empty-icon {
+    font-size: 4rem;
+    color: #1e6f31;
   }
 
   /* Make sure scrollbar is always visible when needed */
   .has-scrollbar::-webkit-scrollbar {
-    height: 6px; /* reduced from 8px */
-    width: 6px; /* reduced from 8px */
+    height: 6px;
+    width: 6px;
   }
 
   /* Shop section margin adjustments */
   #shop .container {
-    max-width: 95%; /* increase container width for more items */
+    max-width: 95%;
   }
   
   .section.shop {
-    padding-top: 30px; /* reduced top padding */
-    padding-bottom: 30px; /* reduced bottom padding */
+    padding-top: 30px;
+    padding-bottom: 30px;
   }
   
   /* Adjust spacing between shop sections */
   .section.shop + .section.shop {
     margin-top: 10px;
-    padding-top: 15px; /* Further reduce padding between shops */
+    padding-top: 15px;
   }
 
   /* Scrollbar styles */
@@ -146,6 +200,27 @@
 
   .has-scrollbar::-webkit-scrollbar-thumb:hover {
     background: #555;
+  }
+
+  /* Button link styling */
+  .btn-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 16px;
+    background-color: #1e6f31;
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+  }
+
+  .btn-link:hover {
+    background-color: #155028;
+  }
+
+  .btn-link ion-icon {
+    font-size: 1.2rem;
   }
 </style>
 @endsection
