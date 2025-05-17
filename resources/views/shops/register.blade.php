@@ -290,14 +290,83 @@
 
         /* Map Related Styles */
         #map-container {
-            height: 300px;
+            height: 400px;
             width: 100%;
             border-radius: 12px;
             border: 2px solid #eee;
-            margin-top: 15px;
-            margin-bottom: 20px;
+            margin: 15px 0;
             overflow: hidden;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+            position: relative;
+            min-height: 400px;
+            max-height: 400px;
+        }
+
+        #map-container:hover {
+            border-color: var(--primary-color);
+        }
+
+        /* Add styles for map controls */
+        .leaflet-control-container .leaflet-control {
+            margin: 10px;
+        }
+
+        .leaflet-control-zoom {
+            border: none !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .leaflet-control-zoom a {
+            background-color: white !important;
+            color: var(--primary-color) !important;
+            border: 1px solid #eee !important;
+            width: 36px !important;
+            height: 36px !important;
+            line-height: 36px !important;
+            font-size: 18px !important;
+        }
+
+        .leaflet-control-zoom a:hover {
+            background-color: var(--primary-color) !important;
+            color: white !important;
+        }
+
+        .leaflet-control-geocoder {
+            border: none !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .leaflet-control-geocoder-form input {
+            border: 1px solid #eee !important;
+            border-radius: 6px !important;
+            padding: 8px 12px !important;
+            font-size: 14px !important;
+            width: 200px !important;
+        }
+
+        .leaflet-control-geocoder-form input:focus {
+            border-color: var(--primary-color) !important;
+            outline: none !important;
+            box-shadow: 0 0 0 3px rgba(81, 122, 91, 0.1) !important;
+        }
+
+        .leaflet-control-geocoder-alternatives {
+            background: white !important;
+            border-radius: 6px !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+            margin-top: 5px !important;
+        }
+
+        .leaflet-control-geocoder-alternatives a {
+            padding: 8px 12px !important;
+            font-size: 14px !important;
+            color: #333 !important;
+        }
+
+        .leaflet-control-geocoder-alternatives a:hover {
+            background-color: rgba(81, 122, 91, 0.1) !important;
+            color: var(--primary-color) !important;
         }
 
         .search-container {
@@ -545,6 +614,375 @@
                 font-size: 16px;
             }
         }
+
+        /* Add these new styles to your existing styles */
+        .register-btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 20px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 8px 20px rgba(81, 122, 91, 0.2);
+        }
+
+        .register-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(81, 122, 91, 0.3);
+        }
+
+        .register-btn i {
+            font-size: 24px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 800px;
+            margin: 40px auto;
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            position: relative;
+            animation: modalSlideIn 0.3s ease-out;
+            overflow: hidden;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 25px 30px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            position: relative;
+        }
+
+        .modal-header h2 {
+            color: white;
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-header h2 i {
+            font-size: 28px;
+        }
+
+        .close-modal {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .close-modal:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 30px;
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            padding: 20px 30px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+        }
+
+        .cancel-btn {
+            background: #f1f1f1;
+            color: #333;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .cancel-btn:hover {
+            background: #e1e1e1;
+        }
+
+        /* Responsive Modal Styles */
+        @media screen and (max-width: 768px) {
+            .modal-content {
+                width: 95%;
+                margin: 20px auto;
+            }
+
+            .modal-header {
+                padding: 20px;
+            }
+
+            .modal-body {
+                padding: 20px;
+            }
+
+            .modal-footer {
+                padding: 15px 20px;
+            }
+
+            .register-btn {
+                padding: 15px 30px;
+                font-size: 18px;
+            }
+        }
+
+        /* Add these new styles to your existing styles */
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            position: relative;
+            padding: 0 20px;
+        }
+
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #eee;
+            z-index: 1;
+            transform: translateY(-50%);
+        }
+
+        .step {
+            position: relative;
+            z-index: 2;
+            background: white;
+            padding: 0 15px;
+            text-align: center;
+        }
+
+        .step-icon {
+            width: 60px;
+            height: 60px;
+            background: #f8f9fa;
+            border: 3px solid #eee;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            transition: var(--transition);
+            font-size: 24px;
+        }
+
+        .step.active .step-icon {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .step.completed .step-icon {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+
+        .step-text {
+            font-size: 14px;
+            color: #666;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+
+        .step.active .step-text {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .step-content {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        .step-content h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-content h3 i {
+            font-size: 28px;
+        }
+
+        .step-description {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .step-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            gap: 15px;
+        }
+
+        .prev-btn, .next-btn {
+            padding: 15px 30px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: var(--transition);
+            font-size: 16px;
+        }
+
+        .prev-btn {
+            background: #f8f9fa;
+            color: #333;
+        }
+
+        .prev-btn:hover {
+            background: #e9ecef;
+            transform: translateX(-3px);
+        }
+
+        .next-btn {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .next-btn:hover {
+            background: var(--secondary-color);
+            transform: translateX(3px);
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: var(--transition);
+            font-size: 16px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(81, 122, 91, 0.2);
+        }
+
+        .verification-note {
+            background: rgba(81, 122, 91, 0.05);
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 25px;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            border: 1px solid rgba(81, 122, 91, 0.1);
+        }
+
+        .verification-note i {
+            color: var(--primary-color);
+            font-size: 28px;
+        }
+
+        .verification-note p {
+            margin: 0;
+            color: #333;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        @media screen and (max-width: 768px) {
+            .progress-bar {
+                padding: 0 10px;
+            }
+
+            .step-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+
+            .step-text {
+                font-size: 12px;
+            }
+
+            .step-content h3 {
+                font-size: 20px;
+            }
+
+            .step-description {
+                font-size: 14px;
+            }
+
+            .prev-btn, .next-btn, .submit-btn {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -583,50 +1021,122 @@
                     </ul>
                 </div>
 
-                <div class="seller-form">
-                    <form method="POST" action="{{ route('shop.store') }}" enctype="multipart/form-data">
-                        @csrf
-                        <div class="form-group">
-                            <label>Shop Name</label>
-                            <input type="text" name="shop_name" required placeholder="Enter your shop name" value="{{ old('shop_name') }}">
-                            @error('shop_name')
-                                <span class="error-message">{{ $message }}</span>
-                            @enderror
-                        </div>
+                <!-- Register Now Button -->
+                <div class="text-center mt-5">
+                    <button type="button" class="register-btn" onclick="openRegisterModal()">
+                        <i class="bi bi-shop"></i> Register Now
+                    </button>
+                </div>
 
-                        <div class="form-group">
-                            <label>Shop Address</label>
-                            <div class="search-container">
-                                <input type="text" id="location-search" placeholder="Search for a location..." value="{{ $user->location }}" class="form-control">
-                                <div class="loader" id="search-loader"></div>
-                                <div class="search-results" id="search-results"></div>
-                            </div>
-                            <div id="map-container"></div>
-                            <div class="selected-location" id="selected-location">
-                                <strong>Selected:</strong> <span id="location-display">{{ $user->location }}</span>
-                            </div>
-                            <textarea name="shop_address" id="shop-address-input" rows="3" required placeholder="Enter your complete shop address">{{ old('shop_address', $user->location) }}</textarea>
-                            @error('shop_address')
-                                <span class="error-message">{{ $message }}</span>
-                            @enderror
+                <!-- Registration Modal -->
+                <div id="registerModal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2>Register Your Shop</h2>
+                            <button type="button" class="close-modal" onclick="closeRegisterModal()">&times;</button>
                         </div>
+                        <div class="modal-body">
+                            <form method="POST" action="{{ route('shop.store') }}" enctype="multipart/form-data">
+                                @csrf
+                                <!-- Progress Bar -->
+                                <div class="progress-bar">
+                                    <div class="step active" data-step="1">
+                                        <div class="step-icon"><i class="bi bi-shop"></i></div>
+                                        <div class="step-text">Shop Info</div>
+                                    </div>
+                                    <div class="step" data-step="2">
+                                        <div class="step-icon"><i class="bi bi-geo-alt"></i></div>
+                                        <div class="step-text">Location</div>
+                                    </div>
+                                    <div class="step" data-step="3">
+                                        <div class="step-icon"><i class="bi bi-card-text"></i></div>
+                                        <div class="step-text">Verification</div>
+                                    </div>
+                                </div>
 
-                        <div class="form-group">
-                            <label>Valid ID <span class="required">*</span></label>
-                            <div class="file-input-wrapper">
-                                <label class="file-label">
-                                    <i class="bi bi-upload"></i> Upload Valid ID
-                                    <input type="file" name="valid_id" accept=".jpg,.jpeg,.png,.pdf" style="display: none;" required>
-                                </label>
-                            </div>
-                            <small class="input-hint">Upload a valid government-issued ID (Max: 5MB)</small>
-                            @error('valid_id')
-                                <span class="error-message">{{ $message }}</span>
-                            @enderror
+                                <!-- Step 1: Shop Information -->
+                                <div class="step-content active" data-step="1">
+                                    <h3>Shop Information</h3>
+                                    <p class="step-description">Let's start with the basic information about your shop.</p>
+                                    
+                                    <div class="form-group">
+                                        <label>Shop Name</label>
+                                        <input type="text" name="shop_name" required placeholder="Enter your shop name" value="{{ old('shop_name') }}" class="form-input">
+                                        @error('shop_name')
+                                            <span class="error-message">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Shop Description</label>
+                                        <textarea name="shop_description" rows="3" placeholder="Tell us about your shop..." class="form-input">{{ old('shop_description') }}</textarea>
+                                    </div>
+
+                                    <div class="step-buttons">
+                                        <button type="button" class="next-btn" onclick="nextStep(1)">Next <i class="bi bi-arrow-right"></i></button>
+                                    </div>
+                                </div>
+
+                                <!-- Step 2: Location -->
+                                <div class="step-content" data-step="2">
+                                    <h3>Shop Location</h3>
+                                    <p class="step-description">Help customers find your shop by providing its location.</p>
+
+                                    <div class="form-group">
+                                        <label>Shop Address</label>
+                                        <div class="search-container">
+                                            <input type="text" id="location-search" placeholder="Search for a location..." value="{{ $user->location }}" class="form-control">
+                                            <div class="loader" id="search-loader"></div>
+                                            <div class="search-results" id="search-results"></div>
+                                        </div>
+                                        <div id="map-container"></div>
+                                        <div class="selected-location" id="selected-location">
+                                            <strong>Selected:</strong> <span id="location-display">{{ $user->location }}</span>
+                                        </div>
+                                        <textarea name="shop_address" id="shop-address-input" rows="3" required placeholder="Enter your complete shop address" class="form-input">{{ old('shop_address', $user->location) }}</textarea>
+                                        @error('shop_address')
+                                            <span class="error-message">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+
+                                    <div class="step-buttons">
+                                        <button type="button" class="prev-btn" onclick="prevStep(2)"><i class="bi bi-arrow-left"></i> Previous</button>
+                                        <button type="button" class="next-btn" onclick="nextStep(2)">Next <i class="bi bi-arrow-right"></i></button>
+                                    </div>
+                                </div>
+
+                                <!-- Step 3: Verification -->
+                                <div class="step-content" data-step="3">
+                                    <h3>Verification</h3>
+                                    <p class="step-description">Please provide a valid government ID for verification.</p>
+
+                                    <div class="form-group">
+                                        <label>Valid ID <span class="required">*</span></label>
+                                        <div class="file-input-wrapper">
+                                            <label class="file-label">
+                                                <i class="bi bi-upload"></i> Upload Valid ID
+                                                <input type="file" name="valid_id" accept=".jpg,.jpeg,.png,.pdf" style="display: none;" required>
+                                            </label>
+                                        </div>
+                                        <small class="input-hint">Upload a valid government-issued ID (Max: 5MB)</small>
+                                        @error('valid_id')
+                                            <span class="error-message">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+
+                                    <div class="verification-note">
+                                        <i class="bi bi-info-circle"></i>
+                                        <p>Your application will be reviewed within 1-2 business days. We'll notify you once it's approved.</p>
+                                    </div>
+
+                                    <div class="step-buttons">
+                                        <button type="button" class="prev-btn" onclick="prevStep(3)"><i class="bi bi-arrow-left"></i> Previous</button>
+                                        <button type="submit" class="submit-btn">Submit Application</button>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
-
-                        <button type="submit" class="submit-btn">Submit Application</button>
-                    </form>
+                    </div>
                 </div>
             @else
                 <!-- Show application status -->
@@ -693,6 +1203,8 @@
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         let map, marker, geocoder;
+        let mapInitialized = false;
+        let mapContainer = null;
         
         // Initialize map if the map container exists (only on new application page)
         if (document.getElementById('map-container')) {
@@ -742,13 +1254,38 @@
         });
         
         function initMap() {
+            if (mapInitialized) return;
+            
+            mapContainer = document.getElementById('map-container');
+            if (!mapContainer) return;
+
+            // Set fixed dimensions
+            mapContainer.style.height = '400px';
+            mapContainer.style.minHeight = '400px';
+            mapContainer.style.maxHeight = '400px';
+            
             // Default to Zamboanga City coordinates
             let initialLat = 6.9214;
             let initialLng = 122.0790;
             let initialZoom = 13;
             
-            // Initialize the map
-            map = L.map('map-container').setView([initialLat, initialLng], initialZoom);
+            // Initialize the map with fixed dimensions
+            map = L.map('map-container', {
+                zoomControl: false,
+                attributionControl: false,
+                minZoom: 10,
+                maxZoom: 18
+            }).setView([initialLat, initialLng], initialZoom);
+            
+            // Add custom zoom control
+            L.control.zoom({
+                position: 'bottomright'
+            }).addTo(map);
+            
+            // Add attribution control
+            L.control.attribution({
+                position: 'bottomleft'
+            }).addTo(map);
             
             // Add OpenStreetMap tile layer
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -757,16 +1294,17 @@
             
             // Initialize marker at Zamboanga City position
             marker = L.marker([initialLat, initialLng], {
-                draggable: true
+                draggable: true,
+                autoPan: true
             }).addTo(map);
             
             // Add a label for Zamboanga City
             L.marker([initialLat, initialLng], {
                 icon: L.divIcon({
                     className: 'location-label',
-                    html: '<div style="background-color: rgba(255,255,255,0.8); padding: 5px; border-radius: 4px; font-weight: bold; border: 1px solid #517A5B;">Zamboanga City</div>',
-                    iconSize: [100, 20],
-                    iconAnchor: [50, 0]
+                    html: '<div style="background-color: rgba(255,255,255,0.9); padding: 8px 12px; border-radius: 6px; font-weight: bold; border: 2px solid #517A5B; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">Zamboanga City</div>',
+                    iconSize: [120, 30],
+                    iconAnchor: [60, 0]
                 })
             }).addTo(map);
             
@@ -784,7 +1322,11 @@
             
             // Initialize the geocoder control
             geocoder = L.Control.geocoder({
-                defaultMarkGeocode: false
+                defaultMarkGeocode: false,
+                placeholder: 'Search location...',
+                errorMessage: 'Nothing found.',
+                position: 'topleft',
+                expanded: true
             }).on('markgeocode', function(e) {
                 const latlng = e.geocode.center;
                 marker.setLatLng(latlng);
@@ -800,6 +1342,8 @@
             if (currentLocation && currentLocation !== '') {
                 geocodeLocation(currentLocation);
             }
+
+            mapInitialized = true;
         }
         
         // Initialize search functionality
@@ -945,6 +1489,92 @@
             }
         });
     }
+
+    // Add these new functions to your existing script
+    function openRegisterModal() {
+        document.getElementById('registerModal').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        
+        // Initialize map after a short delay to ensure modal is visible
+        setTimeout(() => {
+            initMap();
+            // Force map resize after initialization
+            if (map) {
+                map.invalidateSize(true);
+            }
+        }, 300);
+    }
+
+    function closeRegisterModal() {
+        document.getElementById('registerModal').style.display = 'none';
+        document.body.style.overflow = ''; // Restore scrolling
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('registerModal');
+        if (event.target == modal) {
+            closeRegisterModal();
+        }
+    }
+
+    // Close modal on escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeRegisterModal();
+        }
+    });
+
+    // Add these new functions to your existing script
+    function nextStep(currentStep) {
+        // Hide current step
+        document.querySelector(`.step-content[data-step="${currentStep}"]`).classList.remove('active');
+        // Show next step
+        document.querySelector(`.step-content[data-step="${currentStep + 1}"]`).classList.add('active');
+        
+        // Update progress bar
+        document.querySelector(`.step[data-step="${currentStep}"]`).classList.add('completed');
+        document.querySelector(`.step[data-step="${currentStep + 1}"]`).classList.add('active');
+
+        // If moving to step 2 (map step), ensure map is properly initialized and sized
+        if (currentStep + 1 === 2) {
+            setTimeout(() => {
+                if (map) {
+                    map.invalidateSize(true);
+                    // Force map container size
+                    if (mapContainer) {
+                        mapContainer.style.height = '400px';
+                        mapContainer.style.minHeight = '400px';
+                        mapContainer.style.maxHeight = '400px';
+                    }
+                }
+            }, 300);
+        }
+    }
+
+    function prevStep(currentStep) {
+        // Hide current step
+        document.querySelector(`.step-content[data-step="${currentStep}"]`).classList.remove('active');
+        // Show previous step
+        document.querySelector(`.step-content[data-step="${currentStep - 1}"]`).classList.add('active');
+        
+        // Update progress bar
+        document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
+        document.querySelector(`.step[data-step="${currentStep - 1}"]`).classList.remove('completed');
+    }
+
+    // Add window resize handler
+    window.addEventListener('resize', function() {
+        if (map) {
+            map.invalidateSize(true);
+            // Force map container size on resize
+            if (mapContainer) {
+                mapContainer.style.height = '400px';
+                mapContainer.style.minHeight = '400px';
+                mapContainer.style.maxHeight = '400px';
+            }
+        }
+    });
     </script>
 </body>
 </html>

@@ -712,7 +712,8 @@
                         Forgot your password?
                     </a>
                     
-                    <!-- <p class="social-text">Or Sign in with</p>
+                    <!-- Social media section commented out
+                    <p class="social-text">Or Sign in with</p>
                     <div class="social-media">
                         <a href="#" class="social-icon">
                             <i class="bi bi-facebook"></i>
@@ -721,9 +722,10 @@
                             <i class="bi bi-google"></i>
                         </a>
                         <a href="#" class="social-icon">
-                            <i class="bi bi-twitter"></i> -->
+                            <i class="bi bi-twitter"></i>
                         </a>
                     </div>
+                    -->
                 </form>
 
                 <!-- Full Registration Form -->
