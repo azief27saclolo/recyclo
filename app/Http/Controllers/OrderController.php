@@ -36,6 +36,14 @@ class OrderController extends Controller
                 $post = Post::with('user')->findOrFail($request->post_id);
                 $quantity = (int)$request->quantity;
                 
+                // Check if user is trying to buy their own product
+                if ($post->user_id === Auth::id()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Habibi why you want to buy your own product? Hayya!'
+                    ], 400);
+                }
+                
                 // Validate quantity
                 if ($post->quantity < $quantity) {
                     return response()->json([
@@ -247,7 +255,7 @@ class OrderController extends Controller
 
     public function index()
     {
-        $orders = Auth::user()->boughtOrders()->with('post')->get();
+        $orders = Auth::user()->boughtOrders()->with(['items.post', 'seller'])->get();
         return view('orders.index', ['orders' => $orders]);
     }
 
@@ -267,6 +275,12 @@ class OrderController extends Controller
                 
                 // Find the post
                 $post = Post::with('user')->findOrFail($post_id);
+                
+                // Check if user is trying to buy their own product
+                if ($post->user_id === Auth::id()) {
+                    return redirect()->route('posts.show', $post->id)
+                        ->with('error', 'You cannot buy your own products.');
+                }
                 
                 // Check if quantity is valid
                 if ($post->quantity < $quantity) {
@@ -348,18 +362,18 @@ class OrderController extends Controller
 
         // Validate the status
         $validStatus = $request->validate([
-            'status' => 'required|in:processing,delivering,for_pickup,cancelled,completed'
+            'status' => 'required|in:processing,delivering,delivered,for_pickup,cancelled,completed'
         ]);
                    
         $newStatus = $validStatus['status'];
         $orderAmount = null;
 
-        // If buyer is marking as completed, only allow if current status is 'for_pickup'
+        // If buyer is marking as completed, only allow if current status is 'delivered'
         if ($order->buyer_id === Auth::id() && $newStatus === 'completed') {
-            if ($order->status !== 'for_pickup') {
+            if ($order->status !== 'delivered') {
                 return response()->json([
                     'success' => false,
-                    'message' => 'You can only mark orders as completed when they are ready for pickup.'
+                    'message' => 'You can only mark orders as completed when they are delivered.'
                 ], 400);
             }
         }

@@ -8,7 +8,7 @@
 
           <span class="badge" aria-label="20% off">{{ $post->category }}</span>
           <div class="card-actions">
-            <form action="{{ route('cart.add') }}" method="POST" class="cart-form">
+            <form action="{{ route('cart.index') }}" method="POST" class="cart-form">
               @csrf
               <input type="hidden" name="product_id" value="{{ 
                 \App\Models\Product::firstOrCreate(

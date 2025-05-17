@@ -56,8 +56,8 @@
                     </button>
                     <button class="tab-btn" data-tab="to-receive" style="background: #f1f1f1; color: #333; border: none; padding: 10px 20px; border-radius: 8px; display: flex; align-items: center; white-space: nowrap; cursor: pointer;">
                         <ion-icon name="checkbox-outline" style="margin-right: 5px;"></ion-icon>
-                        For Pick Up
-                        <span class="badge" style="background: #517a5b; color: white; border-radius: 50%; width: 20px; height: 20px; display: inline-flex; justify-content: center; align-items: center; margin-left: 5px; font-size: 12px;">{{ $orders->where('status', 'for_pickup')->count() }}</span>
+                        Delivered
+                        <span class="badge" style="background: #517a5b; color: white; border-radius: 50%; width: 20px; height: 20px; display: inline-flex; justify-content: center; align-items: center; margin-left: 5px; font-size: 12px;">{{ $orders->where('status', 'delivered')->count() }}</span>
                     </button>
                     <button class="tab-btn" data-tab="completed" style="background: #f1f1f1; color: #333; border: none; padding: 10px 20px; border-radius: 8px; display: flex; align-items: center; white-space: nowrap; cursor: pointer;">
                         <ion-icon name="checkmark-done-outline" style="margin-right: 5px;"></ion-icon>
@@ -74,16 +74,37 @@
                             @foreach($orders->where('status', 'pending') as $order)
                                 <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
                                     <div class="order-header" style="padding: 15px;">
-                                        <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
-                                        <div class="order-details">
-                                            <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
-                                            <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
-                                            <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
-                                            <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
-                                            <p style="margin: 5px 0; color: #666;">Price: ₱{{ $order->post->price }}.00 per kg</p>
-                                            <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
-                                            <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
-                                        </div>
+                                        @if($order->items->count() > 0)
+                                            @foreach($order->items as $item)
+                                                <div class="order-item" style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #eee;">
+                                                    <img src="{{ asset('storage/' . $item->post->image) }}" alt="{{ $item->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
+                                                    <div class="order-details">
+                                                        <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $item->post->title }}</h3>
+                                                        <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
+                                                        <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
+                                                        <p style="margin: 5px 0; color: #666;">Quantity: {{ $item->quantity }}kg</p>
+                                                        <p style="margin: 5px 0; color: #666;">Price: ₱{{ $item->price }}.00 per kg</p>
+                                                        <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
+                                                        <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Subtotal: ₱{{ $item->quantity * $item->price }}.00</p>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                            <div class="order-total" style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #eee;">
+                                                <p style="margin: 10px 0; font-weight: 600; color: #517a5b; font-size: 18px;">Total Amount: ₱{{ $order->total_amount }}.00</p>
+                                            </div>
+                                        @else
+                                            <!-- Fallback for legacy orders without items -->
+                                            <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
+                                            <div class="order-details">
+                                                <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
+                                                <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
+                                                <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
+                                                <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
+                                                <p style="margin: 5px 0; color: #666;">Price: ₱{{ $order->post->price }}.00 per kg</p>
+                                                <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
+                                                <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
+                                            </div>
+                                        @endif
                                         <div class="order-status" style="margin-top: 10px;">
                                             <span class="status-badge pending" style="background: #ffc107; color: #212529; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Pending</span>
                                         </div>
@@ -112,16 +133,37 @@
                             @foreach($orders->whereIn('status', ['processing', 'approved']) as $order)
                                 <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
                                     <div class="order-header" style="padding: 15px;">
-                                        <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
-                                        <div class="order-details">
-                                            <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
-                                            <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
-                                            <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
-                                            <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
-                                            <p style="margin: 5px 0; color: #666;">Price: ₱{{ $order->post->price }}.00 per kg</p>
-                                            <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
-                                            <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
-                                        </div>
+                                        @if($order->items->count() > 0)
+                                            @foreach($order->items as $item)
+                                                <div class="order-item" style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #eee;">
+                                                    <img src="{{ asset('storage/' . $item->post->image) }}" alt="{{ $item->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
+                                                    <div class="order-details">
+                                                        <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $item->post->title }}</h3>
+                                                        <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
+                                                        <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
+                                                        <p style="margin: 5px 0; color: #666;">Quantity: {{ $item->quantity }}kg</p>
+                                                        <p style="margin: 5px 0; color: #666;">Price: ₱{{ $item->price }}.00 per kg</p>
+                                                        <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
+                                                        <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Subtotal: ₱{{ $item->quantity * $item->price }}.00</p>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                            <div class="order-total" style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #eee;">
+                                                <p style="margin: 10px 0; font-weight: 600; color: #517a5b; font-size: 18px;">Total Amount: ₱{{ $order->total_amount }}.00</p>
+                                            </div>
+                                        @else
+                                            <!-- Fallback for legacy orders without items -->
+                                            <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
+                                            <div class="order-details">
+                                                <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
+                                                <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
+                                                <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
+                                                <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
+                                                <p style="margin: 5px 0; color: #666;">Price: ₱{{ $order->post->price }}.00 per kg</p>
+                                                <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
+                                                <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
+                                            </div>
+                                        @endif
                                         <div class="order-status" style="margin-top: 10px;">
                                             <span class="status-badge processing" style="background: #28a745; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Processing</span>
                                         </div>
@@ -150,18 +192,46 @@
                             @foreach($orders->where('status', 'delivering') as $order)
                                 <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
                                     <div class="order-header" style="padding: 15px;">
-                                        <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
-                                        <div class="order-details">
-                                            <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
-                                            <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
-                                            <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
-                                            <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
-                                            <p style="margin: 5px 0; color: #666;">Price: ₱{{ $order->post->price }}.00 per kg</p>
-                                            <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
-                                            <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
-                                        </div>
+                                        @if($order->items->count() > 0)
+                                            @foreach($order->items as $item)
+                                                <div class="order-item" style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #eee;">
+                                                    <img src="{{ asset('storage/' . $item->post->image) }}" alt="{{ $item->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
+                                                    <div class="order-details">
+                                                        <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $item->post->title }}</h3>
+                                                        <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
+                                                        <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
+                                                        <p style="margin: 5px 0; color: #666;">Quantity: {{ $item->quantity }}kg</p>
+                                                        <p style="margin: 5px 0; color: #666;">Price: ₱{{ $item->price }}.00 per kg</p>
+                                                        <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
+                                                        <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Subtotal: ₱{{ $item->quantity * $item->price }}.00</p>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                            <div class="order-total" style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #eee;">
+                                                <p style="margin: 10px 0; font-weight: 600; color: #517a5b; font-size: 18px;">Total Amount: ₱{{ $order->total_amount }}.00</p>
+                                            </div>
+                                        @else
+                                            <!-- Fallback for legacy orders without items -->
+                                            <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
+                                            <div class="order-details">
+                                                <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
+                                                <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
+                                                <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
+                                                <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
+                                                <p style="margin: 5px 0; color: #666;">Price: ₱{{ $order->post->price }}.00 per kg</p>
+                                                <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
+                                                <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
+                                            </div>
+                                        @endif
                                         <div class="order-status" style="margin-top: 10px;">
                                             <span class="status-badge delivering" style="background: #0d6efd; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Delivering</span>
+                                        </div>
+                                        <div class="order-footer" style="background: #f8f9fa; padding: 15px; position: relative;">
+                                            <button class="btn btn-success confirm-receipt-btn" 
+                                                    data-order-id="{{ $order->id }}" 
+                                                    style="background: #198754; color: white; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer;">
+                                                <i class="bi bi-check-circle"></i> Receive Delivery
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -175,24 +245,45 @@
                         @endif
                     </div>
 
-                    <!-- For Pick Up Orders Tab Content -->
+                    <!-- Delivered Orders Tab Content -->
                     <div class="order-cards" id="to-receive-orders" style="display: none; flex-direction: column; gap: 20px;">
-                        @if($orders->where('status', 'for_pickup')->count() > 0)
-                            @foreach($orders->where('status', 'for_pickup') as $order)
+                        @if($orders->where('status', 'delivered')->count() > 0)
+                            @foreach($orders->where('status', 'delivered') as $order)
                                 <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
                                     <div class="order-header" style="padding: 15px;">
-                                        <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
-                                        <div class="order-details">
-                                            <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
-                                            <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
-                                            <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
-                                            <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
-                                            <p style="margin: 5px 0; color: #666;">Price: ₱{{ $order->post->price }}.00 per kg</p>
-                                            <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
-                                            <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
-                                        </div>
+                                        @if($order->items->count() > 0)
+                                            @foreach($order->items as $item)
+                                                <div class="order-item" style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #eee;">
+                                                    <img src="{{ asset('storage/' . $item->post->image) }}" alt="{{ $item->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
+                                                    <div class="order-details">
+                                                        <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $item->post->title }}</h3>
+                                                        <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
+                                                        <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
+                                                        <p style="margin: 5px 0; color: #666;">Quantity: {{ $item->quantity }}kg</p>
+                                                        <p style="margin: 5px 0; color: #666;">Price: ₱{{ $item->price }}.00 per kg</p>
+                                                        <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
+                                                        <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Subtotal: ₱{{ $item->quantity * $item->price }}.00</p>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                            <div class="order-total" style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #eee;">
+                                                <p style="margin: 10px 0; font-weight: 600; color: #517a5b; font-size: 18px;">Total Amount: ₱{{ $order->total_amount }}.00</p>
+                                            </div>
+                                        @else
+                                            <!-- Fallback for legacy orders without items -->
+                                            <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
+                                            <div class="order-details">
+                                                <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
+                                                <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
+                                                <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
+                                                <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
+                                                <p style="margin: 5px 0; color: #666;">Price: ₱{{ $order->post->price }}.00 per kg</p>
+                                                <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
+                                                <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
+                                            </div>
+                                        @endif
                                         <div class="order-status" style="margin-top: 10px;">
-                                            <span class="status-badge for_pickup" style="background: #6610f2; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">For Pick Up</span>
+                                            <span class="status-badge delivered" style="background: #6610f2; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Delivered</span>
                                         </div>
                                     </div>
                                     <div class="order-footer" style="background: #f8f9fa; padding: 15px; position: relative;">
@@ -207,7 +298,7 @@
                         @else
                             <div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
                                 <ion-icon name="checkbox-outline" style="font-size: 60px; color: #ccc;"></ion-icon>
-                                <p style="font-size: 18px; color: #666; margin-top: 10px;">No orders ready for pick up</p>
+                                <p style="font-size: 18px; color: #666; margin-top: 10px;">No delivered orders</p>
                                 <a href="{{ route('posts') }}" style="background: #517a5b; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; display: inline-block; margin-top: 15px;">Start Shopping</a>
                             </div>
                         @endif
@@ -219,17 +310,37 @@
                             @foreach($orders->where('status', 'completed') as $order)
                                 <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
                                     <div class="order-header" style="padding: 15px;">
-                                        <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
-                                        <div class="order-details">
-                                            <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
-                                            <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
-                                            <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
-                                            <p style="margin: 5px 0; color: #666;">Completed Date: {{ $order->updated_at->format('M d, Y') }}</p>
-                                            <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
-                                            <p style="margin: 5px 0; color: #666;">Price: ₱{{ $order->post->price }}.00 per kg</p>
-                                            <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
-                                            <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
-                                        </div>
+                                        @if($order->items->count() > 0)
+                                            @foreach($order->items as $item)
+                                                <div class="order-item" style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #eee;">
+                                                    <img src="{{ asset('storage/' . $item->post->image) }}" alt="{{ $item->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
+                                                    <div class="order-details">
+                                                        <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $item->post->title }}</h3>
+                                                        <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
+                                                        <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
+                                                        <p style="margin: 5px 0; color: #666;">Quantity: {{ $item->quantity }}kg</p>
+                                                        <p style="margin: 5px 0; color: #666;">Price: ₱{{ $item->price }}.00 per kg</p>
+                                                        <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
+                                                        <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Subtotal: ₱{{ $item->quantity * $item->price }}.00</p>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                            <div class="order-total" style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #eee;">
+                                                <p style="margin: 10px 0; font-weight: 600; color: #517a5b; font-size: 18px;">Total Amount: ₱{{ $order->total_amount }}.00</p>
+                                            </div>
+                                        @else
+                                            <!-- Fallback for legacy orders without items -->
+                                            <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
+                                            <div class="order-details">
+                                                <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
+                                                <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
+                                                <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
+                                                <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
+                                                <p style="margin: 5px 0; color: #666;">Price: ₱{{ $order->post->price }}.00 per kg</p>
+                                                <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
+                                                <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
+                                            </div>
+                                        @endif
                                         <div class="order-status" style="margin-top: 10px;">
                                             <span class="status-badge completed" style="background: #198754; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Completed</span>
                                         </div>
@@ -265,17 +376,37 @@
                                 @foreach($orders->where('status', 'cancelled') as $order)
                                     <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
                                         <div class="order-header" style="padding: 15px;">
-                                            <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
-                                            <div class="order-details">
-                                                <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
-                                                <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
-                                                <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
-                                                <p style="margin: 5px 0; color: #666;">Cancelled Date: {{ $order->updated_at->format('M d, Y') }}</p>
-                                                <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
-                                                <p style="margin: 5px 0; color: #666;">Price: ₱{{ $order->post->price }}.00 per kg</p>
-                                                <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
-                                                <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
-                                            </div>
+                                            @if($order->items->count() > 0)
+                                                @foreach($order->items as $item)
+                                                    <div class="order-item" style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #eee;">
+                                                        <img src="{{ asset('storage/' . $item->post->image) }}" alt="{{ $item->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
+                                                        <div class="order-details">
+                                                            <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $item->post->title }}</h3>
+                                                            <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
+                                                            <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
+                                                            <p style="margin: 5px 0; color: #666;">Quantity: {{ $item->quantity }}kg</p>
+                                                            <p style="margin: 5px 0; color: #666;">Price: ₱{{ $item->price }}.00 per kg</p>
+                                                            <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
+                                                            <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Subtotal: ₱{{ $item->quantity * $item->price }}.00</p>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                                <div class="order-total" style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #eee;">
+                                                    <p style="margin: 10px 0; font-weight: 600; color: #517a5b; font-size: 18px;">Total Amount: ₱{{ $order->total_amount }}.00</p>
+                                                </div>
+                                            @else
+                                                <!-- Fallback for legacy orders without items -->
+                                                <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
+                                                <div class="order-details">
+                                                    <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
+                                                    <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
+                                                    <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
+                                                    <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
+                                                    <p style="margin: 5px 0; color: #666;">Price: ₱{{ $order->post->price }}.00 per kg</p>
+                                                    <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
+                                                    <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
+                                                </div>
+                                            @endif
                                             <div class="order-status" style="margin-top: 10px;">
                                                 <span class="status-badge cancelled" style="background: #dc3545; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Cancelled</span>
                                             </div>
@@ -520,23 +651,22 @@
                     const orderId = this.getAttribute('data-order-id');
                     
                     Swal.fire({
-                        title: 'Complete Order?',
+                        title: 'Mark Order as Completed?',
                         text: "Are you sure you want to mark this order as completed?",
                         icon: 'question',
                         showCancelButton: true,
                         confirmButtonColor: '#198754',
                         cancelButtonColor: '#6c757d',
-                        confirmButtonText: 'Yes, complete it!',
+                        confirmButtonText: 'Yes, mark as completed',
                         cancelButtonText: 'No, cancel'
                     }).then((result) => {
                         if (result.isConfirmed) {
                             // Send AJAX request to update order status
-                            fetch(`/orders/${orderId}/status`, {
+                            fetch(`/orders/${orderId}/update-status`, {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                    'Accept': 'application/json'
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
                                 },
                                 body: JSON.stringify({ status: 'completed' })
                             })
@@ -544,22 +674,87 @@
                             .then(data => {
                                 if (data.success) {
                                     Swal.fire({
-                                        title: 'Completed!',
+                                        title: 'Success!',
                                         text: 'Order has been marked as completed.',
                                         icon: 'success',
                                         confirmButtonColor: '#198754'
                                     }).then(() => {
+                                        // Reload the page to reflect changes
                                         window.location.reload();
                                     });
                                 } else {
-                                    throw new Error(data.message || 'Failed to update order status');
+                                    Swal.fire({
+                                        title: 'Error!',
+                                        text: data.message || 'Something went wrong. Please try again.',
+                                        icon: 'error',
+                                        confirmButtonColor: '#198754'
+                                    });
                                 }
                             })
                             .catch(error => {
                                 console.error('Error:', error);
                                 Swal.fire({
                                     title: 'Error!',
-                                    text: error.message || 'Something went wrong while updating the order status.',
+                                    text: 'Something went wrong. Please try again.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#198754'
+                                });
+                            });
+                        }
+                    });
+                });
+            });
+
+            // Add event listeners for confirm receipt buttons
+            document.querySelectorAll('.confirm-receipt-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const orderId = this.getAttribute('data-order-id');
+                    
+                    Swal.fire({
+                        title: 'Confirm Receipt?',
+                        text: "Have you received this delivery?",
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#198754',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, I received it',
+                        cancelButtonText: 'No, cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Send AJAX request to update order status to delivered
+                            fetch(`/orders/${orderId}/update-status`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                },
+                                body: JSON.stringify({ status: 'delivered' })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire({
+                                        title: 'Success!',
+                                        text: 'Order has been marked as delivered.',
+                                        icon: 'success',
+                                        confirmButtonColor: '#198754'
+                                    }).then(() => {
+                                        window.location.reload();
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        title: 'Error!',
+                                        text: data.message || 'Something went wrong. Please try again.',
+                                        icon: 'error',
+                                        confirmButtonColor: '#198754'
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: 'Something went wrong. Please try again.',
                                     icon: 'error',
                                     confirmButtonColor: '#198754'
                                 });

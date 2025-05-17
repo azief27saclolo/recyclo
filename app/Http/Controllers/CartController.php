@@ -56,6 +56,14 @@ class CartController extends Controller
                 ], 422);
             }
 
+            // Check if user is trying to buy their own product
+            if ($product->user_id === Auth::id()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Habibi why you want to buy your own product? Hayya!'
+                ], 422);
+            }
+
             // Get the current user's cart to check existing quantities
             $cart = $this->getOrCreateCart();
             $existingCartItem = CartItem::where('cart_id', $cart->id)
