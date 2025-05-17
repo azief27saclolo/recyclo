@@ -332,4 +332,37 @@ class PostController extends Controller implements HasMiddleware
             ], 500);
         }
     }
+
+    /**
+     * Get the product ID associated with a post.
+     */
+    public function getProductId($postId)
+    {
+        try {
+            $post = Post::findOrFail($postId);
+            
+            // Get or create the product for this post
+            $product = Product::firstOrCreate(
+                ['post_id' => $post->id],
+                [
+                    'name' => $post->title,
+                    'description' => $post->description,
+                    'price' => $post->price,
+                    'image' => $post->image,
+                    'user_id' => $post->user_id,
+                    'stock' => $post->quantity
+                ]
+            );
+            
+            return response()->json([
+                'success' => true,
+                'product_id' => $product->id
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get product information: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

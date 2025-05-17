@@ -1208,50 +1208,22 @@
         
         // Initialize map if the map container exists (only on new application page)
         if (document.getElementById('map-container')) {
-            initMap();
-        }
-        
-        // Show filename when file is selected
-        document.querySelectorAll('input[type="file"]').forEach(input => {
-            input.addEventListener('change', function(e) {
-                if (e.target.files[0]) {
-                    let fileName = e.target.files[0].name;
-                    let fileSize = e.target.files[0].size / (1024 * 1024); // Convert to MB
-                    let label = e.target.parentElement;
-                    
-                    if (fileSize > 5) {
-                        Swal.fire({
-                            title: 'Error!',
-                            text: 'File size must be less than 5MB',
-                            icon: 'error',
-                            confirmButtonColor: '#517A5B'
-                        });
-                        e.target.value = ''; // Clear the input
-                        return;
+            // Wait for modal to be fully rendered before initializing map
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.target.id === 'registerModal' && 
+                        mutation.target.style.display === 'block') {
+                        initMap();
+                        observer.disconnect();
                     }
-
-                    label.innerHTML = `<i class="bi bi-file-earmark-check"></i> ${fileName}`;
-                    label.classList.add('has-file');
-                    input.style.display = 'none'; // Keep the input hidden
-                    label.appendChild(input); // Re-append the input to the label
-                }
-            });
-        });
-
-        // Form validation
-        document.querySelector('form')?.addEventListener('submit', function(e) {
-            let validId = document.querySelector('input[name="valid_id"]');
-
-            if (validId && !validId.files[0]) {
-                e.preventDefault();
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'Valid ID is required',
-                    icon: 'error',
-                    confirmButtonColor: '#517A5B'
                 });
-            }
-        });
+            });
+
+            observer.observe(document.getElementById('registerModal'), {
+                attributes: true,
+                attributeFilter: ['style']
+            });
+        }
         
         function initMap() {
             if (mapInitialized) return;
@@ -1344,6 +1316,11 @@
             }
 
             mapInitialized = true;
+            
+            // Force a resize after initialization
+            setTimeout(() => {
+                map.invalidateSize(true);
+            }, 100);
         }
         
         // Initialize search functionality
@@ -1495,11 +1472,11 @@
         document.getElementById('registerModal').style.display = 'block';
         document.body.style.overflow = 'hidden';
         
-        // Initialize map after a short delay to ensure modal is visible
+        // Initialize map after modal is visible
         setTimeout(() => {
-            initMap();
-            // Force map resize after initialization
-            if (map) {
+            if (!mapInitialized) {
+                initMap();
+            } else {
                 map.invalidateSize(true);
             }
         }, 300);
@@ -1539,14 +1516,10 @@
         // If moving to step 2 (map step), ensure map is properly initialized and sized
         if (currentStep + 1 === 2) {
             setTimeout(() => {
-                if (map) {
+                if (!mapInitialized) {
+                    initMap();
+                } else {
                     map.invalidateSize(true);
-                    // Force map container size
-                    if (mapContainer) {
-                        mapContainer.style.height = '400px';
-                        mapContainer.style.minHeight = '400px';
-                        mapContainer.style.maxHeight = '400px';
-                    }
                 }
             }, 300);
         }
@@ -1567,12 +1540,6 @@
     window.addEventListener('resize', function() {
         if (map) {
             map.invalidateSize(true);
-            // Force map container size on resize
-            if (mapContainer) {
-                mapContainer.style.height = '400px';
-                mapContainer.style.minHeight = '400px';
-                mapContainer.style.maxHeight = '400px';
-            }
         }
     });
     </script>

@@ -2404,18 +2404,33 @@
             }
         });
 
-        // Send AJAX request to add to cart
-        fetch('{{ route("cart.add") }}', {
-            method: 'POST',
+        // First, get the product ID associated with this post
+        fetch(`/api/posts/${postId}/product`, {
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                product_id: postId,
-                quantity: 1
-            })
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                throw new Error(data.message || 'Failed to get product information');
+            }
+
+            // Now add the product to cart
+            return fetch('{{ route("cart.add") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    product_id: data.product_id,
+                    quantity: 1
+                })
+            });
         })
         .then(response => response.json())
         .then(data => {
