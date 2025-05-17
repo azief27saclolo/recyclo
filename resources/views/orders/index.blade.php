@@ -64,250 +64,229 @@
                         Completed
                         <span class="badge" style="background: #517a5b; color: white; border-radius: 50%; width: 20px; height: 20px; display: inline-flex; justify-content: center; align-items: center; margin-left: 5px; font-size: 12px;">{{ $orders->where('status', 'completed')->count() }}</span>
                     </button>
-                    <button class="tab-btn" data-tab="cancelled" style="background: #f1f1f1; color: #333; border: none; padding: 10px 20px; border-radius: 8px; display: flex; align-items: center; white-space: nowrap; cursor: pointer;">
-                        <ion-icon name="close-circle-outline" style="margin-right: 5px;"></ion-icon>
-                        Cancelled
-                        <span class="badge" style="background: #517a5b; color: white; border-radius: 50%; width: 20px; height: 20px; display: inline-flex; justify-content: center; align-items: center; margin-left: 5px; font-size: 12px;">{{ $orders->where('status', 'cancelled')->count() }}</span>
-                    </button>
                 </div>
 
-                <!-- Pending Orders Tab Content -->
-                <div class="order-cards" id="pending-orders" style="display: flex; flex-direction: column; gap: 20px;">
-                    @if($orders->where('status', 'pending')->count() > 0)
-                        @foreach($orders->where('status', 'pending') as $order)
-                            <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
-                                <div class="order-header" style="padding: 15px;">
-                                    <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
-                                    <div class="order-details">
-                                        <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
-                                        <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
-                                        <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
-                                        <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
-                                        <p style="margin: 5px 0; color: #666;">Price: ₱{{ $order->post->price }}.00 per kg</p>
-                                        <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
-                                        <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
+                <!-- Active Orders Section -->
+                <div class="active-orders-section">
+                    <!-- Pending Orders Tab Content -->
+                    <div class="order-cards" id="pending-orders" style="display: flex; flex-direction: column; gap: 20px;">
+                        @if($orders->where('status', 'pending')->count() > 0)
+                            @foreach($orders->where('status', 'pending') as $order)
+                                <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
+                                    <div class="order-header" style="padding: 15px;">
+                                        <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
+                                        <div class="order-details">
+                                            <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
+                                            <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
+                                            <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
+                                            <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
+                                            <p style="margin: 5px 0; color: #666;">Price: ₱{{ $order->post->price }}.00 per kg</p>
+                                            <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
+                                            <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
+                                        </div>
+                                        <div class="order-status" style="margin-top: 10px;">
+                                            <span class="status-badge pending" style="background: #ffc107; color: #212529; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Pending</span>
+                                        </div>
                                     </div>
-                                    <div class="order-status" style="margin-top: 10px;">
-                                        <span class="status-badge pending" style="background: #ffc107; color: #212529; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Pending</span>
+                                    <div class="order-footer" style="background: #f8f9fa; padding: 15px; position: relative;">
+                                        <button class="btn btn-secondary cancel-order-btn" 
+                                                data-order-id="{{ $order->id }}" 
+                                                style="background: white; border: 1px solid #517a5b; color: #517a5b; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer;">
+                                            Cancel Order
+                                        </button>
                                     </div>
                                 </div>
-                                <div class="order-footer" style="background: #f8f9fa; padding: 15px; position: relative;">
-                                    <button class="btn btn-primary track-location-btn" 
-                                            data-location="{{ $order->seller->location ?? 'Zamboanga City' }}" 
-                                            style="background: #517a5b; color: white; border: none; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;">
-                                        <ion-icon name="location-outline"></ion-icon> Track Location
-                                    </button>
-                                    <button class="btn btn-secondary cancel-order-btn" 
-                                            data-order-id="{{ $order->id }}" 
-                                            style="background: white; border: 1px solid #517a5b; color: #517a5b; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer;">
-                                        Cancel Order
-                                    </button>
-                                </div>
+                            @endforeach
+                        @else
+                            <div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
+                                <ion-icon name="hourglass-outline" style="font-size: 60px; color: #ccc;"></ion-icon>
+                                <p style="font-size: 18px; color: #666; margin-top: 10px;">No pending orders</p>
+                                <a href="{{ route('posts') }}" style="background: #517a5b; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; display: inline-block; margin-top: 15px;">Start Shopping</a>
                             </div>
-                        @endforeach
-                    @else
-                        <div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
-                            <ion-icon name="hourglass-outline" style="font-size: 60px; color: #ccc;"></ion-icon>
-                            <p style="font-size: 18px; color: #666; margin-top: 10px;">No pending orders</p>
-                            <a href="{{ route('posts') }}" style="background: #517a5b; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; display: inline-block; margin-top: 15px;">Start Shopping</a>
-                        </div>
-                    @endif
+                        @endif
+                    </div>
+
+                    <!-- Processing Orders Tab Content -->
+                    <div class="order-cards" id="new-orders" style="display: none; flex-direction: column; gap: 20px;">
+                        @if($orders->whereIn('status', ['processing', 'approved'])->count() > 0)
+                            @foreach($orders->whereIn('status', ['processing', 'approved']) as $order)
+                                <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
+                                    <div class="order-header" style="padding: 15px;">
+                                        <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
+                                        <div class="order-details">
+                                            <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
+                                            <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
+                                            <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
+                                            <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
+                                            <p style="margin: 5px 0; color: #666;">Price: ₱{{ $order->post->price }}.00 per kg</p>
+                                            <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
+                                            <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
+                                        </div>
+                                        <div class="order-status" style="margin-top: 10px;">
+                                            <span class="status-badge processing" style="background: #28a745; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Processing</span>
+                                        </div>
+                                    </div>
+                                    <div class="order-footer" style="background: #f8f9fa; padding: 15px; position: relative;">
+                                        <button class="btn btn-secondary cancel-order-btn" 
+                                                data-order-id="{{ $order->id }}" 
+                                                style="background: white; border: 1px solid #dc3545; color: #dc3545; padding: 6px 12px; border-radius: 5px; font-size: 14px; position: absolute; bottom: 15px; right: 15px; cursor: pointer;">
+                                            <i class="bi bi-x-circle" style="margin-right: 4px;"></i>Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            @endforeach
+                        @else
+                            <div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
+                                <ion-icon name="file-tray-outline" style="font-size: 60px; color: #ccc;"></ion-icon>
+                                <p style="font-size: 18px; color: #666; margin-top: 10px;">No processing orders</p>
+                                <a href="{{ route('posts') }}" style="background: #517a5b; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; display: inline-block; margin-top: 15px;">Start Shopping</a>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Delivering Orders Tab Content -->
+                    <div class="order-cards" id="to-ship-orders" style="display: none; flex-direction: column; gap: 20px;">
+                        @if($orders->where('status', 'delivering')->count() > 0)
+                            @foreach($orders->where('status', 'delivering') as $order)
+                                <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
+                                    <div class="order-header" style="padding: 15px;">
+                                        <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
+                                        <div class="order-details">
+                                            <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
+                                            <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
+                                            <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
+                                            <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
+                                            <p style="margin: 5px 0; color: #666;">Price: ₱{{ $order->post->price }}.00 per kg</p>
+                                            <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
+                                            <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
+                                        </div>
+                                        <div class="order-status" style="margin-top: 10px;">
+                                            <span class="status-badge delivering" style="background: #0d6efd; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Delivering</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        @else
+                            <div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
+                                <ion-icon name="airplane-outline" style="font-size: 60px; color: #ccc;"></ion-icon>
+                                <p style="font-size: 18px; color: #666; margin-top: 10px;">No orders in transit</p>
+                                <a href="{{ route('posts') }}" style="background: #517a5b; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; display: inline-block; margin-top: 15px;">Start Shopping</a>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- For Pick Up Orders Tab Content -->
+                    <div class="order-cards" id="to-receive-orders" style="display: none; flex-direction: column; gap: 20px;">
+                        @if($orders->where('status', 'for_pickup')->count() > 0)
+                            @foreach($orders->where('status', 'for_pickup') as $order)
+                                <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
+                                    <div class="order-header" style="padding: 15px;">
+                                        <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
+                                        <div class="order-details">
+                                            <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
+                                            <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
+                                            <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
+                                            <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
+                                            <p style="margin: 5px 0; color: #666;">Price: ₱{{ $order->post->price }}.00 per kg</p>
+                                            <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
+                                            <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
+                                        </div>
+                                        <div class="order-status" style="margin-top: 10px;">
+                                            <span class="status-badge for_pickup" style="background: #6610f2; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">For Pick Up</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        @else
+                            <div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
+                                <ion-icon name="checkbox-outline" style="font-size: 60px; color: #ccc;"></ion-icon>
+                                <p style="font-size: 18px; color: #666; margin-top: 10px;">No orders ready for pick up</p>
+                                <a href="{{ route('posts') }}" style="background: #517a5b; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; display: inline-block; margin-top: 15px;">Start Shopping</a>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Completed Orders Tab Content -->
+                    <div class="order-cards" id="completed-orders" style="display: none; flex-direction: column; gap: 20px;">
+                        @if($orders->where('status', 'completed')->count() > 0)
+                            @foreach($orders->where('status', 'completed') as $order)
+                                <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
+                                    <div class="order-header" style="padding: 15px;">
+                                        <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
+                                        <div class="order-details">
+                                            <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
+                                            <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
+                                            <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
+                                            <p style="margin: 5px 0; color: #666;">Completed Date: {{ $order->updated_at->format('M d, Y') }}</p>
+                                            <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
+                                            <p style="margin: 5px 0; color: #666;">Price: ₱{{ $order->post->price }}.00 per kg</p>
+                                            <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
+                                            <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
+                                        </div>
+                                        <div class="order-status" style="margin-top: 10px;">
+                                            <span class="status-badge completed" style="background: #198754; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Completed</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        @else
+                            <div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
+                                <ion-icon name="checkmark-done-outline" style="font-size: 60px; color: #ccc;"></ion-icon>
+                                <p style="font-size: 18px; color: #666; margin-top: 10px;">No completed orders</p>
+                                <a href="{{ route('posts') }}" style="background: #517a5b; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; display: inline-block; margin-top: 15px;">Start Shopping</a>
+                            </div>
+                        @endif
+                    </div>
                 </div>
 
-                <!-- Processing Orders Tab Content -->
-                <div class="order-cards" id="new-orders" style="display: none; flex-direction: column; gap: 20px;">
-                    @if($orders->whereIn('status', ['processing', 'approved'])->count() > 0)
-                        @foreach($orders->whereIn('status', ['processing', 'approved']) as $order)
-                            <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
-                                <div class="order-header" style="padding: 15px;">
-                                    <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
-                                    <div class="order-details">
-                                        <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
-                                        <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
-                                        <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
-                                        <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
-                                        <p style="margin: 5px 0; color: #666;">Price: ₱{{ $order->post->price }}.00 per kg</p>
-                                        <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
-                                        <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
+                <!-- Cancelled Orders Section -->
+                <div class="cancelled-orders-section" style="margin-top: 50px; padding-top: 30px; border-top: 2px solid #eee;">
+                    <div class="cancelled-header" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="toggleCancelledOrders()">
+                        <h2 style="color: #dc3545; font-size: 24px; margin: 0; display: flex; align-items: center; gap: 10px;">
+                            <ion-icon name="close-circle-outline"></ion-icon>
+                            Cancelled Orders
+                            <span style="background: #dc3545; color: white; padding: 2px 10px; border-radius: 15px; font-size: 14px;">
+                                {{ $orders->where('status', 'cancelled')->count() }}
+                            </span>
+                        </h2>
+                        <ion-icon name="chevron-down-outline" id="cancelledToggleIcon" style="font-size: 24px; color: #dc3545; transition: transform 0.3s ease;"></ion-icon>
+                    </div>
+                    
+                    <div class="cancelled-orders-content" id="cancelledOrdersContent" style="display: none; margin-top: 20px; transition: all 0.3s ease;">
+                        <div class="order-cards" style="display: flex; flex-direction: column; gap: 20px;">
+                            @if($orders->where('status', 'cancelled')->count() > 0)
+                                @foreach($orders->where('status', 'cancelled') as $order)
+                                    <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
+                                        <div class="order-header" style="padding: 15px;">
+                                            <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
+                                            <div class="order-details">
+                                                <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
+                                                <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
+                                                <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
+                                                <p style="margin: 5px 0; color: #666;">Cancelled Date: {{ $order->updated_at->format('M d, Y') }}</p>
+                                                <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
+                                                <p style="margin: 5px 0; color: #666;">Price: ₱{{ $order->post->price }}.00 per kg</p>
+                                                <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
+                                                <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
+                                            </div>
+                                            <div class="order-status" style="margin-top: 10px;">
+                                                <span class="status-badge cancelled" style="background: #dc3545; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Cancelled</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="order-status" style="margin-top: 10px;">
-                                        <span class="status-badge processing" style="background: #28a745; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Processing</span>
-                                    </div>
+                                @endforeach
+                            @else
+                                <div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
+                                    <ion-icon name="close-circle-outline" style="font-size: 60px; color: #ccc;"></ion-icon>
+                                    <p style="font-size: 18px; color: #666; margin-top: 10px;">No cancelled orders</p>
                                 </div>
-                                <div class="order-footer" style="background: #f8f9fa; padding: 15px; position: relative;">
-                                    <button class="btn btn-secondary cancel-order-btn" 
-                                            data-order-id="{{ $order->id }}" 
-                                            style="background: white; border: 1px solid #dc3545; color: #dc3545; padding: 6px 12px; border-radius: 5px; font-size: 14px; position: absolute; bottom: 15px; right: 15px; cursor: pointer;">
-                                        <i class="bi bi-x-circle" style="margin-right: 4px;"></i>Cancel
-                                    </button>
-                                </div>
-                            </div>
-                        @endforeach
-                    @else
-                        <div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
-                            <ion-icon name="file-tray-outline" style="font-size: 60px; color: #ccc;"></ion-icon>
-                            <p style="font-size: 18px; color: #666; margin-top: 10px;">No processing orders</p>
-                            <a href="{{ route('posts') }}" style="background: #517a5b; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; display: inline-block; margin-top: 15px;">Start Shopping</a>
+                            @endif
                         </div>
-                    @endif
-                </div>
-
-                <!-- Delivering Orders Tab Content -->
-                <div class="order-cards" id="to-ship-orders" style="display: none; flex-direction: column; gap: 20px;">
-                    @if($orders->where('status', 'delivering')->count() > 0)
-                        @foreach($orders->where('status', 'delivering') as $order)
-                            <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
-                                <div class="order-header" style="padding: 15px;">
-                                    <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
-                                    <div class="order-details">
-                                        <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
-                                        <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
-                                        <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
-                                        <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
-                                        <p style="margin: 5px 0; color: #666;">Price: ₱{{ $order->post->price }}.00 per kg</p>
-                                        <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
-                                        <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
-                                    </div>
-                                    <div class="order-status" style="margin-top: 10px;">
-                                        <span class="status-badge delivering" style="background: #0d6efd; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Delivering</span>
-                                    </div>
-                                </div>
-                                <div class="order-footer" style="background: #f8f9fa; padding: 15px; display: flex; gap: 10px;">
-                                    <button class="btn btn-primary track-location-btn" 
-                                            data-location="{{ $order->seller->location ?? 'Zamboanga City' }}" 
-                                            style="background: #517a5b; color: white; border: none; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;">
-                                        <ion-icon name="location-outline"></ion-icon> Track Location
-                                    </button>
-                                </div>
-                            </div>
-                        @endforeach
-                    @else
-                        <div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
-                            <ion-icon name="airplane-outline" style="font-size: 60px; color: #ccc;"></ion-icon>
-                            <p style="font-size: 18px; color: #666; margin-top: 10px;">No orders in transit</p>
-                            <a href="{{ route('posts') }}" style="background: #517a5b; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; display: inline-block; margin-top: 15px;">Start Shopping</a>
-                        </div>
-                    @endif
-                </div>
-
-                <!-- For Pick Up Orders Tab Content -->
-                <div class="order-cards" id="to-receive-orders" style="display: none; flex-direction: column; gap: 20px;">
-                    @if($orders->where('status', 'for_pickup')->count() > 0)
-                        @foreach($orders->where('status', 'for_pickup') as $order)
-                            <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
-                                <div class="order-header" style="padding: 15px;">
-                                    <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
-                                    <div class="order-details">
-                                        <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
-                                        <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
-                                        <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
-                                        <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
-                                        <p style="margin: 5px 0; color: #666;">Price: ₱{{ $order->post->price }}.00 per kg</p>
-                                        <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
-                                        <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
-                                    </div>
-                                    <div class="order-status" style="margin-top: 10px;">
-                                        <span class="status-badge for_pickup" style="background: #6610f2; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">For Pick Up</span>
-                                    </div>
-                                </div>
-                                <div class="order-footer" style="background: #f8f9fa; padding: 15px; display: flex; gap: 10px;">
-                                    <button class="btn btn-primary track-location-btn" 
-                                            data-location="{{ $order->seller->location ?? 'Zamboanga City' }}" 
-                                            style="background: #517a5b; color: white; border: none; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;">
-                                        <ion-icon name="location-outline"></ion-icon> Track Location
-                                    </button>
-                                </div>
-                            </div>
-                        @endforeach
-                    @else
-                        <div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
-                            <ion-icon name="checkbox-outline" style="font-size: 60px; color: #ccc;"></ion-icon>
-                            <p style="font-size: 18px; color: #666; margin-top: 10px;">No orders ready for pick up</p>
-                            <a href="{{ route('posts') }}" style="background: #517a5b; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; display: inline-block; margin-top: 15px;">Start Shopping</a>
-                        </div>
-                    @endif
-                </div>
-
-                <!-- Completed Orders Tab Content -->
-                <div class="order-cards" id="completed-orders" style="display: none; flex-direction: column; gap: 20px;">
-                    @if($orders->where('status', 'completed')->count() > 0)
-                        @foreach($orders->where('status', 'completed') as $order)
-                            <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
-                                <div class="order-header" style="padding: 15px;">
-                                    <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
-                                    <div class="order-details">
-                                        <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
-                                        <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
-                                        <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
-                                        <p style="margin: 5px 0; color: #666;">Completed Date: {{ $order->updated_at->format('M d, Y') }}</p>
-                                        <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
-                                        <p style="margin: 5px 0; color: #666;">Price: ₱{{ $order->post->price }}.00 per kg</p>
-                                        <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
-                                        <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
-                                    </div>
-                                    <div class="order-status" style="margin-top: 10px;">
-                                        <span class="status-badge completed" style="background: #198754; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Completed</span>
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
-                    @else
-                        <div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
-                            <ion-icon name="checkmark-done-outline" style="font-size: 60px; color: #ccc;"></ion-icon>
-                            <p style="font-size: 18px; color: #666; margin-top: 10px;">No completed orders</p>
-                            <a href="{{ route('posts') }}" style="background: #517a5b; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; display: inline-block; margin-top: 15px;">Start Shopping</a>
-                        </div>
-                    @endif
-                </div>
-
-                <!-- Cancelled Orders Tab Content -->
-                <div class="order-cards" id="cancelled-orders" style="display: none; flex-direction: column; gap: 20px;">
-                    @if($orders->where('status', 'cancelled')->count() > 0)
-                        @foreach($orders->where('status', 'cancelled') as $order)
-                            <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
-                                <div class="order-header" style="padding: 15px;">
-                                    <img src="{{ asset('storage/' . $order->post->image) }}" alt="{{ $order->post->title }}" class="order-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
-                                    <div class="order-details">
-                                        <h3 style="margin: 0 0 10px 0; font-size: 18px;">{{ $order->post->title }}</h3>
-                                        <p style="margin: 5px 0; color: #666;">Seller: {{ $order->seller->username }}</p>
-                                        <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
-                                        <p style="margin: 5px 0; color: #666;">Cancelled Date: {{ $order->updated_at->format('M d, Y') }}</p>
-                                        <p style="margin: 5px 0; color: #666;">Quantity: {{ $order->quantity }}kg</p>
-                                        <p style="margin: 5px 0; color: #666;">Price: ₱{{ $order->post->price }}.00 per kg</p>
-                                        <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
-                                        <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Total: ₱{{ $order->total_amount }}.00</p>
-                                    </div>
-                                    <div class="order-status" style="margin-top: 10px;">
-                                        <span class="status-badge cancelled" style="background: #dc3545; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Cancelled</span>
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
-                    @else
-                        <div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
-                            <ion-icon name="close-circle-outline" style="font-size: 60px; color: #ccc;"></ion-icon>
-                            <p style="font-size: 18px; color: #666; margin-top: 10px;">No cancelled orders</p>
-                            <a href="{{ route('posts') }}" style="background: #517a5b; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; display: inline-block; margin-top: 15px;">Start Shopping</a>
-                        </div>
-                    @endif
+                    </div>
                 </div>
             </div>
         </section>
     </article>
-
-    <!-- Add Location Map Modal -->
-    <div id="locationMapModal" style="display: none; position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);">
-        <div style="background-color: white; margin: 50px auto; padding: 20px; width: 90%; max-width: 800px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
-                <h2 style="color: #517a5b; font-size: 24px; font-weight: 600; margin: 0;">Location Tracker</h2>
-                <span id="closeLocationMap" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
-            </div>
-            <div style="margin-bottom: 20px;">
-                <p id="locationDetails" style="font-size: 16px; margin-bottom: 15px;">Loading location details...</p>
-                <div id="locationMap" style="height: 400px; width: 100%; border-radius: 8px; border: 1px solid #ccc;"></div>
-            </div>
-        </div>
-    </div>
 
     <!-- Add Cancellation Reason Modal -->
     <div id="cancellationReasonModal" class="modal" style="display: none; position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
@@ -487,7 +466,7 @@
                 if (tabBtn) tabBtn.click();
             }
 
-            // Cancel Order Functionality - Single event listener for all cancel buttons
+            // Cancel Order Functionality
             document.querySelectorAll('.cancel-order-btn').forEach(button => {
                 button.addEventListener('click', function() {
                     const orderId = this.getAttribute('data-order-id');
@@ -496,7 +475,6 @@
                     if (orderStatus === 'processing') {
                         showCancellationModal(orderId);
                     } else {
-                        // For non-processing orders, use the existing confirmation
                         Swal.fire({
                             title: 'Cancel Order?',
                             text: "Are you sure you want to cancel this order? This action cannot be undone.",
@@ -514,6 +492,20 @@
                     }
                 });
             });
+
+            // Add toggle function for cancelled orders
+            window.toggleCancelledOrders = function() {
+                const content = document.getElementById('cancelledOrdersContent');
+                const icon = document.getElementById('cancelledToggleIcon');
+                
+                if (content.style.display === 'none') {
+                    content.style.display = 'block';
+                    icon.style.transform = 'rotate(180deg)';
+                } else {
+                    content.style.display = 'none';
+                    icon.style.transform = 'rotate(0deg)';
+                }
+            }
         });
 
         // Modal functions
