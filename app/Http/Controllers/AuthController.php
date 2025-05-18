@@ -254,4 +254,27 @@ class AuthController extends Controller
     {
         return view('auth.restricted-account');
     }
+
+    // Add this method to show the login form
+    public function showLoginForm(Request $request)
+    {
+        // Simple user-agent check for mobile
+        $userAgent = $request->header('User-Agent');
+        $isMobile = preg_match('/Mobile|Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i', $userAgent);
+        if ($isMobile) {
+            return view('auth.login_mobile');
+        }
+        return view('auth.login');
+    }
+
+    // Add this method to show the register form (optional, if you have a separate route)
+    public function showRegisterForm(Request $request)
+    {
+        $userAgent = $request->header('User-Agent');
+        $isMobile = preg_match('/Mobile|Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i', $userAgent);
+        if ($isMobile) {
+            return view('auth.login_mobile'); // Use the same mobile view for register
+        }
+        return view('auth.login');
+    }
 }

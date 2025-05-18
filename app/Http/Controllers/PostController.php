@@ -76,6 +76,22 @@ class PostController extends Controller implements HasMiddleware
         
         $posts = $query->paginate(20)->withQueryString();
 
+        // Create products for posts and load the relationship
+        foreach ($posts as $post) {
+            $product = Product::firstOrCreate(
+                ['post_id' => $post->id],
+                [
+                    'name' => $post->title,
+                    'description' => $post->description,
+                    'price' => $post->price,
+                    'image' => $post->image,
+                    'user_id' => $post->user_id,
+                    'stock' => $post->quantity
+                ]
+            );
+        }
+        $posts->load('product');
+
         return view('posts.index', [
             'posts' => $posts,
             'categories' => $categories,

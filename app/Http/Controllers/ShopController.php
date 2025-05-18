@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use App\Models\Post;
+use App\Models\User;
+use App\Models\Product;
 
 class ShopController extends Controller
 {
@@ -441,5 +443,31 @@ class ShopController extends Controller
             return redirect()->route('shop.dashboard')
                 ->with('error', 'Failed to update product: ' . $e->getMessage());
         }
+    }
+
+    public function show($id)
+    {
+        $shop = User::with(['posts' => function($query) {
+            $query->where('status', Post::STATUS_APPROVED)
+                  ->latest();
+        }])->findOrFail($id);
+
+        // Create products for posts and load the relationship
+        foreach ($shop->posts as $post) {
+            $product = Product::firstOrCreate(
+                ['post_id' => $post->id],
+                [
+                    'name' => $post->title,
+                    'description' => $post->description,
+                    'price' => $post->price,
+                    'image' => $post->image,
+                    'user_id' => $post->user_id,
+                    'stock' => $post->quantity
+                ]
+            );
+        }
+        $shop->posts->load('product');
+
+        return view('shops.show', compact('shop'));
     }
 }

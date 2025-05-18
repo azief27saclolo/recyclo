@@ -72,46 +72,20 @@
                             If you don't see the email, check your spam folder
                         </p>
                     </div>
-                    
-                    <!-- Resend Verification Text Link -->
-                    <div class="text-center mb-4">
-                        <p class="text-sm text-gray-600">
-                            Didn't receive the email? 
-                            <form action="{{ route('verification.send') }}" method="post" class="inline">
-                                @csrf
-                                <button type="submit" class="text-[#517A5B] font-medium hover:text-[#3a5941] underline">
-                                    Click here to resend
-                                </button>
-                            </form>
-                        </p>
-                    </div>
                 </div>
                 
                 <!-- Action Buttons -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <form action="{{ route('verification.send') }}" method="post">
-                        @csrf
-                        <button class="w-full bg-[#517A5B] hover:bg-[#3a5941] text-white font-medium py-2.5 px-4 rounded-md transition duration-300 flex items-center justify-center">
-                            <svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                            Resend Verification
-                        </button>
-                    </form>
-                    
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="w-full bg-white hover:bg-gray-50 text-gray-700 font-medium py-2.5 px-4 rounded-md border border-gray-300 transition duration-300 flex items-center justify-center">
-                            <svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                            </svg>
-                            Log Out
-                        </button>
-                    </form>
+                <div class="flex flex-col items-center justify-center gap-3 mt-6">
+                    <a href="{{ route('login') }}" class="w-full bg-[#517A5B] hover:bg-[#3a5941] text-white font-medium py-3 px-4 rounded-md transition duration-300 flex items-center justify-center text-lg">
+                        <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M13 5v6h6" />
+                        </svg>
+                        Return Home
+                    </a>
                 </div>
                 
                 <!-- Help Link -->
-                <div class="mt-4 text-center">
+                <div class="mt-6 text-center">
                     <a href="#" class="text-xs text-[#517A5B] hover:text-[#3a5941] underline transition duration-150">
                         Need help? Contact support
                     </a>

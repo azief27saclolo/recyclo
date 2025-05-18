@@ -94,115 +94,67 @@
       </section>
 
       <section class="section feedback" id="feedback" aria-label="feedback">
-        <div class="container" style="border: 2px solid var(--hoockers-green); padding: 10px; border-radius: var(--radius-3); position: relative; height: 400px;">
+        <div class="container" style="border: 2px solid var(--hoockers-green); padding: 20px; border-radius: var(--radius-3); position: relative; min-height: 400px;">
           <div class="title-wrapper">
             <h2 class="h2 section-title">Feedback & Reviews</h2>
           </div>
-      
-          
+
+          @auth
+            <div class="review-form" style="margin-bottom: 30px; padding: 25px; background: #f9f9f9; border-radius: 12px; box-shadow: 0 2px 15px rgba(0,0,0,0.1);">
+              <h3 style="margin-bottom: 20px; color: var(--hoockers-green); font-size: 1.5rem;">Write a Review</h3>
+              <form action="{{ route('reviews.store', $post) }}" method="POST" id="reviewForm">
+                @csrf
+                <div style="margin-bottom: 20px;">
+                  <label style="display: block; margin-bottom: 10px; font-weight: 500; color: #333;">Rating:</label>
+                  <div class="rating" style="display: flex; gap: 5px; font-size: 30px; position: relative;">
+                    @for($i = 5; $i >= 1; $i--)
+                      <input type="radio" name="rating" value="{{ $i }}" id="star{{ $i }}" required>
+                      <label for="star{{ $i }}" style="cursor: pointer; color: #ddd; transition: all 0.2s ease; position: relative; z-index: 1;">★</label>
+                    @endfor
+                    <div id="ratingHighlight" style="position: absolute; top: 0; left: 0; height: 100%; background: linear-gradient(90deg, #ffd700 0%, #ffd700 0%, #ddd 0%); transition: width 0.3s ease; pointer-events: none; z-index: 0;"></div>
+                  </div>
+                  <div id="ratingText" style="margin-top: 5px; color: #666; font-size: 0.9rem;"></div>
+                </div>
+                <div style="margin-bottom: 20px;">
+                  <label for="comment" style="display: block; margin-bottom: 10px; font-weight: 500; color: #333;">Your Review:</label>
+                  <textarea name="comment" id="comment" rows="4" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; resize: vertical; transition: border-color 0.3s;" required minlength="10" maxlength="500" placeholder="Share your experience with this product..."></textarea>
+                  <div id="charCount" style="text-align: right; margin-top: 5px; color: #666; font-size: 0.9rem;">0/500 characters</div>
+                </div>
+                <button type="submit" class="btn btn-primary" style="background-color: var(--hoockers-green); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.3s ease;">Submit Review</button>
+              </form>
+            </div>
+          @endauth
       
           <!-- Feedback List -->
-          <ul class="feedback-list" id="feedback-list" style="overflow-y: auto; max-height: 300px; margin-top: 10px; padding: 10px;">
-            <!-- Feedback Items (4 shown at a time) -->
-            <li class="feedback-item">
-              <div class="feedback-card" style="border: 1px solid var(--light-gray); padding: 15px; border-radius: var(--radius-3); display: flex; align-items: center;">
-                <img src="{{ asset('images/f2.jpg') }}" alt="User Image" style="width: 50px; height: 50px; border-radius: 50%; margin-right: 15px;">
-                <div>
-                  <h3 class="feedback-title">Azief</h3>
-                  <p class="feedback-text">Great shop! The products are of high quality and the prices are very reasonable. Highly recommend!</p>
-                  <div class="feedback-rating" style="color: yellow; display: flex; flex-direction: row;">
-                    <ion-icon name="star" aria-hidden="true"></ion-icon>
-                    <ion-icon name="star" aria-hidden="true"></ion-icon>
-                    <ion-icon name="star" aria-hidden="true"></ion-icon>
-                    <ion-icon name="star" aria-hidden="true"></ion-icon>
-                    <ion-icon name="star" aria-hidden="true"></ion-icon>
-                  </div>
-                </div>
-              </div>
-            </li>
-            <li class="feedback-item">
-                <div class="feedback-card" style="border: 1px solid var(--light-gray); padding: 15px; border-radius: var(--radius-3); display: flex; align-items: center;">
-                  <img src="{{ asset('images/f1.jpg') }}" alt="User Image" style="width: 50px; height: 50px; border-radius: 50%; margin-right: 15px;">
-                  <div>
-                    <h3 class="feedback-title">Ronald</h3>
-                    <p class="feedback-text">Great shop! The products are of high quality and the prices are very reasonable. Highly recommend!</p>
-                    <div class="feedback-rating" style="color: yellow; display: flex; flex-direction: row;">
-                      <ion-icon name="star" aria-hidden="true"></ion-icon>
-                      <ion-icon name="star" aria-hidden="true"></ion-icon>
-                      <ion-icon name="star" aria-hidden="true"></ion-icon>
-                      <ion-icon name="star" aria-hidden="true"></ion-icon>
-                      <ion-icon name="star" aria-hidden="true"></ion-icon>
+          <ul class="feedback-list" id="feedback-list" style="overflow-y: auto; max-height: 400px; margin-top: 20px; padding: 10px;">
+            @forelse($post->reviews()->with('user')->latest()->get() as $review)
+              <li class="feedback-item" style="margin-bottom: 20px;">
+                <div class="feedback-card" style="border: 1px solid var(--light-gray); padding: 20px; border-radius: 12px; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                  <div style="display: flex; align-items: flex-start; gap: 15px;">
+                    <img src="{{ asset('images/default-avatar.jpg') }}" alt="User Image" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+                    <div style="flex: 1;">
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h3 class="feedback-title" style="margin: 0; color: #333; font-size: 1.25rem; font-weight: 600;">{{ $review->user->firstname }} {{ $review->user->lastname }}</h3>
+                        <div class="feedback-rating" style="display: inline-flex; align-items: center; gap: 3px;">
+                          @for($i = 1; $i <= 5; $i++)
+                            <ion-icon name="star" aria-hidden="true" style="color: {{ $i <= $review->rating ? '#ffd700' : '#ddd' }}; font-size: 1.4rem;"></ion-icon>
+                          @endfor
+                        </div>
+                      </div>
+                      <p class="feedback-text" style="margin: 0 0 12px 0; color: #444; line-height: 1.6; font-size: 1.1rem;">{{ $review->comment }}</p>
+                      <small style="color: #777; font-size: 0.95rem; font-weight: 500;">{{ $review->created_at->diffForHumans() }}</small>
                     </div>
                   </div>
                 </div>
               </li>
+            @empty
               <li class="feedback-item">
-                <div class="feedback-card" style="border: 1px solid var(--light-gray); padding: 15px; border-radius: var(--radius-3); display: flex; align-items: center;">
-                  <img src="{{ asset('images/f4.jpg') }}" alt="User Image" style="width: 50px; height: 50px; border-radius: 50%; margin-right: 15px;">
-                  <div>
-                    <h3 class="feedback-title">Ian</h3>
-                    <p class="feedback-text">Great shop! The products are of high quality and the prices are very reasonable. Highly recommend!</p>
-                    <div class="feedback-rating" style="color: yellow; display: flex; flex-direction: row;">
-                      <ion-icon name="star" aria-hidden="true"></ion-icon>
-                      <ion-icon name="star" aria-hidden="true"></ion-icon>
-                      <ion-icon name="star" aria-hidden="true"></ion-icon>
-                      <ion-icon name="star" aria-hidden="true"></ion-icon>
-                      <ion-icon name="star" aria-hidden="true"></ion-icon>
-                    </div>
-                  </div>
+                <div class="feedback-card" style="border: 1px solid var(--light-gray); padding: 20px; border-radius: 12px; text-align: center; background: white;">
+                  <p style="margin: 0; color: #666;">No reviews yet. Be the first to review this product!</p>
                 </div>
               </li>
-              <li class="feedback-item">
-                <div class="feedback-card" style="border: 1px solid var(--light-gray); padding: 15px; border-radius: var(--radius-3); display: flex; align-items: center;">
-                  <img src="{{ asset('images/f3.jpg') }}" alt="User Image" style="width: 50px; height: 50px; border-radius: 50%; margin-right: 15px;">
-                  <div>
-                    <h3 class="feedback-title">Jameel</h3>
-                    <p class="feedback-text">Great shop! The products are of high quality and the prices are very reasonable. Highly recommend!</p>
-                    <div class="feedback-rating" style="color: yellow; display: flex; flex-direction: row;">
-                      <ion-icon name="star" aria-hidden="true"></ion-icon>
-                      <ion-icon name="star" aria-hidden="true"></ion-icon>
-                      <ion-icon name="star" aria-hidden="true"></ion-icon>
-                      <ion-icon name="star" aria-hidden="true"></ion-icon>
-                      <ion-icon name="star" aria-hidden="true"></ion-icon>
-                    </div>
-                  </div>
-                </div>
-              </li>
-              <li class="feedback-item">
-                <div class="feedback-card" style="border: 1px solid var(--light-gray); padding: 15px; border-radius: var(--radius-3); display: flex; align-items: center;">
-                  <img src="{{ asset('images/f3.jpg') }}" alt="User Image" style="width: 50px; height: 50px; border-radius: 50%; margin-right: 15px;">
-                  <div>
-                    <h3 class="feedback-title">Jameel</h3>
-                    <p class="feedback-text">Great shop! The products are of high quality and the prices are very reasonable. Highly recommend!</p>
-                    <div class="feedback-rating" style="color: yellow; display: flex; flex-direction: row;">
-                      <ion-icon name="star" aria-hidden="true"></ion-icon>
-                      <ion-icon name="star" aria-hidden="true"></ion-icon>
-                      <ion-icon name="star" aria-hidden="true"></ion-icon>
-                      <ion-icon name="star" aria-hidden="true"></ion-icon>
-                      <ion-icon name="star" aria-hidden="true"></ion-icon>
-                    </div>
-                  </div>
-                </div>
-              </li>
-              <li class="feedback-item">
-                <div class="feedback-card" style="border: 1px solid var(--light-gray); padding: 15px; border-radius: var(--radius-3); display: flex; align-items: center;">
-                  <img src="{{ asset('images/f3.jpg') }}" alt="User Image" style="width: 50px; height: 50px; border-radius: 50%; margin-right: 15px;">
-                  <div>
-                    <h3 class="feedback-title">Jameel</h3>
-                    <p class="feedback-text">Great shop! The products are of high quality and the prices are very reasonable. Highly recommend!</p>
-                    <div class="feedback-rating" style="color: yellow; display: flex; flex-direction: row;">
-                      <ion-icon name="star" aria-hidden="true"></ion-icon>
-                      <ion-icon name="star" aria-hidden="true"></ion-icon>
-                      <ion-icon name="star" aria-hidden="true"></ion-icon>
-                      <ion-icon name="star" aria-hidden="true"></ion-icon>
-                      <ion-icon name="star" aria-hidden="true"></ion-icon>
-                    </div>
-                  </div>
-                </div>
-              </li>
-            <!-- Add other feedback items here -->
+            @endforelse
           </ul>
-
         </div>
       </section>
 
@@ -341,74 +293,66 @@
                 'Accept': 'application/json'
             },
             body: JSON.stringify({
-                product_id: '{{ $post->product->id }}',  // Use the product ID instead of post ID
+                product_id: '{{ $post->product->id }}',
                 quantity: quantity
             })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (response.status === 401) {
+                // Handle unauthenticated error
+                Swal.fire({
+                    title: 'Login Required',
+                    text: 'You must be login to buy',
+                    icon: 'warning',
+                    confirmButtonColor: '#517A5B',
+                    customClass: {
+                        popup: 'bigger-modal'
+                    }
+                }).then(() => {
+                    // Add 3 second delay before redirecting
+                    Swal.fire({
+                        title: 'Redirecting...',
+                        text: 'Please wait while we redirect you to the login page',
+                        timer: 3000,
+                        timerProgressBar: true,
+                        showConfirmButton: false,
+                        allowOutsideClick: false,
+                        customClass: {
+                            popup: 'bigger-modal'
+                        }
+                    }).then(() => {
+                        window.location.href = '{{ route("login") }}';
+                    });
+                });
+                return;
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
-                // Show success message with product details
                 Swal.fire({
-                    title: '<span style="color: #517A5B"><i class="bi bi-check-circle-fill"></i> Added to Cart!</span>',
-                    html: `
-                        <div style="display: flex; align-items: center; margin-bottom: 25px; margin-top: 20px;">
-                            <img src="{{ asset('storage/' . $post->image) }}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 10px;">
-                            <div style="margin-left: 20px; text-align: left;" class="product-details">
-                                <div style="font-weight: 700; font-size: 24px;" class="product-name">{{ $post->title }}</div>
-                                <div style="font-size: 20px; margin-top: 8px;">Quantity: ${quantity}</div>
-                                <div style="font-size: 20px; font-weight: 600; color: #517A5B; margin-top: 5px;">₱{{ $post->price }}</div>
-                            </div>
-                        </div>
-                        <p style="font-size: 20px;">${data.message}</p>
-                    `,
+                    title: 'Success!',
+                    text: data.message || 'Item added to cart successfully!',
                     icon: 'success',
                     confirmButtonColor: '#517A5B',
-                    confirmButtonText: 'Continue Shopping',
-                    showCancelButton: true,
-                    cancelButtonText: 'Go to Cart',
-                    cancelButtonColor: '#6c757d',
                     customClass: {
-                        popup: 'extra-large-modal',
-                        title: 'swal-title-large',
-                        confirmButton: 'swal-button-large',
-                        cancelButton: 'swal-button-large'
+                        popup: 'bigger-modal'
                     }
-                }).then((result) => {
-                    if (!result.isConfirmed) {
-                        // If user clicked "Go to Cart"
-                        window.location.href = "{{ route('cart.index') }}";
-                    }
+                }).then(() => {
+                    window.location.href = '{{ route("cart.index") }}';
                 });
-                
-                // Update cart badge count if it exists
-                const cartBadge = document.querySelector('.btn-badge');
-                if (cartBadge) {
-                    const currentCount = parseInt(cartBadge.textContent || '0');
-                    cartBadge.textContent = currentCount + 1;
-                }
             } else {
-                // Show error message
-                Swal.fire({
-                    title: 'Error',
-                    text: data.message || 'Failed to add item to cart',
-                    icon: 'error',
-                    confirmButtonColor: '#517A5B',
-                    customClass: {
-                        popup: 'extra-large-modal'
-                    }
-                });
+                throw new Error(data.message || 'Failed to add item to cart');
             }
         })
         .catch(error => {
-            console.error('Error:', error);
             Swal.fire({
-                title: 'Error',
-                text: 'Something went wrong. Please try again.',
+                title: 'Error!',
+                text: error.message || 'Something went wrong. Please try again.',
                 icon: 'error',
                 confirmButtonColor: '#517A5B',
                 customClass: {
-                    popup: 'extra-large-modal'
+                    popup: 'bigger-modal'
                 }
             });
         });
@@ -797,6 +741,82 @@
         margin-bottom: 25px;
       }
     }
+
+    /* Rating stars styling */
+    .rating {
+      position: relative;
+      display: inline-flex;
+      gap: 5px;
+    }
+    
+    .rating input {
+      display: none;
+    }
+    
+    .rating label {
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .rating label:hover,
+    .rating label:hover ~ label,
+    .rating input:checked ~ label {
+      color: #ffd700;
+      transform: scale(1.1);
+    }
+    
+    #ratingHighlight {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: linear-gradient(90deg, #ffd700 0%, #ffd700 0%, #ddd 0%);
+      transition: width 0.3s ease;
+      pointer-events: none;
+      z-index: 0;
+      border-radius: 4px;
+    }
+    
+    /* Review form styling */
+    .review-form {
+      transition: all 0.3s ease;
+    }
+    
+    .review-form:hover {
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    
+    .review-form textarea:focus {
+      outline: none;
+      border-color: var(--hoockers-green);
+      box-shadow: 0 0 0 2px rgba(81, 122, 91, 0.1);
+    }
+    
+    .review-form button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(81, 122, 91, 0.2);
+    }
+
+    /* Feedback list styling */
+    .feedback-list::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .feedback-list::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+    
+    .feedback-list::-webkit-scrollbar-thumb {
+      background: var(--hoockers-green);
+      border-radius: 10px;
+    }
+    
+    .feedback-list::-webkit-scrollbar-thumb:hover {
+      background: #3a5a4a;
+    }
   </style>
       
       <script>
@@ -809,6 +829,141 @@
         function scrollDown() {
           feedbackList.scrollBy({ top: 100, behavior: 'smooth' });
         }
+      </script>
+
+      <script>
+        // Handle review form submission
+        document.getElementById('reviewForm')?.addEventListener('submit', function(e) {
+          e.preventDefault();
+          
+          const formData = new FormData(this);
+          
+          fetch(this.action, {
+            method: 'POST',
+            headers: {
+              'X-CSRF-TOKEN': '{{ csrf_token() }}',
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              rating: formData.get('rating'),
+              comment: formData.get('comment')
+            })
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return response.json();
+          })
+          .then(data => {
+            if (data.success) {
+              Swal.fire({
+                title: 'Success!',
+                text: data.message,
+                icon: 'success',
+                confirmButtonColor: '#517A5B',
+                customClass: {
+                  popup: 'bigger-modal'
+                }
+              }).then(() => {
+                window.location.reload();
+              });
+            } else {
+              throw new Error(data.message || 'Failed to submit review');
+            }
+          })
+          .catch(error => {
+            Swal.fire({
+              title: 'Error!',
+              text: error.message || 'Something went wrong. Please try again.',
+              icon: 'error',
+              confirmButtonColor: '#517A5B',
+              customClass: {
+                popup: 'bigger-modal'
+              }
+            });
+          });
+        });
+
+        // Handle star rating hover and click
+        const ratingInputs = document.querySelectorAll('.rating input');
+        const ratingLabels = document.querySelectorAll('.rating label');
+        const ratingText = document.getElementById('ratingText');
+        const ratingHighlight = document.getElementById('ratingHighlight');
+        
+        function updateRatingDisplay(rating) {
+          const percentage = (rating / 5) * 100;
+          ratingText.textContent = `${percentage}% - ${getRatingText(rating)}`;
+          ratingHighlight.style.background = `linear-gradient(90deg, #ffd700 0%, #ffd700 ${percentage}%, #ddd ${percentage}%)`;
+          
+          // Add highlight effect to selected stars
+          ratingLabels.forEach((label, index) => {
+            const starRating = 5 - index;
+            if (starRating <= rating) {
+              label.style.color = '#ffd700';
+              label.style.transform = 'scale(1.1)';
+            } else {
+              label.style.color = '#ddd';
+              label.style.transform = 'scale(1)';
+            }
+          });
+        }
+        
+        ratingInputs.forEach((input, index) => {
+          input.addEventListener('change', () => {
+            const rating = 5 - index;
+            updateRatingDisplay(rating);
+          });
+        });
+
+        ratingLabels.forEach((label, index) => {
+          label.addEventListener('mouseover', () => {
+            const rating = 5 - index;
+            updateRatingDisplay(rating);
+          });
+        });
+
+        document.querySelector('.rating').addEventListener('mouseleave', () => {
+          const checkedInput = document.querySelector('.rating input:checked');
+          if (checkedInput) {
+            const rating = parseInt(checkedInput.value);
+            updateRatingDisplay(rating);
+          } else {
+            ratingText.textContent = '';
+            ratingHighlight.style.background = 'linear-gradient(90deg, #ffd700 0%, #ffd700 0%, #ddd 0%)';
+            ratingLabels.forEach(label => {
+              label.style.color = '#ddd';
+              label.style.transform = 'scale(1)';
+            });
+          }
+        });
+
+        function getRatingText(rating) {
+          const texts = {
+            1: 'Poor',
+            2: 'Fair',
+            3: 'Good',
+            4: 'Very Good',
+            5: 'Excellent'
+          };
+          return texts[rating] || '';
+        }
+
+        // Handle character count for comment
+        const commentTextarea = document.getElementById('comment');
+        const charCount = document.getElementById('charCount');
+
+        commentTextarea.addEventListener('input', () => {
+          const length = commentTextarea.value.length;
+          charCount.textContent = `${length}/500 characters`;
+          
+          if (length > 500) {
+            charCount.style.color = '#dc3545';
+          } else {
+            charCount.style.color = '#666';
+          }
+        });
       </script>
 
 </div>

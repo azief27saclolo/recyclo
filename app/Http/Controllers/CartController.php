@@ -38,6 +38,17 @@ class CartController extends Controller
      */
     public function addToCart(Request $request)
     {
+        // Check if user is authenticated
+        if (!Auth::check()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You must be login to buy'
+                ], 401);
+            }
+            return redirect()->route('login')->with('message', 'You must be login to buy');
+        }
+
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1'
@@ -46,6 +57,7 @@ class CartController extends Controller
         try {
             DB::beginTransaction();
 
+            // Get the product
             $product = Product::with('post')->findOrFail($request->product_id);
             
             // Verify product has a post

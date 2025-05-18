@@ -1,5 +1,45 @@
 @props(['post', 'class' => ''])
 
+@php
+    try {
+        // Ensure product relationship is loaded
+        if (!$post->relationLoaded('product')) {
+            $post->load('product');
+        }
+        
+        // Create product if it doesn't exist
+        if (!$post->product) {
+            $product = \App\Models\Product::firstOrCreate(
+                ['post_id' => $post->id],
+                [
+                    'name' => $post->title,
+                    'description' => $post->description,
+                    'price' => $post->price,
+                    'image' => $post->image,
+                    'user_id' => $post->user_id,
+                    'stock' => $post->quantity
+                ]
+            );
+            $post->setRelation('product', $product);
+        }
+
+        // Load reviews if not loaded
+        if (!$post->relationLoaded('reviews')) {
+            $post->load('reviews');
+        }
+
+        // Calculate average rating and review count
+        $reviews = $post->reviews ?? collect();
+        $averageRating = $reviews->avg('rating') ?? 0;
+        $reviewCount = $reviews->count();
+    } catch (\Exception $e) {
+        // If anything fails, set default values
+        $averageRating = 0;
+        $reviewCount = 0;
+        \Log::error('Error in postCard component: ' . $e->getMessage());
+    }
+@endphp
+
 <a href="{{ route('posts.show', $post) }}" class="{{ $class }}">
     <div class="shop-card">
         <div class="card-banner img-holder" style="--width: 270; --height: 360;">
@@ -8,38 +48,20 @@
 
           <span class="badge" aria-label="20% off">{{ $post->category }}</span>
           <div class="card-actions">
-            <form action="{{ route('cart.index') }}" method="POST" class="cart-form">
+            @if($post->product && $post->product->post)
+            <form action="{{ route('cart.add') }}" method="POST" class="cart-form">
               @csrf
-              <input type="hidden" name="product_id" value="{{ 
-                \App\Models\Product::firstOrCreate(
-                    ['name' => $post->title, 'user_id' => $post->user_id],
-                    [
-                        'description' => $post->description,
-                        'price' => $post->price,
-                        'image' => $post->image,
-                        'stock' => !empty($post->quantity) && is_numeric($post->quantity) ? (int)$post->quantity : 1
-                    ]
-                )->id 
-              }}">
-              <input type="number" name="quantity" value="1" hidden>
-              <button type="button" class="action-btn" aria-label="add to cart" 
-                     data-product-id="{{ 
-                        \App\Models\Product::firstOrCreate(
-                            ['name' => $post->title, 'user_id' => $post->user_id],
-                            [
-                                'description' => $post->description,
-                                'price' => $post->price,
-                                'image' => $post->image,
-                                'stock' => !empty($post->quantity) && is_numeric($post->quantity) ? (int)$post->quantity : 1
-                            ]
-                        )->id 
-                     }}"
-                     data-product-name="{{ $post->title }}"
-                     data-product-image="{{ asset('storage/' . $post->image) }}"
-                     data-product-price="{{ number_format($post->price, 2) }}">
+              <input type="hidden" name="product_id" value="{{ $post->product->id }}">
+              <input type="hidden" name="quantity" value="1">
+              <button type="submit" class="action-btn" aria-label="add to cart" 
+                data-product-id="{{ $post->product->id }}"
+                data-product-name="{{ $post->title }}"
+                data-product-image="{{ asset('storage/' . $post->image) }}"
+                data-product-price="{{ $post->price }}">
                 <ion-icon name="cart" aria-hidden="true"></ion-icon>
               </button>
             </form>
+            @endif
 
             <form action="{{ route('favorites.add', $post) }}" method="POST" id="favorite-form-{{ $post->id }}">
                 @csrf
@@ -59,19 +81,17 @@
             <a href="{{ route('posts.show', $post) }}" class="card-title">{{ $post->title }}</a>
           </h3>
           <h3>
-            <a href="{{ route('posts.user', $post->user) }}" class="card-title">{{ $post->user->username }}'s Shop</a>
+            <a href="{{ route('shops.show', $post->user) }}" class="card-title">{{ $post->user->username }}'s Shop</a>
           </h3>
 
           <div class="card-rating">
-            <div class="rating-wrapper" aria-label="5 start rating">
-              <ion-icon name="star" aria-hidden="true"></ion-icon>
-              <ion-icon name="star" aria-hidden="true"></ion-icon>
-              <ion-icon name="star" aria-hidden="true"></ion-icon>
-              <ion-icon name="star" aria-hidden="true"></ion-icon>
-              <ion-icon name="star" aria-hidden="true"></ion-icon>
+            <div class="rating-wrapper" aria-label="{{ number_format($averageRating, 1) }} star rating">
+              @for ($i = 1; $i <= 5; $i++)
+                <ion-icon name="star" aria-hidden="true" class="{{ $i <= round($averageRating) ? 'text-yellow-400' : 'text-gray-300' }}"></ion-icon>
+              @endfor
             </div>
 
-            <p class="rating-text">5170 reviews</p>
+            <p class="rating-text">{{ $reviewCount }} {{ Str::plural('review', $reviewCount) }}</p>
           </div>
         </div>
       </div>
