@@ -19,6 +19,7 @@ use App\Http\Middleware\AdminMiddleware;
 use App\Http\Controllers\InventoryHistoryController;
 use App\Http\Controllers\PrivacyController;
 use App\Http\Controllers\UserReportController;
+use App\Http\Controllers\ReviewController;
 
 // Landing page route
 Route::redirect('/', 'landingpage');
@@ -235,16 +236,20 @@ Route::middleware(['auth', 'verified'])->group(function() {
 
     // User Reports routes
     Route::post('/reports', [UserReportController::class, 'store'])->name('reports.store');
+
+    // Review routes
+    Route::post('/posts/{post}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+    Route::get('/posts/{post}/reviews', [ReviewController::class, 'index'])->name('reviews.index');
 });
 
 // Routes for guests users
 Route::middleware('guest')->group(function() {
     // Use dedicated route for registration form 
-    Route::view('/register', 'auth.login')->name('register.form');
+    Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register.form');
     // Keep the post route for registration
     Route::post('/register', [AuthController::class, 'register'])->name('register');
     
-    Route::view('/login', 'auth.login')->name('login');
+    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
     
     // Reset Password Routes

@@ -265,6 +265,7 @@
 
         .mobile-menu.active {
             right: 0;
+            display: block;
         }
 
         .mobile-menu ul {
@@ -275,6 +276,11 @@
 
         .mobile-menu li {
             margin: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .mobile-menu li:last-child {
+            border-bottom: none;
         }
 
         .mobile-menu a {
@@ -282,14 +288,17 @@
             text-decoration: none;
             font-size: 18px;
             display: block;
-            padding: 10px;
+            padding: 15px;
             border-radius: 5px;
             transition: all 0.3s ease;
+            background-color: #f8f8f8;
+            margin: 5px 0;
         }
 
         .mobile-menu a:hover {
-            background-color: #f5f5f5;
-            color: #517A5B;
+            background-color: #517A5B;
+            color: white;
+            transform: translateX(5px);
         }
 
         .overlay {
@@ -347,15 +356,25 @@
                 display: block;
             }
 
+            .mobile-menu {
+                display: block;
+            }
+
             .login-container {
                 margin-top: 60px;
                 padding: 15px;
                 min-height: calc(100vh - 60px);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
             }
 
             .forms-container {
                 width: 100%;
-                padding: 0;
+                max-width: 400px;
+                padding: 0 10px;
+                margin: 0 auto;
             }
 
             .signin-signup {
@@ -363,16 +382,25 @@
                 left: 0;
                 padding: 0;
                 transform: none !important;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
             }
 
             .sign-in-form,
             .sign-up-form {
-                padding: 20px 15px;
-                width: 100%;
+                padding: 32px 10px 32px 10px;
+                width: 95vw;
+                max-width: 500px;
+                min-height: 80vh;
+                margin: 0 auto;
+                border-radius: 16px;
+                background: #fff;
+                box-shadow: 0 2px 16px rgba(0,0,0,0.07);
                 position: absolute;
                 opacity: 0;
                 visibility: hidden;
-                transition: opacity 0.3s ease;
+                transition: none !important;
                 transform: none !important;
             }
 
@@ -411,7 +439,8 @@
             .sign-in-form .title,
             .sign-up-form .title {
                 font-size: 24px;
-                margin-bottom: 15px;
+                margin-bottom: 24px;
+                text-align: center;
             }
 
             .input-field {
@@ -626,223 +655,204 @@
             background-color: #3a5941;
             transform: translateY(-2px);
         }
+
+        /* Alert message styling */
+        .alert {
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .alert-info {
+            background-color: #e3f2fd;
+            color: #0d47a1;
+            border: 1px solid #bbdefb;
+        }
+
+        .alert-success {
+            background-color: #e8f5e9;
+            color: #1b5e20;
+            border: 1px solid #c8e6c9;
+        }
+
+        .alert-error {
+            background-color: #ffebee;
+            color: #b71c1c;
+            border: 1px solid #ffcdd2;
+        }
     </style>
 </head>
 <body>
-    <!-- Mobile Navigation -->
-    <nav class="mobile-nav">
-        <img src="{{ asset('images/recyclo-logo.png') }}" alt="Recyclo Logo" style="height: 30px;">
-        <div class="burger-menu" id="burgerMenu">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
-    </nav>
+    <!-- Back Button -->
+    <a href="{{ route('landingpage') }}" class="back-button" title="Back to Home">
+        <i class="bi bi-arrow-left"></i>
+    </a>
 
-    <!-- Mobile Menu -->
-    <div class="mobile-menu" id="mobileMenu">
-        <ul>
-            <li><a href="{{ route('landingpage') }}">Home</a></li>
-            <li><a href="{{ route('posts') }}">Posts</a></li>
-            <li><a href="{{ route('password.request') }}">Forgot Password</a></li>
-            <li><a href="#" onclick="switchToSignup(); return false;">Sign Up</a></li>
-        </ul>
-    </div>
+    <div class="login-body">
+        <div class="login-container" id="container">
+            <div class="forms-container">
+                <div class="signin-signup">
+                    <!-- Login Form -->
+                    <form action="{{ route('login') }}" method="post" class="sign-in-form">
+                        @csrf
+                        <img src="{{ asset('images/recyclo-logo.png') }}" alt="Recyclo Logo" class="login-logo">
+                        <h2 class="title">Sign in to Recyclo</h2>
+                        
+                        @if (session('status'))
+                            <div class="mb-4 text-sm font-medium text-green-600">
+                                {{ session('status') }}
+                            </div>
+                        @endif
 
-    <!-- Overlay -->
-    <div class="overlay" id="overlay"></div>
-
-<!-- Back Button -->
-<a href="{{ route('landingpage') }}" class="back-button" title="Back to Home">
-    <i class="bi bi-arrow-left"></i>
-</a>
-
-<div class="login-body">
-    <div class="login-container" id="container">
-            <!-- Mobile Tabs -->
-            <div class="mobile-tabs">
-                <button class="mobile-tab active" data-tab="signin">Sign In</button>
-                <button class="mobile-tab" data-tab="signup">Sign Up</button>
-            </div>
-
-        <div class="forms-container">
-            <div class="signin-signup">
-                <!-- Login Form -->
-                <form action="{{ route('login') }}" method="post" class="sign-in-form">
-                    @csrf
-                    <img src="{{ asset('images/recyclo-logo.png') }}" alt="Recyclo Logo" class="login-logo">
-                    <h2 class="title">Sign in to Recyclo</h2>
-                    
-                    @if (session('status'))
-                        <div class="mb-4 text-sm font-medium text-green-600">
-                            {{ session('status') }}
+                        @if (session('message'))
+                            <div class="alert alert-info">
+                                {{ session('message') }}
+                            </div>
+                        @endif
+                        
+                        <div class="input-field">
+                            <i class="bi bi-envelope-fill"></i>
+                            <input type="email" name="email" value="{{ old('email') }}" placeholder="Email" required />
                         </div>
-                    @endif
-
-                    @if (session('message'))
-                        <div class="success-message">
-                            {{ session('message') }}
+                        @error('email')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                        
+                        <div class="input-field">
+                            <i class="bi bi-lock-fill"></i>
+                            <input type="password" name="password" placeholder="Password" required />
                         </div>
-                    @endif
-                    
-                    <div class="input-field">
-                        <i class="bi bi-envelope-fill"></i>
-                        <input type="email" name="email" value="{{ old('email') }}" placeholder="Email" required />
-                    </div>
-                    @error('email')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
-                    
-                    <div class="input-field">
-                        <i class="bi bi-lock-fill"></i>
-                        <input type="password" name="password" placeholder="Password" required />
-                    </div>
-                    @error('password')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
-                    
-                    <div class="terms-checkbox">
-                        <input type="checkbox" name="remember" id="remember">
-                        <label for="remember">Remember me</label>
-                    </div>
-                    
-                    <input type="submit" value="Login" class="btn solid" />
-                    
-                    <a href="{{ route('password.request') }}" class="forgot-password-link">
-                        Forgot your password?
-                    </a>
-                    
-                    <!-- Social media section commented out
-                    <p class="social-text">Or Sign in with</p>
-                    <div class="social-media">
-                        <a href="#" class="social-icon">
-                            <i class="bi bi-facebook"></i>
+                        @error('password')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                        
+                        <div class="terms-checkbox">
+                            <input type="checkbox" name="remember" id="remember">
+                            <label for="remember">Remember me</label>
+                        </div>
+                        
+                        <input type="submit" value="Login" class="btn solid" />
+                        
+                        <a href="{{ route('password.request') }}" class="forgot-password-link">
+                            Forgot your password?
                         </a>
-                        <a href="#" class="social-icon">
-                            <i class="bi bi-google"></i>
-                        </a>
-                        <a href="#" class="social-icon">
-                            <i class="bi bi-twitter"></i>
-                        </a>
-                    </div>
-                    -->
-                </form>
+                    </form>
 
-                <!-- Full Registration Form -->
-                <form action="{{ route('register') }}" method="post" class="sign-up-form">
-                    @csrf
-                    <h2 class="title">Join Recyclo</h2>
-                    
-                    <!-- Add a hidden input with the token as a backup -->
-                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                    
-                    <!-- First Name -->
-                    <div class="input-field">
-                        <i class="bi bi-person-fill"></i>
-                        <input type="text" name="firstname" value="{{ old('firstname') }}" placeholder="First name" required />
-                    </div>
-                    @error('firstname')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
-                    
-                    <!-- Middle Name -->
-                    <div class="input-field">
-                        <i class="bi bi-person-fill"></i>
-                        <input type="text" name="middlename" value="{{ old('middlename') }}" placeholder="Middle name" />
-                    </div>
-                    @error('middlename')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
-                    
-                    <!-- Last Name -->
-                    <div class="input-field">
-                        <i class="bi bi-person-fill"></i>
-                        <input type="text" name="lastname" value="{{ old('lastname') }}" placeholder="Last name" required />
-                    </div>
-                    @error('lastname')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
-                    
-                    <!-- Username -->
-                    <div class="input-field">
-                        <i class="bi bi-person-badge-fill"></i>
-                        <input type="text" name="username" value="{{ old('username') }}" placeholder="Username" required />
-                    </div>
-                    @error('username')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
-                    
-                    <!-- Email -->
-                    <div class="input-field">
-                        <i class="bi bi-envelope-fill"></i>
-                        <input type="email" name="email" value="{{ old('email') }}" placeholder="Email" required />
-                    </div>
-                    @error('email')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
-                    
-                    <!-- Birthday -->
-                    <div class="input-field">
-                        <i class="bi bi-calendar-fill"></i>
-                        <input type="date" name="birthday" value="{{ old('birthday') }}" placeholder="Birthday" required />
-                    </div>
-                    @error('birthday')
-                            <p class="text-red-500 text-sm mt-1" style="font-size: 14px; font-weight: 500;">Age not valid</p>
-                    @enderror
-                        <small class="text-muted" style="display: block; margin-top: -5px; margin-bottom: 10px; color: #666; font-size: 12px;">
-                            You must be at least 18 years old to register.
-                        </small>
-                    
-                    <!-- Password -->
-                    <div class="input-field">
-                        <i class="bi bi-lock-fill"></i>
-                        <input type="password" name="password" placeholder="Password" required />
-                    </div>
-                    @error('password')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
-                    
-                    <!-- Confirm Password -->
-                    <div class="input-field">
-                        <i class="bi bi-lock-fill"></i>
-                        <input type="password" name="password_confirmation" placeholder="Confirm password" required />
-                    </div>
-                    
-                    <!-- Terms & Conditions -->
-                    <div class="terms-checkbox">
-                        <input type="checkbox" name="terms" id="terms" required>
-                            <label for="terms">I accept the <span class="terms-link" id="openTerms">terms and conditions</span></label>
-                    </div>
-                    
-                    <input type="submit" class="btn" value="Sign up" />
-                    
-                    <!-- Removed social login options here -->
-                </form>
+                    <!-- Full Registration Form -->
+                    <form action="{{ route('register') }}" method="post" class="sign-up-form">
+                        @csrf
+                        <h2 class="title">Join Recyclo</h2>
+                        
+                        <!-- Add a hidden input with the token as a backup -->
+                        <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                        
+                        <!-- First Name -->
+                        <div class="input-field">
+                            <i class="bi bi-person-fill"></i>
+                            <input type="text" name="firstname" value="{{ old('firstname') }}" placeholder="First name" required />
+                        </div>
+                        @error('firstname')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                        
+                        <!-- Middle Name -->
+                        <div class="input-field">
+                            <i class="bi bi-person-fill"></i>
+                            <input type="text" name="middlename" value="{{ old('middlename') }}" placeholder="Middle name" />
+                        </div>
+                        @error('middlename')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                        
+                        <!-- Last Name -->
+                        <div class="input-field">
+                            <i class="bi bi-person-fill"></i>
+                            <input type="text" name="lastname" value="{{ old('lastname') }}" placeholder="Last name" required />
+                        </div>
+                        @error('lastname')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                        
+                        <!-- Username -->
+                        <div class="input-field">
+                            <i class="bi bi-person-badge-fill"></i>
+                            <input type="text" name="username" value="{{ old('username') }}" placeholder="Username" required />
+                        </div>
+                        @error('username')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                        
+                        <!-- Email -->
+                        <div class="input-field">
+                            <i class="bi bi-envelope-fill"></i>
+                            <input type="email" name="email" value="{{ old('email') }}" placeholder="Email" required />
+                        </div>
+                        @error('email')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                        
+                        <!-- Birthday -->
+                        <div class="input-field">
+                            <i class="bi bi-calendar-fill"></i>
+                            <input type="date" name="birthday" value="{{ old('birthday') }}" placeholder="Birthday" required />
+                        </div>
+                        @error('birthday')
+                                <p class="text-red-500 text-sm mt-1" style="font-size: 14px; font-weight: 500;">Age not valid</p>
+                        @enderror
+                            <small class="text-muted" style="display: block; margin-top: -5px; margin-bottom: 10px; color: #666; font-size: 12px;">
+                                You must be at least 18 years old to register.
+                            </small>
+                        
+                        <!-- Password -->
+                        <div class="input-field">
+                            <i class="bi bi-lock-fill"></i>
+                            <input type="password" name="password" placeholder="Password" required />
+                        </div>
+                        @error('password')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                        
+                        <!-- Confirm Password -->
+                        <div class="input-field">
+                            <i class="bi bi-lock-fill"></i>
+                            <input type="password" name="password_confirmation" placeholder="Confirm password" required />
+                        </div>
+                        
+                        <!-- Terms & Conditions -->
+                        <div class="terms-checkbox">
+                            <input type="checkbox" name="terms" id="terms" required>
+                                <label for="terms">I accept the <span class="terms-link" id="openTerms">terms and conditions</span></label>
+                        </div>
+                        
+                        <input type="submit" class="btn" value="Sign up" />
+                    </form>
+                </div>
             </div>
-        </div>
 
-        <div class="panels-container">
-            <div class="panel left-panel">
-                <div class="content">
-                    <h3>New to Recyclo?</h3>
-                    <p>Join our community of eco-conscious buyers and sellers. Turn waste into opportunity!</p>
-                    <div class="text-center w-full mt-4">
-                        <button type="button" class="btn transparent" id="sign-up-btn">Sign up</button>
+            <div class="panels-container">
+                <div class="panel left-panel">
+                    <div class="content">
+                        <h3>New to Recyclo?</h3>
+                        <p>Join our community of eco-conscious buyers and sellers. Turn waste into opportunity!</p>
+                        <div class="text-center w-full mt-4">
+                            <button type="button" class="btn transparent" id="sign-up-btn">Sign up</button>
+                        </div>
                     </div>
+                    <img src="{{ asset('images/reduce.svg') }}" class="image" alt="" />
                 </div>
-                <img src="{{ asset('images/reduce.svg') }}" class="image" alt="" />
-            </div>
-            <div class="panel right-panel">
-                <div class="content">
-                    <h3>Already a member?</h3>
-                    <p>Sign in to continue your journey in making the world a better place, one recycled item at a time.</p>
-                    <button type="button" class="btn transparent" id="sign-in-btn">Sign in</button>
+                <div class="panel right-panel">
+                    <div class="content">
+                        <h3>Already a member?</h3>
+                        <p>Sign in to continue your journey in making the world a better place, one recycled item at a time.</p>
+                        <button type="button" class="btn transparent" id="sign-in-btn">Sign in</button>
+                    </div>
+                    <img src="{{ asset('images/recycle.svg') }}" class="image" alt="" />
                 </div>
-                <img src="{{ asset('images/recycle.svg') }}" class="image" alt="" />
             </div>
         </div>
     </div>
-</div>
 
     <!-- Terms and Conditions Modal -->
     <div class="terms-modal" id="termsModal">
@@ -902,6 +912,37 @@
         // Set focus on the first input field
         if (activeForm) {
             activeForm.focus();
+        }
+    }
+
+    // Global function to switch tabs
+    function switchTab(tab) {
+        const mobileTabs = document.querySelectorAll('.mobile-tab');
+        const signInForm = document.querySelector('.sign-in-form');
+        const signUpForm = document.querySelector('.sign-up-form');
+        const container = document.getElementById('container');
+
+        // Update tab styles
+        mobileTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        // Show/hide forms
+        if (tab.dataset.tab === 'signin') {
+            signInForm.classList.add('active');
+            signUpForm.classList.remove('active');
+            container.classList.remove('sign-up-mode');
+        } else {
+            signInForm.classList.remove('active');
+            signUpForm.classList.add('active');
+            container.classList.add('sign-up-mode');
+        }
+    }
+
+    // Function to switch to signup tab
+    function switchToSignup() {
+        const signupTab = document.querySelector('.mobile-tab[data-tab="signup"]');
+        if (signupTab) {
+            switchTab(signupTab);
         }
     }
 
@@ -999,165 +1040,47 @@
         }
     });
 
-        // Terms and Conditions Modal Functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const modal = document.getElementById('termsModal');
-            const openTermsBtn = document.getElementById('openTerms');
-            const acceptTermsBtn = document.getElementById('acceptTerms');
-            const rejectTermsBtn = document.getElementById('rejectTerms');
-            const termsCheckbox = document.getElementById('terms');
+    // Terms and Conditions Modal Functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('termsModal');
+        const openTermsBtn = document.getElementById('openTerms');
+        const acceptTermsBtn = document.getElementById('acceptTerms');
+        const rejectTermsBtn = document.getElementById('rejectTerms');
+        const termsCheckbox = document.getElementById('terms');
 
-            // Open modal when clicking the terms link
-            openTermsBtn.addEventListener('click', function(e) {
+        // Open modal when clicking the terms link
+        openTermsBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            modal.style.display = 'flex';
+        });
+
+        // Close modal when clicking outside
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // Handle accept button
+        acceptTermsBtn.addEventListener('click', function() {
+            termsCheckbox.checked = true;
+            modal.style.display = 'none';
+        });
+
+        // Handle reject button
+        rejectTermsBtn.addEventListener('click', function() {
+            termsCheckbox.checked = false;
+            modal.style.display = 'none';
+        });
+
+        // Prevent checkbox from being checked directly
+        termsCheckbox.addEventListener('click', function(e) {
+            if (!this.checked) {
                 e.preventDefault();
                 modal.style.display = 'flex';
-            });
-
-            // Close modal when clicking outside
-            modal.addEventListener('click', function(e) {
-                if (e.target === modal) {
-                    modal.style.display = 'none';
-                }
-            });
-
-            // Handle accept button
-            acceptTermsBtn.addEventListener('click', function() {
-                termsCheckbox.checked = true;
-                modal.style.display = 'none';
-            });
-
-            // Handle reject button
-            rejectTermsBtn.addEventListener('click', function() {
-                termsCheckbox.checked = false;
-                modal.style.display = 'none';
-            });
-
-            // Prevent checkbox from being checked directly
-            termsCheckbox.addEventListener('click', function(e) {
-                if (!this.checked) {
-                    e.preventDefault();
-                    modal.style.display = 'flex';
-                }
-            });
+            }
         });
-
-        // Mobile Menu Functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const burgerMenu = document.getElementById('burgerMenu');
-            const mobileMenu = document.getElementById('mobileMenu');
-            const overlay = document.getElementById('overlay');
-
-            function toggleMenu() {
-                burgerMenu.classList.toggle('active');
-                mobileMenu.classList.toggle('active');
-                overlay.classList.toggle('active');
-                document.body.style.overflow = mobileMenu.classList.contains('active') ? 'hidden' : '';
-            }
-
-            burgerMenu.addEventListener('click', toggleMenu);
-            overlay.addEventListener('click', toggleMenu);
-
-            // Close menu when clicking a link
-            const mobileMenuLinks = mobileMenu.querySelectorAll('a');
-            mobileMenuLinks.forEach(link => {
-                link.addEventListener('click', () => {
-                    if (mobileMenu.classList.contains('active')) {
-                        toggleMenu();
-                    }
-                });
-            });
-
-            // Handle window resize
-            window.addEventListener('resize', () => {
-                if (window.innerWidth > 768 && mobileMenu.classList.contains('active')) {
-                    toggleMenu();
-                }
-            });
-        });
-
-        // Mobile Tab Functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const mobileTabs = document.querySelectorAll('.mobile-tab');
-            const signInForm = document.querySelector('.sign-in-form');
-            const signUpForm = document.querySelector('.sign-up-form');
-            const container = document.getElementById('container');
-
-            function switchTab(tab) {
-                // Update tab styles
-                mobileTabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-
-                // Show/hide forms
-                if (tab.dataset.tab === 'signin') {
-                    signInForm.classList.add('active');
-                    signUpForm.classList.remove('active');
-                    container.classList.remove('sign-up-mode');
-                } else {
-                    signInForm.classList.remove('active');
-                    signUpForm.classList.add('active');
-                    container.classList.add('sign-up-mode');
-                }
-            }
-
-            // Add click handlers to tabs
-            mobileTabs.forEach(tab => {
-                tab.addEventListener('click', () => switchTab(tab));
-            });
-
-            // Check URL parameters for initial tab
-            const urlParams = new URLSearchParams(window.location.search);
-            const form = urlParams.get('form');
-            
-            if (form && form.toLowerCase() === 'register') {
-                switchTab(mobileTabs[1]); // Switch to signup tab
-            } else {
-                switchTab(mobileTabs[0]); // Default to signin tab
-            }
-
-            // Disable original flip functionality on mobile
-            if (window.innerWidth <= 768) {
-                if (signUpButton) signUpButton.style.display = 'none';
-                if (signInButton) signInButton.style.display = 'none';
-            }
-
-            // Handle window resize
-            window.addEventListener('resize', () => {
-                if (window.innerWidth <= 768) {
-                    if (signUpButton) signUpButton.style.display = 'none';
-                    if (signInButton) signInButton.style.display = 'none';
-                } else {
-                    if (signUpButton) signUpButton.style.display = '';
-                    if (signInButton) signInButton.style.display = '';
-                }
-            });
-        });
-
-        // Function to switch to signup tab
-        function switchToSignup() {
-            const signupTab = document.querySelector('.mobile-tab[data-tab="signup"]');
-            if (signupTab) {
-                switchTab(signupTab);
-            }
-        }
-
-        // Update the mobile menu click handler to close menu after clicking
-        document.addEventListener('DOMContentLoaded', function() {
-            const mobileMenuLinks = document.querySelectorAll('.mobile-menu a');
-            mobileMenuLinks.forEach(link => {
-                link.addEventListener('click', () => {
-                    const mobileMenu = document.getElementById('mobileMenu');
-                    const burgerMenu = document.getElementById('burgerMenu');
-                    const overlay = document.getElementById('overlay');
-                    
-                    if (mobileMenu.classList.contains('active')) {
-                        mobileMenu.classList.remove('active');
-                        burgerMenu.classList.remove('active');
-                        overlay.classList.remove('active');
-                        document.body.style.overflow = '';
-                    }
-                });
-            });
-        });
+    });
 </script>
 </body>
 </html>

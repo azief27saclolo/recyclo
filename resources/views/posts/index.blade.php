@@ -566,65 +566,63 @@
               quantity: quantity
             })
           })
-          .then(response => response.json())
+          .then(response => {
+            if (response.status === 401) {
+              // Handle unauthenticated error
+              Swal.fire({
+                title: 'Login Required',
+                text: 'You must be login to buy',
+                icon: 'warning',
+                confirmButtonColor: '#517A5B',
+                customClass: {
+                  popup: 'bigger-modal'
+                }
+              }).then(() => {
+                // Add 3 second delay before redirecting
+                Swal.fire({
+                  title: 'Redirecting...',
+                  text: 'Please wait while we redirect you to the login page',
+                  timer: 3000,
+                  timerProgressBar: true,
+                  showConfirmButton: false,
+                  allowOutsideClick: false,
+                  customClass: {
+                    popup: 'bigger-modal'
+                  }
+                }).then(() => {
+                  window.location.href = '{{ route("login") }}';
+                });
+              });
+              return;
+            }
+            return response.json();
+          })
           .then(data => {
             if (data.success) {
-              // Show success message with product details
               Swal.fire({
-                title: '<span style="color: #517A5B"><i class="bi bi-check-circle-fill"></i> Added to Cart!</span>',
-                html: `
-                  <div style="display: flex; align-items: center; margin-bottom: 25px; margin-top: 20px;">
-                    <img src="${productImage}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 10px;">
-                    <div style="margin-left: 20px; text-align: left;" class="product-details">
-                      <div style="font-weight: 700; font-size: 22px;" class="product-name">${productName}</div>
-                      <div style="font-size: 18px; margin-top: 8px;">Quantity: ${quantity}</div>
-                      <div style="font-size: 18px; font-weight: 600; color: #517A5B; margin-top: 5px;">₱${productPrice}</div>
-                    </div>
-                  </div>
-                  <p style="font-size: 18px;">${data.message}</p>
-                `,
+                title: 'Success!',
+                text: data.message || 'Item added to cart successfully!',
                 icon: 'success',
                 confirmButtonColor: '#517A5B',
-                confirmButtonText: 'Continue Shopping',
-                showCancelButton: true,
-                cancelButtonText: 'Go to Cart',
-                cancelButtonColor: '#6c757d',
                 customClass: {
-                  popup: 'bigger-modal',
-                  title: 'swal-title',
-                  confirmButton: 'swal-button',
-                  cancelButton: 'swal-button'
+                  popup: 'bigger-modal'
                 }
-              }).then((result) => {
-                if (!result.isConfirmed) {
-                  // If user clicked "Go to Cart"
-                  window.location.href = "{{ route('cart.index') }}";
-                }
+              }).then(() => {
+                window.location.href = '{{ route("cart.index") }}';
               });
-              
-              // Update cart badge count
-              const cartBadge = document.querySelector('.btn-badge');
-              if (cartBadge) {
-                const currentCount = parseInt(cartBadge.textContent || '0');
-                cartBadge.textContent = currentCount + 1;
-              }
             } else {
-              // Show error message
-              Swal.fire({
-                title: 'Error',
-                text: data.message || 'Failed to add item to cart',
-                icon: 'error',
-                confirmButtonColor: '#517A5B'
-              });
+              throw new Error(data.message || 'Failed to add item to cart');
             }
           })
           .catch(error => {
-            console.error('Error:', error);
             Swal.fire({
-              title: 'Error',
-              text: 'Something went wrong. Please try again.',
+              title: 'Error!',
+              text: error.message || 'Something went wrong. Please try again.',
               icon: 'error',
-              confirmButtonColor: '#517A5B'
+              confirmButtonColor: '#517A5B',
+              customClass: {
+                popup: 'bigger-modal'
+              }
             });
           });
         });

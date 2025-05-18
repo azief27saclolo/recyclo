@@ -62,6 +62,11 @@ class Post extends Model
     {
         return $this->belongsToMany(User::class, 'favorites', 'post_id', 'user_id');
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class, 'post_id');
+    }
     
     // Helper method to get the seller name
     public function getSellerNameAttribute()
