@@ -18,7 +18,17 @@ class Order extends Model
         'cancellation_reason',
         'receipt_image',
         'buyer_id',
-        'seller_id'
+        'seller_id',
+        'delivery_method',
+        'delivery_name',
+        'delivery_phone',
+        'delivery_address',
+        'delivery_city',
+        'delivery_province',
+        'delivery_postal',
+        'delivery_instructions',
+        'delivery_speed',
+        'delivery_fee'
     ];
 
     /**

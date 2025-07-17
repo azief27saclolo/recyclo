@@ -112,6 +112,32 @@
                             </div>
                         </div>
                         
+                        <!-- Delivery Method Selection -->
+                        <div style="margin: 25px 0; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                            <h4 style="color: #517a5b; margin-bottom: 15px; font-size: 20px;">Delivery Method</h4>
+                            <p style="margin-bottom: 15px; color: #666; font-size: 16px;">Choose your preferred delivery method.</p>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <!-- Pickup Option -->
+                                <label class="delivery-option" for="pickup" style="cursor: pointer; border: 2px solid #e0e0e0; border-radius: 10px; padding: 20px; background: white; transition: all 0.3s ease; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                                    <input type="radio" id="pickup" name="delivery_method" value="pickup" checked style="margin-bottom: 10px; transform: scale(1.2);">
+                                    <i class="bi bi-geo-alt" style="font-size: 32px; color: #517a5b; margin-bottom: 10px;"></i>
+                                    <h5 style="margin-bottom: 5px; color: #333; font-size: 18px;">Pickup</h5>
+                                    <p style="color: #666; font-size: 14px; margin: 0;">Pick up from seller's location</p>
+                                    <span style="color: #28a745; font-weight: 600; font-size: 16px; margin-top: 5px;">Free</span>
+                                </label>
+                                
+                                <!-- Delivery Option -->
+                                <label class="delivery-option" for="delivery" style="cursor: pointer; border: 2px solid #e0e0e0; border-radius: 10px; padding: 20px; background: white; transition: all 0.3s ease; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                                    <input type="radio" id="delivery" name="delivery_method" value="delivery" style="margin-bottom: 10px; transform: scale(1.2);">
+                                    <i class="bi bi-truck" style="font-size: 32px; color: #517a5b; margin-bottom: 10px;"></i>
+                                    <h5 style="margin-bottom: 5px; color: #333; font-size: 18px;">Delivery</h5>
+                                    <p style="color: #666; font-size: 14px; margin: 0;">We'll deliver to your address</p>
+                                    <span style="color: #dc3545; font-weight: 600; font-size: 16px; margin-top: 5px;">₱50 - ₱150</span>
+                                </label>
+                            </div>
+                        </div>
+                        
                         <!-- Receipt Upload Section -->
                         <div style="margin: 25px 0; padding: 20px; background: #f8f9fa; border-radius: 10px;">
                             <h4 style="color: #517a5b; margin-bottom: 15px; font-size: 20px;">Upload Payment Receipt</h4>
@@ -136,8 +162,13 @@
                             </div>
                         </div>
                         
-                        <div style="margin: 25px 0; padding: 20px; background: #f8f9fa; border-radius: 10px;">
-                            <h4 style="color: #517a5b; margin-bottom: 15px; font-size: 20px;">Pickup Information</h4>
+                        
+                        <!-- Pickup Information Section -->
+                        <div id="pickupInfoSection" style="margin: 25px 0; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                            <h4 style="color: #517a5b; margin-bottom: 15px; font-size: 20px;">
+                                <i class="bi bi-geo-alt" style="margin-right: 8px;"></i>
+                                Pickup Information
+                            </h4>
                             
                             @foreach($sellerGroups as $sellerId => $items)
                                 @php 
@@ -145,13 +176,141 @@
                                     $seller = $firstItem->product->post->user;
                                     $location = $firstItem->product->post->location ?? 'Location not specified';
                                 @endphp
-                                <div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                                    <p style="margin-bottom: 5px; color: #333; font-size: 18px; font-weight: 600;">{{ $seller->username }}'s Shop</p>
-                                    <p style="margin-bottom: 5px; color: #333; font-size: 16px;">{{ $location }}</p>
+                                <div style="margin-bottom: 15px; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 4px solid #517a5b;">
+                                    <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                                        <i class="bi bi-shop" style="font-size: 20px; color: #517a5b; margin-right: 10px;"></i>
+                                        <h5 style="margin: 0; color: #333; font-size: 18px; font-weight: 600;">{{ $seller->username }}'s Shop</h5>
+                                    </div>
+                                    
+                                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                                        <i class="bi bi-geo-alt-fill" style="font-size: 16px; color: #666; margin-right: 8px;"></i>
+                                        <span style="color: #333; font-size: 16px;">{{ $location }}</span>
+                                    </div>
+                                    
+                                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                                        <i class="bi bi-telephone-fill" style="font-size: 16px; color: #666; margin-right: 8px;"></i>
+                                        <span style="color: #333; font-size: 16px;">{{ $seller->number ?? 'Contact number not available' }}</span>
+                                    </div>
+                                    
+                                    <div style="display: flex; align-items: center;">
+                                        <i class="bi bi-clock-fill" style="font-size: 16px; color: #666; margin-right: 8px;"></i>
+                                        <span style="color: #333; font-size: 16px;">Business Hours: 9:00 AM - 6:00 PM</span>
+                                    </div>
                                 </div>
                             @endforeach
                             
-                            <p style="color: #666; font-size: 16px; margin-top: 15px;">Please pick up your order within 3 days after your order has been approved and payment is confirmed.</p>
+                            <div style="background: #e7f3ff; border-left: 4px solid #007bff; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                                <div style="display: flex; align-items: flex-start;">
+                                    <i class="bi bi-info-circle-fill" style="font-size: 18px; color: #007bff; margin-right: 10px; margin-top: 2px;"></i>
+                                    <div>
+                                        <p style="color: #333; font-size: 16px; margin: 0 0 5px 0; font-weight: 600;">Pickup Instructions:</p>
+                                        <ul style="color: #666; font-size: 14px; margin: 0; padding-left: 20px;">
+                                            <li>Please pick up your order within 3 days after approval</li>
+                                            <li>Bring a valid ID and your order reference number</li>
+                                            <li>Contact the seller before visiting for availability</li>
+                                            <li>Verify the items before leaving the pickup location</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Delivery Information Section -->
+                        <div id="deliveryInfoSection" style="margin: 25px 0; padding: 20px; background: #f8f9fa; border-radius: 10px; display: none;">
+                            <h4 style="color: #517a5b; margin-bottom: 15px; font-size: 20px;">
+                                <i class="bi bi-truck" style="margin-right: 8px;"></i>
+                                Delivery Information
+                            </h4>
+                            
+                            <!-- Delivery Address Form -->
+                            <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 20px;">
+                                <h5 style="color: #333; margin-bottom: 15px; font-size: 18px;">
+                                    <i class="bi bi-house-door" style="margin-right: 8px;"></i>
+                                    Delivery Address
+                                </h5>
+                                
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                    <div>
+                                        <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Full Name *</label>
+                                        <input type="text" id="deliveryName" name="delivery_name" value="{{ Auth::user()->firstname }} {{ Auth::user()->lastname }}" 
+                                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;" required>
+                                    </div>
+                                    <div>
+                                        <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Phone Number *</label>
+                                        <input type="text" id="deliveryPhone" name="delivery_phone" value="{{ Auth::user()->number }}" 
+                                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;" required>
+                                    </div>
+                                </div>
+                                
+                                <div style="margin-bottom: 15px;">
+                                    <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Street Address *</label>
+                                    <input type="text" id="deliveryAddress" name="delivery_address" placeholder="House number, street name" 
+                                           style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;" required>
+                                </div>
+                                
+                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                    <div>
+                                        <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">City *</label>
+                                        <input type="text" id="deliveryCity" name="delivery_city" 
+                                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;" required>
+                                    </div>
+                                    <div>
+                                        <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Province *</label>
+                                        <input type="text" id="deliveryProvince" name="delivery_province" 
+                                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;" required>
+                                    </div>
+                                    <div>
+                                        <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Postal Code</label>
+                                        <input type="text" id="deliveryPostal" name="delivery_postal" 
+                                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Delivery Instructions (Optional)</label>
+                                    <textarea id="deliveryInstructions" name="delivery_instructions" rows="3" placeholder="Any special instructions for delivery..."
+                                              style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; resize: vertical;"></textarea>
+                                </div>
+                            </div>
+                            
+                            <!-- Delivery Options -->
+                            <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 20px;">
+                                <h5 style="color: #333; margin-bottom: 15px; font-size: 18px;">
+                                    <i class="bi bi-clock" style="margin-right: 8px;"></i>
+                                    Delivery Options
+                                </h5>
+                                
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                    <label class="delivery-speed-option" for="standard" style="cursor: pointer; border: 2px solid #e0e0e0; border-radius: 8px; padding: 15px; background: white; transition: all 0.3s ease;">
+                                        <input type="radio" id="standard" name="delivery_speed" value="standard" checked style="margin-bottom: 8px;">
+                                        <div style="font-weight: 600; color: #333; margin-bottom: 4px;">Standard Delivery</div>
+                                        <div style="color: #666; font-size: 14px; margin-bottom: 4px;">3-5 business days</div>
+                                        <div style="color: #28a745; font-weight: 600;">₱50</div>
+                                    </label>
+                                    
+                                    <label class="delivery-speed-option" for="express" style="cursor: pointer; border: 2px solid #e0e0e0; border-radius: 8px; padding: 15px; background: white; transition: all 0.3s ease;">
+                                        <input type="radio" id="express" name="delivery_speed" value="express" style="margin-bottom: 8px;">
+                                        <div style="font-weight: 600; color: #333; margin-bottom: 4px;">Express Delivery</div>
+                                        <div style="color: #666; font-size: 14px; margin-bottom: 4px;">1-2 business days</div>
+                                        <div style="color: #dc3545; font-weight: 600;">₱150</div>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 8px;">
+                                <div style="display: flex; align-items: flex-start;">
+                                    <i class="bi bi-exclamation-triangle-fill" style="font-size: 18px; color: #856404; margin-right: 10px; margin-top: 2px;"></i>
+                                    <div>
+                                        <p style="color: #856404; font-size: 16px; margin: 0 0 5px 0; font-weight: 600;">Delivery Notes:</p>
+                                        <ul style="color: #856404; font-size: 14px; margin: 0; padding-left: 20px;">
+                                            <li>Delivery fees may vary based on location and distance</li>
+                                            <li>Orders will be delivered during business hours (9 AM - 6 PM)</li>
+                                            <li>Someone must be available to receive the delivery</li>
+                                            <li>Additional charges may apply for remote areas</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div style="display: grid; gap: 15px; margin-top: 25px;">
@@ -186,6 +345,64 @@
 </div>
 
 <script>
+    // Delivery method switching functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const pickupRadio = document.getElementById('pickup');
+        const deliveryRadio = document.getElementById('delivery');
+        const pickupSection = document.getElementById('pickupInfoSection');
+        const deliverySection = document.getElementById('deliveryInfoSection');
+        
+        // Handle delivery method change
+        function handleDeliveryMethodChange() {
+            if (pickupRadio.checked) {
+                pickupSection.style.display = 'block';
+                deliverySection.style.display = 'none';
+                
+                // Update delivery option styling
+                document.querySelector('label[for="pickup"]').style.borderColor = '#517a5b';
+                document.querySelector('label[for="pickup"]').style.backgroundColor = '#f8f9fa';
+                document.querySelector('label[for="delivery"]').style.borderColor = '#e0e0e0';
+                document.querySelector('label[for="delivery"]').style.backgroundColor = 'white';
+            } else if (deliveryRadio.checked) {
+                pickupSection.style.display = 'none';
+                deliverySection.style.display = 'block';
+                
+                // Update delivery option styling
+                document.querySelector('label[for="delivery"]').style.borderColor = '#517a5b';
+                document.querySelector('label[for="delivery"]').style.backgroundColor = '#f8f9fa';
+                document.querySelector('label[for="pickup"]').style.borderColor = '#e0e0e0';
+                document.querySelector('label[for="pickup"]').style.backgroundColor = 'white';
+            }
+        }
+        
+        // Handle delivery speed option styling
+        function handleDeliverySpeedChange() {
+            document.querySelectorAll('.delivery-speed-option').forEach(option => {
+                const radio = option.querySelector('input[type="radio"]');
+                if (radio.checked) {
+                    option.style.borderColor = '#517a5b';
+                    option.style.backgroundColor = '#f8f9fa';
+                } else {
+                    option.style.borderColor = '#e0e0e0';
+                    option.style.backgroundColor = 'white';
+                }
+            });
+        }
+        
+        // Add event listeners
+        pickupRadio.addEventListener('change', handleDeliveryMethodChange);
+        deliveryRadio.addEventListener('change', handleDeliveryMethodChange);
+        
+        // Add event listeners for delivery speed options
+        document.querySelectorAll('input[name="delivery_speed"]').forEach(radio => {
+            radio.addEventListener('change', handleDeliverySpeedChange);
+        });
+        
+        // Initialize the view
+        handleDeliveryMethodChange();
+        handleDeliverySpeedChange();
+    });
+
     // Image preview functionality
     document.addEventListener('DOMContentLoaded', function() {
         const receiptInput = document.getElementById('receiptImage');
@@ -256,10 +473,47 @@
             return;
         }
         
+        // Get delivery method
+        const deliveryMethod = document.querySelector('input[name="delivery_method"]:checked').value;
+        
+        // Validate delivery address if delivery is selected
+        if (deliveryMethod === 'delivery') {
+            const requiredFields = ['deliveryName', 'deliveryPhone', 'deliveryAddress', 'deliveryCity', 'deliveryProvince'];
+            let missingFields = [];
+            
+            requiredFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (!field.value.trim()) {
+                    missingFields.push(field.previousElementSibling.textContent.replace(' *', ''));
+                }
+            });
+            
+            if (missingFields.length > 0) {
+                errorDisplay.textContent = 'Please fill in all required delivery fields: ' + missingFields.join(', ');
+                errorDisplay.style.display = 'block';
+                submitButton.innerText = originalText;
+                submitButton.disabled = false;
+                return;
+            }
+        }
+        
         // Create FormData to handle file upload
         const formData = new FormData();
         formData.append('receipt_image', receiptInput.files[0]);
         formData.append('_token', "{{ csrf_token() }}");
+        formData.append('delivery_method', deliveryMethod);
+        
+        // Add delivery information if delivery is selected
+        if (deliveryMethod === 'delivery') {
+            formData.append('delivery_name', document.getElementById('deliveryName').value);
+            formData.append('delivery_phone', document.getElementById('deliveryPhone').value);
+            formData.append('delivery_address', document.getElementById('deliveryAddress').value);
+            formData.append('delivery_city', document.getElementById('deliveryCity').value);
+            formData.append('delivery_province', document.getElementById('deliveryProvince').value);
+            formData.append('delivery_postal', document.getElementById('deliveryPostal').value);
+            formData.append('delivery_instructions', document.getElementById('deliveryInstructions').value);
+            formData.append('delivery_speed', document.querySelector('input[name="delivery_speed"]:checked').value);
+        }
         
         // Add direct checkout data if this is a direct checkout
         @if(isset($directCheckout) && $directCheckout)
