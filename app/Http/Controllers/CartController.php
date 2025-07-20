@@ -497,7 +497,8 @@ class CartController extends Controller
         // Return the checkout view with the cart containing valid items
         return view('orders.checkout', [
             'cart' => $cart,
-            'totalPrice' => $totalPrice
+            'totalPrice' => $totalPrice,
+            'userLocation' => Auth::user()->location
         ]);
     }
 }

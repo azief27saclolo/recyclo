@@ -94,11 +94,93 @@
             </div>
         </section>
 
-        {{-- User's Posts --}}
+        {{-- Best Deals Section --}}
+        @if($bestDeals->count() > 0)
+        <section class="section shop" id="best-deals" aria-label="best deals">
+            <div class="container">
+                <div class="title-wrapper">
+                    <h2 class="h2 section-title">🔥 Best Deals</h2>
+                    <a href="{{ route('deals.index') }}" class="btn-link">
+                        <span class="span">View All Deals</span>
+                        <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
+                    </a>
+                </div>
+                <ul class="has-scrollbar product-slider">
+                    @foreach ($bestDeals as $deal)       
+                        <li class="scrollbar-item">
+                            <a href="{{ route('posts.show', $deal) }}" class="shop-card-link">
+                                <div class="shop-card" style="position: relative;">
+                                    <!-- Deal Badge -->
+                                    @if($deal->discount_percentage > 0)
+                                    <div style="position: absolute; top: 10px; right: 10px; background: linear-gradient(45deg, #ff416c, #ff4b2b); color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 700; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
+                                        {{ number_format($deal->discount_percentage, 0) }}% OFF
+                                    </div>
+                                    @endif
+                                    
+                                    <!-- Featured Badge -->
+                                    @if($deal->is_featured_deal)
+                                    <div style="position: absolute; top: 10px; left: 10px; background: linear-gradient(45deg, #ffd700, #ffed4e); color: #333; padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: 700; z-index: 10;">
+                                        ⭐ FEATURED
+                                    </div>
+                                    @endif
+                                    
+                                    <div class="card-banner img-holder" style="--width: 270; --height: 360;">
+                                        @if($deal->image)
+                                            <img src="{{ asset('storage/' . $deal->image) }}" width="270" height="360" loading="lazy"
+                                                alt="{{ $deal->title }}" class="img-cover" style="object-fit: cover; width: 100%; height: 100%; max-height: 360px;">
+                                        @else
+                                            <img src="{{ asset('images/default-product.jpg') }}" width="270" height="360" loading="lazy"
+                                                alt="{{ $deal->title }}" class="img-cover" style="object-fit: cover; width: 100%; height: 100%; max-height: 360px;">
+                                        @endif
+                                        <span class="badge" aria-label="category">{{ $deal->category }}</span>
+                                        
+                                        <!-- Deal Score Badge -->
+                                        <div style="position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.8); color: white; padding: 3px 6px; border-radius: 8px; font-size: 10px; font-weight: 600;">
+                                            🔥 {{ number_format($deal->deal_score, 1) }}
+                                        </div>
+                                    </div>
+                                    <div class="card-content">
+                                        <div class="price">
+                                            @if($deal->original_price && $deal->original_price > $deal->price)
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <span style="color: #ff416c; font-weight: 700;">₱{{ number_format($deal->price, 2) }}</span>
+                                                <span style="color: #999; text-decoration: line-through; font-size: 14px;">₱{{ number_format($deal->original_price, 2) }}</span>
+                                            </div>
+                                            <div style="color: #28a745; font-size: 12px; font-weight: 600; margin-top: 2px;">
+                                                Save ₱{{ number_format($deal->savings_amount, 2) }}
+                                            </div>
+                                            @else
+                                            <span style="color: #ff416c; font-weight: 700;">₱{{ number_format($deal->price, 2) }}</span>
+                                            @endif
+                                        </div>
+                                        <h3 class="h3">
+                                            <span class="card-title">{{ Str::limit($deal->title, 40) }}</span>
+                                        </h3>
+                                        <p class="card-text" style="font-size: 14px; color: #666; margin-top: 5px;">
+                                            <i class="bi bi-shop" style="margin-right: 4px;"></i>{{ $deal->user->username ?? 'Unknown' }}
+                                            <span style="margin-left: 10px;">
+                                                <i class="bi bi-geo-alt" style="margin-right: 4px;"></i>{{ Str::limit($deal->location, 15) }}
+                                            </span>
+                                        </p>
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 12px; color: #666;">
+                                            <span><i class="bi bi-box" style="margin-right: 3px;"></i>{{ $deal->quantity }} left</span>
+                                            <span><i class="bi bi-eye" style="margin-right: 3px;"></i>{{ $deal->views_count }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        </section>
+        @endif
+
+        {{-- Recent Posts --}}
         <section class="section shop" id="shop" aria-label="shop">
             <div class="container">
                 <div class="title-wrapper">
-                    <h2 class="h2 section-title">Best Deals</h2>
+                    <h2 class="h2 section-title">Recent Products</h2>
                     <a href="{{ route('posts') }}" class="btn-link">
                         <span class="span">View More Products</span>
                         <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>

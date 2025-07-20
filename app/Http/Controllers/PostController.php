@@ -159,6 +159,9 @@ class PostController extends Controller implements HasMiddleware
      */
     public function show(Post $post)
     {
+        // Increment views count for deals tracking
+        $post->incrementViews();
+        
         // Add product relation to ensure posts can be added to cart
         $product = Product::firstOrCreate(
             ['post_id' => $post->id],

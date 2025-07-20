@@ -19,16 +19,6 @@ class Order extends Model
         'receipt_image',
         'buyer_id',
         'seller_id',
-        'delivery_method',
-        'delivery_name',
-        'delivery_phone',
-        'delivery_address',
-        'delivery_city',
-        'delivery_province',
-        'delivery_postal',
-        'delivery_instructions',
-        'delivery_speed',
-        'delivery_fee'
     ];
 
     /**
@@ -83,5 +73,29 @@ class Order extends Model
     public function items()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * Get the delivery details for the order.
+     */
+    public function deliveryDetail()
+    {
+        return $this->hasOne(DeliveryDetail::class);
+    }
+
+    /**
+     * Check if order has pickup delivery method
+     */
+    public function isPickup()
+    {
+        return $this->deliveryDetail && $this->deliveryDetail->deliveryMethod->isPickup();
+    }
+
+    /**
+     * Check if order has home delivery method
+     */
+    public function isDelivery()
+    {
+        return $this->deliveryDetail && $this->deliveryDetail->deliveryMethod->isDelivery();
     }
 }

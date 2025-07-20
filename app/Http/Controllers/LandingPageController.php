@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 use App\Models\Shop;
+use App\Http\Controllers\BestDealsController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -22,6 +23,10 @@ class LandingPageController extends Controller
                       ->take(6)
                       ->get();
             
+            // Get best deals for homepage section
+            $bestDealsController = new BestDealsController();
+            $bestDeals = $bestDealsController->getHomepageDeals();
+            
             // Check profile completion status for authenticated users
             if (Auth::check()) {
                 $user = Auth::user();
@@ -34,7 +39,8 @@ class LandingPageController extends Controller
             
             return view('landingpage.landingpage', [
                 'posts' => $posts,
-                'shops' => $shops
+                'shops' => $shops,
+                'bestDeals' => $bestDeals
             ]);
         } catch (\Exception $e) {
             // Log any errors
@@ -43,7 +49,8 @@ class LandingPageController extends Controller
             // Return the view with empty collections to avoid breaking the page
             return view('landingpage.landingpage', [
                 'posts' => collect([]),
-                'shops' => collect([])
+                'shops' => collect([]),
+                'bestDeals' => collect([])
             ]);
         }
     }
