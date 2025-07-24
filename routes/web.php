@@ -111,6 +111,11 @@ Route::group(['prefix' => 'admin', 'middleware' => [AdminMiddleware::class]], fu
     Route::delete('/products/{id}', [AdminController::class, 'deleteProduct'])->name('admin.products.delete');
     Route::put('/products/{id}/update', [AdminController::class, 'updateProduct'])->name('admin.products.update');
     
+    // Deal management routes
+    Route::post('/deals/{id}/toggle-featured', [AdminController::class, 'toggleFeaturedDeal'])->name('admin.deals.toggle-featured');
+    Route::post('/deals/{id}/remove', [AdminController::class, 'removeDeal'])->name('admin.deals.remove');
+    Route::post('/deals/{id}/create', [AdminController::class, 'createDeal'])->name('admin.deals.create');
+    
     // Add this route for retrieving product details in the admin product view
     Route::get('/admin/products/{id}/details', [App\Http\Controllers\AdminController::class, 'getProductDetails'])->name('admin.products.details');
     

@@ -270,13 +270,16 @@ class Post extends Model
      */
     public function autoDetectDeal()
     {
+        // Check if original_price exists and is valid
         if (!$this->original_price || $this->original_price <= 0) {
             return false;
         }
 
+        // Calculate discount percentage
         $discountPercentage = (($this->original_price - $this->price) / $this->original_price) * 100;
         
-        if ($discountPercentage >= 15) { // 15% or more discount qualifies as a deal
+        // Only qualify as deal if discount is 15% or more
+        if ($discountPercentage >= 15) {
             $this->update([
                 'discount_percentage' => round($discountPercentage, 2),
                 'is_deal' => true
@@ -287,6 +290,33 @@ class Post extends Model
         }
 
         return false;
+    }
+
+    /**
+     * Apply discount to existing post (for manual deal creation)
+     */
+    public function applyDiscount($discountPercentage, $originalPrice = null)
+    {
+        // Set original price if provided, otherwise use current price as original
+        if ($originalPrice) {
+            $this->original_price = $originalPrice;
+        } elseif (!$this->original_price || $this->original_price <= 0) {
+            $this->original_price = $this->price;
+        }
+
+        // Calculate new discounted price
+        $discountAmount = ($this->original_price * $discountPercentage) / 100;
+        $newPrice = $this->original_price - $discountAmount;
+
+        $this->update([
+            'original_price' => $this->original_price,
+            'price' => round($newPrice, 2),
+            'discount_percentage' => round($discountPercentage, 2),
+            'is_deal' => true
+        ]);
+
+        $this->calculateDealScore();
+        return $this;
     }
 
     /**
@@ -344,6 +374,18 @@ class Post extends Model
             // Set as deal if not already
             if (!$this->is_deal) {
                 $updates['is_deal'] = true;
+                
+                // If no original_price is set, create an automatic discount
+                if (!$this->original_price || $this->original_price <= 0) {
+                    // Set original price as 15% higher than current price to create a deal
+                    $automaticOriginalPrice = $this->price * 1.15; // 15% higher
+                    $updates['original_price'] = round($automaticOriginalPrice, 2);
+                    $updates['discount_percentage'] = 15; // Fixed 15% discount for auto-promoted deals
+                } else {
+                    // Recalculate discount if original_price exists
+                    $discountPercentage = (($this->original_price - $this->price) / $this->original_price) * 100;
+                    $updates['discount_percentage'] = round($discountPercentage, 2);
+                }
             }
             
             // Set as featured deal if not already
@@ -356,10 +398,13 @@ class Post extends Model
                 $this->update($updates);
                 
                 // Log the auto-promotion for tracking
-                \Log::info('Auto-promoted post', [
+                \Log::info('Auto-promoted post with discount', [
                     'post_id' => $this->id,
                     'title' => $this->title,
                     'orders_count' => $this->orders_count,
+                    'original_price' => $this->original_price,
+                    'current_price' => $this->price,
+                    'discount_percentage' => $this->discount_percentage,
                     'updates' => $updates,
                     'deal_score' => $this->deal_score
                 ]);

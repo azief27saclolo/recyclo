@@ -362,7 +362,7 @@ class OrderController extends Controller
                 $quantity = $request->quantity;
                 
                 // Find the post
-                $post = Post::with('user')->findOrFail($post_id);
+                $post = Post::with(['user.shop'])->findOrFail($post_id);
                 
                 // Check if user is trying to buy their own product
                 if ($post->user_id === Auth::id()) {
@@ -375,6 +375,26 @@ class OrderController extends Controller
                     return redirect()->route('posts.show', $post->id)
                         ->with('error', 'The requested quantity exceeds available stock.');
                 }
+                
+                // Get seller shop information
+                $shop = $post->user->shop;
+                \Log::info('Direct checkout shop data:', [
+                    'user_id' => $post->user_id,
+                    'shop_exists' => $shop ? 'yes' : 'no',
+                    'shop_name' => $shop ? $shop->shop_name : 'N/A',
+                    'shop_address' => $shop ? $shop->shop_address : 'N/A',
+                    'post_location' => $post->location,
+                    'user_location' => $post->user->location
+                ]);
+                
+                $sellerShopLocations = [
+                    $post->user_id => [
+                        'shop_name' => $shop ? $shop->shop_name : $post->user->username . "'s Shop",
+                        'shop_address' => $shop ? $shop->shop_address : ($post->location ?? $post->user->location ?? 'Location not specified'),
+                        'contact_number' => $post->user->number,
+                        'username' => $post->user->username
+                    ]
+                ];
                 
                 // Create a temporary cart-like structure for the view
                 $cartItem = new \stdClass();
@@ -395,7 +415,8 @@ class OrderController extends Controller
                     'post' => $post,
                     'directCheckout' => true,
                     'quantity' => $quantity,
-                    'userLocation' => Auth::user()->location
+                    'userLocation' => Auth::user()->location,
+                    'sellerShopLocations' => $sellerShopLocations
                 ]);
             } catch (\Exception $e) {
                 \Log::error('Direct checkout error: ' . $e->getMessage());
@@ -412,7 +433,33 @@ class OrderController extends Controller
         }
         
         // Load products and posts with eager loading to reduce database queries
-        $cart->load(['items.product.post.user', 'items.product.user.shop']);
+        $cart->load(['items.product.post.user.shop', 'items.product.user']);
+        
+        // Get shop locations for all sellers in the cart
+        $sellerShopLocations = [];
+        foreach ($cart->items as $item) {
+            if ($item->product && $item->product->post && $item->product->post->user) {
+                $sellerId = $item->product->post->user->id;
+                if (!isset($sellerShopLocations[$sellerId])) {
+                    $shop = $item->product->post->user->shop;
+                    \Log::info('Cart checkout shop data:', [
+                        'seller_id' => $sellerId,
+                        'shop_exists' => $shop ? 'yes' : 'no',
+                        'shop_name' => $shop ? $shop->shop_name : 'N/A',
+                        'shop_address' => $shop ? $shop->shop_address : 'N/A',
+                        'post_location' => $item->product->post->location,
+                        'user_location' => $item->product->post->user->location
+                    ]);
+                    
+                    $sellerShopLocations[$sellerId] = [
+                        'shop_name' => $shop ? $shop->shop_name : $item->product->post->user->username . "'s Shop",
+                        'shop_address' => $shop ? $shop->shop_address : ($item->product->post->location ?? $item->product->post->user->location ?? 'Location not specified'),
+                        'contact_number' => $item->product->post->user->number,
+                        'username' => $item->product->post->user->username
+                    ];
+                }
+            }
+        }
         
         // Check for missing or invalid products
         $validItems = 0;
@@ -433,7 +480,8 @@ class OrderController extends Controller
             'cart' => $cart,
             'totalPrice' => $cart->total,
             'directCheckout' => false,
-            'userLocation' => Auth::user()->location
+            'userLocation' => Auth::user()->location,
+            'sellerShopLocations' => $sellerShopLocations
         ]);
     }
 

@@ -2247,4 +2247,121 @@ class AdminController extends Controller
             return back()->with('error', 'An error occurred while unrestricting the user.');
         }
     }
+
+    /**
+     * Toggle featured status of a deal
+     */
+    public function toggleFeaturedDeal(Request $request, $id)
+    {
+        try {
+            $post = Post::findOrFail($id);
+            
+            // Ensure the post is actually a deal
+            if (!$post->is_deal) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This product is not currently a deal.'
+                ], 400);
+            }
+
+            // Toggle featured status
+            $post->is_featured_deal = !$post->is_featured_deal;
+            $post->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => $post->is_featured_deal ? 'Deal marked as featured' : 'Deal removed from featured',
+                'is_featured' => $post->is_featured_deal
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update deal status: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Remove deal status from a product
+     */
+    public function removeDeal(Request $request, $id)
+    {
+        try {
+            $post = Post::findOrFail($id);
+            
+            // Remove deal status
+            $post->is_deal = false;
+            $post->is_featured_deal = false;
+            $post->discount_percentage = 0;
+            $post->deal_score = null;
+            $post->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Deal status removed successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to remove deal status: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Create a new deal from a product
+     */
+    public function createDeal(Request $request, $id)
+    {
+        try {
+            $request->validate([
+                'discount_percentage' => 'required|numeric|min:1|max:90',
+                'is_featured' => 'boolean'
+            ]);
+
+            $post = Post::findOrFail($id);
+            
+            // Calculate discounted price
+            $discountPercentage = $request->discount_percentage;
+            $originalPrice = $post->original_price ?? $post->price;
+            $discountedPrice = $originalPrice * (1 - $discountPercentage / 100);
+            
+            // Update the post with deal information
+            $post->is_deal = true;
+            $post->is_featured_deal = $request->is_featured ?? false;
+            $post->discount_percentage = $discountPercentage;
+            $post->original_price = $originalPrice;
+            $post->price = $discountedPrice;
+            
+            // Calculate deal score
+            $post->deal_score = $post->calculateDealScore();
+            $post->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Deal created successfully',
+                'deal' => [
+                    'discount_percentage' => $post->discount_percentage,
+                    'original_price' => number_format($post->original_price, 2),
+                    'discounted_price' => number_format($post->price, 2),
+                    'is_featured' => $post->is_featured_deal,
+                    'deal_score' => number_format($post->deal_score, 2)
+                ]
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create deal: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

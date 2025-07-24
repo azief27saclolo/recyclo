@@ -656,10 +656,11 @@
                                     <th>Image</th>
                                     <th>Title</th>
                                     <th>Category</th>
-                                    <th>Price</th>
+                                    <th>Price / Deal</th>
                                     <th>Quantity</th>
                                     <th>Seller</th>
                                     <th>Posted Date</th>
+                                    <th>Deal Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -688,7 +689,23 @@
                                                 {{ $categoryName }}
                                             </span>
                                         </td>
-                                        <td>₱{{ number_format($product->price, 2) }} / {{ $product->unit }}</td>
+                                        <td>
+                                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                                <div style="font-weight: 600; color: #333;">
+                                                    ₱{{ number_format($product->price, 2) }} / {{ $product->unit }}
+                                                </div>
+                                                @if($product->is_deal && $product->original_price && $product->original_price > $product->price)
+                                                <div style="display: flex; align-items: center; gap: 6px;">
+                                                    <span style="font-size: 12px; color: #999; text-decoration: line-through;">
+                                                        ₱{{ number_format($product->original_price, 2) }}
+                                                    </span>
+                                                    <span style="background: linear-gradient(45deg, #ff416c, #ff4b2b); color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; font-weight: bold;">
+                                                        {{ number_format($product->discount_percentage, 0) }}% OFF
+                                                    </span>
+                                                </div>
+                                                @endif
+                                            </div>
+                                        </td>
                                         <td>{{ $product->quantity }} {{ $product->unit }}</td>
                                         <td>
                                             @if($product->user)
@@ -699,13 +716,62 @@
                                         </td>
                                         <td>{{ $product->created_at->format('M d, Y') }}</td>
                                         <td>
-                                            <div class="action-buttons">
+                                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                                @if($product->is_deal)
+                                                    <span style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; text-align: center;">
+                                                        🔥 DEAL
+                                                    </span>
+                                                    @if($product->is_featured_deal)
+                                                    <span style="background: linear-gradient(45deg, #ffd700, #ffed4e); color: #333; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; text-align: center;">
+                                                        ⭐ FEATURED
+                                                    </span>
+                                                    @endif
+                                                    @if($product->deal_score > 0)
+                                                    <div style="font-size: 10px; color: #666; text-align: center;">
+                                                        Score: {{ number_format($product->deal_score, 1) }}
+                                                    </div>
+                                                    @endif
+                                                @else
+                                                    <span style="color: #666; font-size: 12px; text-align: center;">Regular</span>
+                                                @endif
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons" style="display: flex; flex-wrap: wrap; gap: 4px;">
                                                 <button class="btn btn-sm btn-primary view-product" data-id="{{ $product->id }}" data-toggle="tooltip" title="View details" style="color: var(--hoockers-green); border: 1px solid var(--hoockers-green);">
                                                     <i class="bi bi-eye" style="color: var(--hoockers-green);"></i>
                                                 </button>
                                                 <button class="btn btn-sm btn-warning edit-product" data-id="{{ $product->id }}" data-toggle="tooltip" title="Edit product" style="color: #ffc107; border: 1px solid #ffc107;">
                                                     <i class="bi bi-pencil" style="color: #ffc107;"></i>
                                                 </button>
+                                                
+                                                <!-- Deal Management Buttons -->
+                                                @if($product->is_deal)
+                                                    <button class="btn btn-sm btn-info toggle-featured" 
+                                                            data-id="{{ $product->id }}" 
+                                                            data-featured="{{ $product->is_featured_deal ? 'true' : 'false' }}"
+                                                            data-toggle="tooltip" 
+                                                            title="{{ $product->is_featured_deal ? 'Remove from Featured' : 'Make Featured' }}" 
+                                                            style="color: #17a2b8; border: 1px solid #17a2b8;">
+                                                        <i class="bi bi-star{{ $product->is_featured_deal ? '-fill' : '' }}" style="color: #17a2b8;"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-secondary remove-deal" 
+                                                            data-id="{{ $product->id }}" 
+                                                            data-toggle="tooltip" 
+                                                            title="Remove Deal Status" 
+                                                            style="color: #6c757d; border: 1px solid #6c757d;">
+                                                        <i class="bi bi-x-circle" style="color: #6c757d;"></i>
+                                                    </button>
+                                                @else
+                                                    <button class="btn btn-sm btn-success make-deal" 
+                                                            data-id="{{ $product->id }}" 
+                                                            data-toggle="tooltip" 
+                                                            title="Create Deal" 
+                                                            style="color: #28a745; border: 1px solid #28a745;">
+                                                        <i class="bi bi-fire" style="color: #28a745;"></i>
+                                                    </button>
+                                                @endif
+                                                
                                                 <button type="button" class="btn btn-sm btn-danger delete-product" 
                                                         data-id="{{ $product->id }}" 
                                                         data-title="{{ $product->title }}"
@@ -720,7 +786,7 @@
                                     @endforeach
                                 @else
                                     <tr>
-                                        <td colspan="9" class="text-center">No products found</td>
+                                        <td colspan="10" class="text-center">No products found</td>
                                     </tr>
                                 @endif
                             </tbody>
@@ -1352,6 +1418,9 @@
             
             // Initialize product deletion functionality
             initProductDeletion();
+            
+            // Initialize deal management functionality
+            initDealManagement();
         });
 
         // Initialize tab navigation functionality
@@ -2868,6 +2937,260 @@
                             });
                         }
                     });
+                });
+            });
+        }
+
+        // Deal Management Functions
+        function initDealManagement() {
+            // Toggle Featured Deal Status
+            document.querySelectorAll('.toggle-featured').forEach(button => {
+                button.addEventListener('click', function() {
+                    const productId = this.getAttribute('data-id');
+                    const isFeatured = this.getAttribute('data-featured') === 'true';
+                    const action = isFeatured ? 'remove from featured' : 'make featured';
+                    
+                    Swal.fire({
+                        title: `${isFeatured ? 'Remove Featured Status?' : 'Make Featured Deal?'}`,
+                        text: `Are you sure you want to ${action} this deal?`,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#17a2b8',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: `Yes, ${action}!`,
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            toggleFeaturedStatus(productId);
+                        }
+                    });
+                });
+            });
+
+            // Remove Deal Status
+            document.querySelectorAll('.remove-deal').forEach(button => {
+                button.addEventListener('click', function() {
+                    const productId = this.getAttribute('data-id');
+                    
+                    Swal.fire({
+                        title: 'Remove Deal Status?',
+                        text: 'This will remove the deal status and reset pricing to current price.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#6c757d',
+                        cancelButtonColor: '#dc3545',
+                        confirmButtonText: 'Yes, remove deal',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            removeDealStatus(productId);
+                        }
+                    });
+                });
+            });
+
+            // Create New Deal
+            document.querySelectorAll('.make-deal').forEach(button => {
+                button.addEventListener('click', function() {
+                    const productId = this.getAttribute('data-id');
+                    showCreateDealModal(productId);
+                });
+            });
+        }
+
+        function toggleFeaturedStatus(productId) {
+            fetch(`/admin/deals/${productId}/toggle-featured`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Success!',
+                        text: data.message,
+                        icon: 'success',
+                        timer: 1500
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: data.message,
+                        icon: 'error'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to update featured status',
+                    icon: 'error'
+                });
+            });
+        }
+
+        function removeDealStatus(productId) {
+            fetch(`/admin/deals/${productId}/remove`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Deal Removed!',
+                        text: data.message,
+                        icon: 'success',
+                        timer: 1500
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: data.message,
+                        icon: 'error'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to remove deal status',
+                    icon: 'error'
+                });
+            });
+        }
+
+        function showCreateDealModal(productId) {
+            Swal.fire({
+                title: 'Create Deal',
+                html: `
+                    <div style="text-align: left;">
+                        <div style="margin-bottom: 15px;">
+                            <label for="original_price" style="display: block; margin-bottom: 5px; font-weight: 600;">Original Price (₱)</label>
+                            <input type="number" id="original_price" class="swal2-input" step="0.01" min="0" placeholder="Enter original price" style="margin: 0; width: 100%;">
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label for="discount_percentage" style="display: block; margin-bottom: 5px; font-weight: 600;">Discount Percentage (%)</label>
+                            <input type="number" id="discount_percentage" class="swal2-input" step="1" min="15" max="90" placeholder="Minimum 15%" style="margin: 0; width: 100%;">
+                        </div>
+                        <div id="deal_preview" style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 10px; display: none;">
+                            <strong>Deal Preview:</strong>
+                            <div id="preview_content"></div>
+                        </div>
+                    </div>
+                `,
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Create Deal',
+                cancelButtonText: 'Cancel',
+                didOpen: () => {
+                    const originalPriceInput = document.getElementById('original_price');
+                    const discountInput = document.getElementById('discount_percentage');
+                    const preview = document.getElementById('deal_preview');
+                    const previewContent = document.getElementById('preview_content');
+
+                    function updatePreview() {
+                        const originalPrice = parseFloat(originalPriceInput.value) || 0;
+                        const discount = parseFloat(discountInput.value) || 0;
+                        
+                        if (originalPrice > 0 && discount >= 15) {
+                            const discountedPrice = originalPrice * (1 - discount / 100);
+                            const savings = originalPrice - discountedPrice;
+                            
+                            previewContent.innerHTML = `
+                                <div style="color: #28a745; font-weight: bold;">
+                                    New Price: ₱${discountedPrice.toFixed(2)}
+                                </div>
+                                <div style="color: #dc3545; text-decoration: line-through;">
+                                    Original: ₱${originalPrice.toFixed(2)}
+                                </div>
+                                <div style="color: #ff6b35; font-weight: bold;">
+                                    Customers Save: ₱${savings.toFixed(2)} (${discount}% OFF)
+                                </div>
+                            `;
+                            preview.style.display = 'block';
+                        } else {
+                            preview.style.display = 'none';
+                        }
+                    }
+
+                    originalPriceInput.addEventListener('input', updatePreview);
+                    discountInput.addEventListener('input', updatePreview);
+                },
+                preConfirm: () => {
+                    const originalPrice = parseFloat(document.getElementById('original_price').value);
+                    const discountPercentage = parseFloat(document.getElementById('discount_percentage').value);
+                    
+                    if (!originalPrice || originalPrice <= 0) {
+                        Swal.showValidationMessage('Please enter a valid original price');
+                        return false;
+                    }
+                    
+                    if (!discountPercentage || discountPercentage < 15) {
+                        Swal.showValidationMessage('Discount must be at least 15%');
+                        return false;
+                    }
+                    
+                    return { originalPrice, discountPercentage };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    createDeal(productId, result.value.originalPrice, result.value.discountPercentage);
+                }
+            });
+        }
+
+        function createDeal(productId, originalPrice, discountPercentage) {
+            fetch(`/admin/deals/${productId}/create`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    original_price: originalPrice,
+                    discount_percentage: discountPercentage
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: '🔥 Deal Created!',
+                        text: `Successfully created deal with ${discountPercentage}% discount!`,
+                        icon: 'success',
+                        timer: 2000
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: data.message,
+                        icon: 'error'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to create deal',
+                    icon: 'error'
                 });
             });
         }

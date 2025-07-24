@@ -123,6 +123,7 @@ class PostController extends Controller implements HasMiddleware
             'location' => ['required', 'max:255'],
             'address' => ['required', 'max:255'],
             'price' => ['required', 'numeric'],
+            'original_price' => ['nullable', 'numeric', 'gte:price'], // Must be >= price if provided
             'description' => ['required', 'string'],
             'image' => ['required', 'file', 'max:3000', 'mimes:webp,png,jpg'],
             'unit' => ['required'],
@@ -135,8 +136,8 @@ class PostController extends Controller implements HasMiddleware
         // Get the category for backwards compatibility
         $category = Category::findOrFail($request->category_id);
 
-        // Create a post with pending status
-        $post = Auth::user()->posts()->create([
+        // Prepare post data
+        $postData = [
             'title' => $request->title,
             'category_id' => $request->category_id,
             'category' => $category->name, // Keep category name for backwards compatibility
@@ -148,10 +149,46 @@ class PostController extends Controller implements HasMiddleware
             'unit' => $request->unit,
             'quantity' => $request->quantity,
             'status' => Post::STATUS_PENDING, // Set as pending by default
-        ]);
+        ];
 
-        // Redirect with pending message
-        return back()->with('success', 'Your post has been submitted and is awaiting admin approval!');
+        // Handle pricing and deals
+        if ($request->filled('original_price') && $request->original_price > $request->price) {
+            $originalPrice = $request->original_price;
+            $currentPrice = $request->price;
+            $discountPercentage = (($originalPrice - $currentPrice) / $originalPrice) * 100;
+
+            // Add pricing fields but DON'T auto-mark as deal
+            $postData['original_price'] = $originalPrice;
+            $postData['discount_percentage'] = round($discountPercentage, 2);
+            
+            // Only mark as deal if discount is very significant (30%+) or if manually promoted later
+            // Normal discounts will only become deals when they reach 3+ orders
+        }
+
+        // Create a post with pending status
+        $post = Auth::user()->posts()->create($postData);
+
+        // Note: We don't automatically calculate deal score here since it's not a deal yet
+        // Deal status will be determined by:
+        // 1. Auto-promotion when reaching 3+ orders
+        // 2. Manual admin promotion
+        // 3. Very high discounts (30%+) - uncomment below if desired
+        
+        // Uncomment this if you want posts with 30%+ discount to be immediate deals
+        // if (isset($postData['discount_percentage']) && $postData['discount_percentage'] >= 30) {
+        //     $post->update(['is_deal' => true]);
+        //     $post->calculateDealScore();
+        // }
+
+        // Success message based on whether pricing info was provided
+        $message = 'Your post has been submitted and is awaiting admin approval!';
+        if (isset($postData['original_price']) && isset($postData['discount_percentage'])) {
+            $discountPercentage = $postData['discount_percentage'];
+            $message = '✨ Your post with ' . round($discountPercentage, 0) . '% discount has been submitted! ' .
+                      'It will become a featured deal once it gets popular (3+ orders) or when promoted by admin.';
+        }
+
+        return back()->with('success', $message);
     }
 
     /**
