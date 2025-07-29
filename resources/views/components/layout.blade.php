@@ -265,6 +265,9 @@
                   <a href="{{ route('buy.marketplace') }}" class="navbar-link has-after">Buying</a>
                 </li>
                 <li>
+                  <a href="{{ route('deals.index') }}" class="navbar-link has-after">🔥 Best Deals</a>
+                </li>
+                <li>
                   <a href="#collection" class="navbar-link has-after">About Us</a>
                 </li>
                 <li>
@@ -300,6 +303,9 @@
                 </li>
                 <li>
                     <a href="{{ route('buy.marketplace') }}" class="navbar-link has-after">Buying</a>
+                </li>
+                <li>
+                    <a href="{{ route('deals.index') }}" class="navbar-link has-after">🔥 Best Deals</a>
                 </li>
                 <li>
                     <a href="#collection" class="navbar-link has-after">About Us</a>

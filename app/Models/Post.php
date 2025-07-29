@@ -19,6 +19,14 @@ class Post extends Model
         'address', 
         'unit',
         'price',
+        'original_price',
+        'discount_percentage',
+        'is_deal',
+        'is_featured_deal',
+        'deal_expires_at',
+        'views_count',
+        'orders_count',
+        'deal_score',
         'description',
         'image',
         'quantity',
@@ -40,6 +48,15 @@ class Post extends Model
     // Cast quantity to integer
     protected $casts = [
         'quantity' => 'integer',
+        'price' => 'decimal:2',
+        'original_price' => 'decimal:2',
+        'discount_percentage' => 'decimal:2',
+        'deal_score' => 'decimal:2',
+        'is_deal' => 'boolean',
+        'is_featured_deal' => 'boolean',
+        'deal_expires_at' => 'datetime',
+        'views_count' => 'integer',
+        'orders_count' => 'integer',
     ];
 
     public function user() : BelongsTo 
@@ -220,5 +237,215 @@ class Post extends Model
         }
 
         return $this;
+    }
+
+    /**
+     * Calculate and update deal score based on various factors
+     */
+    public function calculateDealScore()
+    {
+        $score = 0;
+        
+        // Discount percentage weight (40%)
+        $score += $this->discount_percentage * 0.4;
+        
+        // Views count weight (20%) - normalize by dividing by 100
+        $score += ($this->views_count / 100) * 0.2;
+        
+        // Orders count weight (30%) - normalize by multiplying by 10
+        $score += $this->orders_count * 10 * 0.3;
+        
+        // Recency bonus (10%) - newer posts get higher score
+        $daysOld = $this->created_at->diffInDays(now());
+        $recencyScore = max(0, 30 - $daysOld) / 30 * 10; // Max 10 points for posts less than 30 days old
+        $score += $recencyScore * 0.1;
+        
+        $this->update(['deal_score' => round($score, 2)]);
+        
+        return $score;
+    }
+
+    /**
+     * Auto-detect if this post qualifies as a deal
+     */
+    public function autoDetectDeal()
+    {
+        // Check if original_price exists and is valid
+        if (!$this->original_price || $this->original_price <= 0) {
+            return false;
+        }
+
+        // Calculate discount percentage
+        $discountPercentage = (($this->original_price - $this->price) / $this->original_price) * 100;
+        
+        // Only qualify as deal if discount is 15% or more
+        if ($discountPercentage >= 15) {
+            $this->update([
+                'discount_percentage' => round($discountPercentage, 2),
+                'is_deal' => true
+            ]);
+            
+            $this->calculateDealScore();
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Apply discount to existing post (for manual deal creation)
+     */
+    public function applyDiscount($discountPercentage, $originalPrice = null)
+    {
+        // Set original price if provided, otherwise use current price as original
+        if ($originalPrice) {
+            $this->original_price = $originalPrice;
+        } elseif (!$this->original_price || $this->original_price <= 0) {
+            $this->original_price = $this->price;
+        }
+
+        // Calculate new discounted price
+        $discountAmount = ($this->original_price * $discountPercentage) / 100;
+        $newPrice = $this->original_price - $discountAmount;
+
+        $this->update([
+            'original_price' => $this->original_price,
+            'price' => round($newPrice, 2),
+            'discount_percentage' => round($discountPercentage, 2),
+            'is_deal' => true
+        ]);
+
+        $this->calculateDealScore();
+        return $this;
+    }
+
+    /**
+     * Check if deal is expired
+     */
+    public function isDealExpired()
+    {
+        return $this->deal_expires_at && $this->deal_expires_at->isPast();
+    }
+
+    /**
+     * Get formatted discount percentage
+     */
+    public function getFormattedDiscountAttribute()
+    {
+        return $this->discount_percentage > 0 ? number_format($this->discount_percentage, 0) . '% OFF' : '';
+    }
+
+    /**
+     * Get savings amount
+     */
+    public function getSavingsAmountAttribute()
+    {
+        if (!$this->original_price || $this->original_price <= 0) {
+            return 0;
+        }
+        
+        return $this->original_price - $this->price;
+    }
+
+    /**
+     * Increment views count
+     */
+    public function incrementViews()
+    {
+        $this->increment('views_count');
+        
+        // Recalculate deal score after view increment
+        if ($this->is_deal) {
+            $this->calculateDealScore();
+        }
+    }
+
+    /**
+     * Increment orders count
+     */
+    public function incrementOrders()
+    {
+        $this->increment('orders_count');
+        
+        // Auto-promote to deal and featured deal when reaching 3 orders
+        if ($this->orders_count >= 3) {
+            $updates = [];
+            
+            // Set as deal if not already
+            if (!$this->is_deal) {
+                $updates['is_deal'] = true;
+                
+                // If no original_price is set, create an automatic discount
+                if (!$this->original_price || $this->original_price <= 0) {
+                    // Set original price as 15% higher than current price to create a deal
+                    $automaticOriginalPrice = $this->price * 1.15; // 15% higher
+                    $updates['original_price'] = round($automaticOriginalPrice, 2);
+                    $updates['discount_percentage'] = 15; // Fixed 15% discount for auto-promoted deals
+                } else {
+                    // Recalculate discount if original_price exists
+                    $discountPercentage = (($this->original_price - $this->price) / $this->original_price) * 100;
+                    $updates['discount_percentage'] = round($discountPercentage, 2);
+                }
+            }
+            
+            // Set as featured deal if not already
+            if (!$this->is_featured_deal) {
+                $updates['is_featured_deal'] = true;
+            }
+            
+            // Apply updates if any
+            if (!empty($updates)) {
+                $this->update($updates);
+                
+                // Log the auto-promotion for tracking
+                \Log::info('Auto-promoted post with discount', [
+                    'post_id' => $this->id,
+                    'title' => $this->title,
+                    'orders_count' => $this->orders_count,
+                    'original_price' => $this->original_price,
+                    'current_price' => $this->price,
+                    'discount_percentage' => $this->discount_percentage,
+                    'updates' => $updates,
+                    'deal_score' => $this->deal_score
+                ]);
+            }
+        }
+        
+        // Recalculate deal score after order increment
+        if ($this->is_deal) {
+            $this->calculateDealScore();
+        }
+    }
+
+    /**
+     * Scope for getting deals
+     */
+    public function scopeDeals($query)
+    {
+        return $query->where('is_deal', true)
+                    ->where(function($q) {
+                        $q->whereNull('deal_expires_at')
+                          ->orWhere('deal_expires_at', '>', now());
+                    });
+    }
+
+    /**
+     * Scope for getting featured deals
+     */
+    public function scopeFeaturedDeals($query)
+    {
+        return $query->deals()->where('is_featured_deal', true);
+    }
+
+    /**
+     * Scope for getting best deals (ordered by deal score)
+     */
+    public function scopeBestDeals($query)
+    {
+        return $query->deals()
+                    ->where('status', 'approved')
+                    ->where('quantity', '>', 0)
+                    ->orderBy('deal_score', 'desc')
+                    ->orderBy('discount_percentage', 'desc');
     }
 }

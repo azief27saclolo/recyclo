@@ -170,46 +170,142 @@
                                 Pickup Information
                             </h4>
                             
-                            @foreach($sellerGroups as $sellerId => $items)
+                            {{-- Debug: Show seller shop locations data --}}
+                            @if(config('app.debug'))
+                            <div style="background: #f0f0f0; padding: 10px; margin-bottom: 15px; border-radius: 5px; font-size: 12px;">
+                                <strong>Debug - Seller Shop Locations:</strong>
+                                <pre>{{ print_r($sellerShopLocations ?? [], true) }}</pre>
+                            </div>
+                            @endif
+                            
+                            @if(isset($directCheckout) && $directCheckout)
+                                {{-- Direct checkout - single seller --}}
                                 @php 
-                                    $firstItem = $items->first();
-                                    $seller = $firstItem->product->post->user;
-                                    $location = $firstItem->product->post->location ?? 'Location not specified';
+                                    $sellerId = $post->user_id;
+                                    // Use the shop location data passed from controller, or create fallback
+                                    if (isset($sellerShopLocations[$sellerId])) {
+                                        $shopLocation = $sellerShopLocations[$sellerId];
+                                    } else {
+                                        $seller = $post->user;
+                                        $shop = $seller->shop ?? null;
+                                        $shopLocation = [
+                                            'shop_name' => $shop ? $shop->shop_name : $seller->username . "'s Shop",
+                                            'shop_address' => $shop ? $shop->shop_address : ($post->location ?? $seller->location ?? 'Location not specified'),
+                                            'contact_number' => $seller->number ?? 'Contact number not available',
+                                            'username' => $seller->username
+                                        ];
+                                    }
+                                    $sellersToShow = [['id' => $sellerId, 'location' => $shopLocation]];
                                 @endphp
+                            @else
+                                {{-- Regular cart checkout - multiple sellers --}}
+                                @php 
+                                    $sellersToShow = [];
+                                    foreach($sellerGroups as $sellerId => $items) {
+                                        // Use the shop location data passed from controller, or create fallback
+                                        if (isset($sellerShopLocations[$sellerId])) {
+                                            $shopLocation = $sellerShopLocations[$sellerId];
+                                        } else {
+                                            $firstItem = $items->first();
+                                            $seller = $firstItem->product->post->user;
+                                            $shop = $seller->shop ?? null;
+                                            $shopLocation = [
+                                                'shop_name' => $shop ? $shop->shop_name : $seller->username . "'s Shop",
+                                                'shop_address' => $shop ? $shop->shop_address : ($firstItem->product->post->location ?? $seller->location ?? 'Location not specified'),
+                                                'contact_number' => $seller->number ?? 'Contact number not available',
+                                                'username' => $seller->username
+                                            ];
+                                        }
+                                        $sellersToShow[] = ['id' => $sellerId, 'location' => $shopLocation];
+                                    }
+                                @endphp
+                            @endif
+                            
+                            {{-- Unified display for all sellers --}}
+                            @foreach($sellersToShow as $sellerData)
+                                @php $shopLocation = $sellerData['location']; @endphp
                                 <div style="margin-bottom: 15px; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 4px solid #517a5b;">
                                     <div style="display: flex; align-items: center; margin-bottom: 12px;">
                                         <i class="bi bi-shop" style="font-size: 20px; color: #517a5b; margin-right: 10px;"></i>
-                                        <h5 style="margin: 0; color: #333; font-size: 18px; font-weight: 600;">{{ $seller->username }}'s Shop</h5>
+                                        <h5 style="margin: 0; color: #333; font-size: 18px; font-weight: 600;">{{ $shopLocation['shop_name'] }}</h5>
                                     </div>
                                     
-                                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                                        <i class="bi bi-geo-alt-fill" style="font-size: 16px; color: #666; margin-right: 8px;"></i>
-                                        <span style="color: #333; font-size: 16px;">{{ $location }}</span>
+                                    <div style="display: flex; align-items: flex-start; margin-bottom: 8px;">
+                                        <i class="bi bi-geo-alt-fill" style="font-size: 16px; color: #666; margin-right: 8px; margin-top: 2px;"></i>
+                                        <span style="color: #333; font-size: 16px; line-height: 1.4;">{{ $shopLocation['shop_address'] }}</span>
                                     </div>
                                     
                                     <div style="display: flex; align-items: center; margin-bottom: 8px;">
                                         <i class="bi bi-telephone-fill" style="font-size: 16px; color: #666; margin-right: 8px;"></i>
-                                        <span style="color: #333; font-size: 16px;">{{ $seller->number ?? 'Contact number not available' }}</span>
+                                        <span style="color: #333; font-size: 16px;">{{ $shopLocation['contact_number'] }}</span>
                                     </div>
                                     
-                                    <div style="display: flex; align-items: center;">
+                                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
                                         <i class="bi bi-clock-fill" style="font-size: 16px; color: #666; margin-right: 8px;"></i>
                                         <span style="color: #333; font-size: 16px;">Business Hours: 9:00 AM - 6:00 PM</span>
+                                    </div>
+
+                                    <!-- Pickup Status Badge -->
+                                    <div style="display: flex; align-items: center; margin-top: 12px;">
+                                        <i class="bi bi-check-circle-fill" style="font-size: 16px; color: #28a745; margin-right: 8px;"></i>
+                                        <span style="background: #d4edda; color: #155724; padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: 500;">Available for Pickup</span>
                                     </div>
                                 </div>
                             @endforeach
                             
+                            <!-- Pickup Preferences Section -->
+                            <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 20px;">
+                                <h5 style="color: #333; margin-bottom: 15px; font-size: 18px;">
+                                    <i class="bi bi-calendar-check" style="margin-right: 8px;"></i>
+                                    Pickup Preferences
+                                </h5>
+                                
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                    <div>
+                                        <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Preferred Pickup Date</label>
+                                        <input type="date" id="pickupDate" name="pickup_date" 
+                                               min="{{ date('Y-m-d', strtotime('+1 day')) }}" 
+                                               value="{{ date('Y-m-d', strtotime('+2 days')) }}"
+                                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                                    </div>
+                                    <div>
+                                        <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Preferred Time</label>
+                                        <select id="pickupTime" name="pickup_time" 
+                                                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                                            <option value="morning">Morning (9:00 AM - 12:00 PM)</option>
+                                            <option value="afternoon">Afternoon (12:00 PM - 3:00 PM)</option>
+                                            <option value="evening">Evening (3:00 PM - 6:00 PM)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Pickup Notes (Optional)</label>
+                                    <textarea id="pickupNotes" name="pickup_notes" rows="3" placeholder="Any special instructions or notes for the seller..."
+                                              style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; resize: vertical;"></textarea>
+                                </div>
+                            </div>
+                            
+                            <!-- Enhanced Pickup Instructions -->
                             <div style="background: #e7f3ff; border-left: 4px solid #007bff; padding: 15px; border-radius: 8px; margin-top: 15px;">
                                 <div style="display: flex; align-items: flex-start;">
                                     <i class="bi bi-info-circle-fill" style="font-size: 18px; color: #007bff; margin-right: 10px; margin-top: 2px;"></i>
                                     <div>
-                                        <p style="color: #333; font-size: 16px; margin: 0 0 5px 0; font-weight: 600;">Pickup Instructions:</p>
+                                        <p style="color: #333; font-size: 16px; margin: 0 0 10px 0; font-weight: 600;">Pickup Instructions:</p>
                                         <ul style="color: #666; font-size: 14px; margin: 0; padding-left: 20px;">
-                                            <li>Please pick up your order within 3 days after approval</li>
-                                            <li>Bring a valid ID and your order reference number</li>
-                                            <li>Contact the seller before visiting for availability</li>
-                                            <li>Verify the items before leaving the pickup location</li>
+                                            <li><strong>Timing:</strong> Pick up your order within 3 days after approval</li>
+                                            <li><strong>Requirements:</strong> Bring a valid ID and your order reference number</li>
+                                            <li><strong>Contact:</strong> Call the seller 30 minutes before your visit</li>
+                                            <li><strong>Verification:</strong> Inspect and verify all items before leaving</li>
+                                            <li><strong>Payment:</strong> Ensure your payment receipt is ready for verification</li>
                                         </ul>
+                                        
+                                        <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 6px; border-left: 3px solid #ffc107;">
+                                            <p style="color: #856404; font-size: 14px; margin: 0; font-weight: 500;">
+                                                <i class="bi bi-exclamation-triangle-fill" style="margin-right: 5px;"></i>
+                                                Important: Orders not picked up within 3 days will be automatically cancelled and refunded.
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -229,6 +325,50 @@
                                     Delivery Address
                                 </h5>
                                 
+                                <!-- Address Selection Options -->
+                                @if(!empty($userLocation))
+                                <div style="margin-bottom: 20px;">
+                                    <!-- Hidden radio inputs -->
+                                    <input type="radio" id="useSavedAddress" name="address_option" value="saved" checked style="display: none;">
+                                    <input type="radio" id="useDifferentAddress" name="address_option" value="different" style="display: none;">
+                                    
+                                    <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                                        <!-- Use Saved Address Option -->
+                                        <div class="address-option" data-option="saved" style="cursor: pointer; flex: 1; height: 60px; border-radius: 8px; background: #f8f9fa; padding: 10px; display: flex; align-items: center; justify-content: space-between; transition: all 0.3s ease; border: 2px solid #2b9875;">
+                                            <div style="display: flex; gap: 10px; align-items: center;">
+                                                <div style="color: #2b9875; background: rgba(43, 152, 117, 0.1); backdrop-filter: blur(10px); padding: 6px; border-radius: 6px;">
+                                                    <i class="bi bi-check" style="font-size: 20px; font-weight: bold;"></i>
+                                                </div>
+                                                <div>
+                                                    <p style="color: #333; margin: 0; font-size: 14px; font-weight: 600;">Use my saved address</p>
+                                                    <p style="color: #666; margin: 0; font-size: 12px;">{{ Str::limit($userLocation, 40) }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Use Different Address Option -->
+                                        <div class="address-option" data-option="different" style="cursor: pointer; flex: 1; height: 60px; border-radius: 8px; background: #f8f9fa; padding: 10px; display: flex; align-items: center; justify-content: space-between; transition: all 0.3s ease; border: 2px solid transparent; opacity: 0.7;">
+                                            <div style="display: flex; gap: 10px; align-items: center;">
+                                                <div style="color: #666; background: rgba(102, 102, 102, 0.1); backdrop-filter: blur(10px); padding: 6px; border-radius: 6px;">
+                                                    <i class="bi bi-plus-circle" style="font-size: 20px;"></i>
+                                                </div>
+                                                <div>
+                                                    <p style="color: #333; margin: 0; font-size: 14px; font-weight: 600;">Use a different address</p>
+                                                    <p style="color: #666; margin: 0; font-size: 12px;">Enter a new delivery address</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                @else
+                                <div style="margin-bottom: 20px; padding: 15px; background: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
+                                    <div style="display: flex; align-items: center;">
+                                        <i class="bi bi-info-circle-fill" style="color: #856404; margin-right: 8px;"></i>
+                                        <span style="color: #856404; font-weight: 500;">No saved address found. Please enter your delivery address below.</span>
+                                    </div>
+                                </div>
+                                @endif
+                                
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                                     <div>
                                         <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Full Name *</label>
@@ -242,29 +382,34 @@
                                     </div>
                                 </div>
                                 
-                                <div style="margin-bottom: 15px;">
-                                    <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Street Address *</label>
-                                    <input type="text" id="deliveryAddress" name="delivery_address" placeholder="House number, street name" 
-                                           style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;" required>
+                                <div id="manualAddressFields" style="{{ !empty($userLocation) ? 'display: none;' : '' }}">
+                                    <div style="margin-bottom: 15px;">
+                                        <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Street Address *</label>
+                                        <input type="text" id="deliveryAddress" name="delivery_address" placeholder="House number, street name, subdivision, barangay" 
+                                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;" {{ empty($userLocation) ? 'required' : '' }}>
+                                    </div>
+                                    
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                        <div>
+                                            <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">City *</label>
+                                            <input type="text" id="deliveryCity" name="delivery_city" placeholder="Enter city"
+                                                   style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;" {{ empty($userLocation) ? 'required' : '' }}>
+                                        </div>
+                                        <div>
+                                            <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Province *</label>
+                                            <input type="text" id="deliveryProvince" name="delivery_province" placeholder="Enter province"
+                                                   style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;" {{ empty($userLocation) ? 'required' : '' }}>
+                                        </div>
+                                        <div>
+                                            <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Postal Code</label>
+                                            <input type="text" id="deliveryPostal" name="delivery_postal" placeholder="Optional"
+                                                   style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                                        </div>
+                                    </div>
                                 </div>
                                 
-                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                                    <div>
-                                        <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">City *</label>
-                                        <input type="text" id="deliveryCity" name="delivery_city" 
-                                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;" required>
-                                    </div>
-                                    <div>
-                                        <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Province *</label>
-                                        <input type="text" id="deliveryProvince" name="delivery_province" 
-                                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;" required>
-                                    </div>
-                                    <div>
-                                        <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Postal Code</label>
-                                        <input type="text" id="deliveryPostal" name="delivery_postal" 
-                                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
-                                    </div>
-                                </div>
+                                <!-- Hidden input to store the selected address -->
+                                <input type="hidden" id="selectedDeliveryAddress" name="selected_delivery_address" value="{{ $userLocation ?? '' }}">
                                 
                                 <div>
                                     <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Delivery Instructions (Optional)</label>
@@ -398,6 +543,92 @@
             radio.addEventListener('change', handleDeliverySpeedChange);
         });
         
+        // Handle address option change
+        const useSavedAddressRadio = document.getElementById('useSavedAddress');
+        const useDifferentAddressRadio = document.getElementById('useDifferentAddress');
+        const manualAddressFields = document.getElementById('manualAddressFields');
+        const selectedDeliveryAddress = document.getElementById('selectedDeliveryAddress');
+        
+        // Handle card-based address selection
+        document.querySelectorAll('.address-option').forEach(card => {
+            card.addEventListener('click', function() {
+                const option = this.getAttribute('data-option');
+                
+                // Update radio button states
+                if (option === 'saved') {
+                    useSavedAddressRadio.checked = true;
+                    useDifferentAddressRadio.checked = false;
+                } else {
+                    useSavedAddressRadio.checked = false;
+                    useDifferentAddressRadio.checked = true;
+                }
+                
+                // Update card styling
+                document.querySelectorAll('.address-option').forEach(c => {
+                    if (c.getAttribute('data-option') === option) {
+                        // Selected state
+                        c.style.borderColor = '#2b9875';
+                        c.style.opacity = '1';
+                        const icon = c.querySelector('i');
+                        const iconContainer = c.querySelector('div > div');
+                        icon.className = 'bi bi-check';
+                        iconContainer.style.color = '#2b9875';
+                        iconContainer.style.background = 'rgba(43, 152, 117, 0.1)';
+                    } else {
+                        // Unselected state
+                        c.style.borderColor = 'transparent';
+                        c.style.opacity = '0.7';
+                        const icon = c.querySelector('i');
+                        const iconContainer = c.querySelector('div > div');
+                        if (c.getAttribute('data-option') === 'saved') {
+                            icon.className = 'bi bi-geo-alt-fill';
+                        } else {
+                            icon.className = 'bi bi-plus-circle';
+                        }
+                        iconContainer.style.color = '#666';
+                        iconContainer.style.background = 'rgba(102, 102, 102, 0.1)';
+                    }
+                });
+                
+                // Call the existing address change handler
+                handleAddressOptionChange();
+            });
+        });
+        
+        function handleAddressOptionChange() {
+            if (useSavedAddressRadio && useSavedAddressRadio.checked) {
+                // Use saved address
+                manualAddressFields.style.display = 'none';
+                selectedDeliveryAddress.value = `{{ $userLocation ?? '' }}`;
+                
+                // Remove required attributes from manual fields
+                const manualFields = ['deliveryAddress', 'deliveryCity', 'deliveryProvince'];
+                manualFields.forEach(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    if (field) {
+                        field.removeAttribute('required');
+                        field.value = '';
+                    }
+                });
+            } else if (useDifferentAddressRadio && useDifferentAddressRadio.checked) {
+                // Use different address
+                manualAddressFields.style.display = 'block';
+                selectedDeliveryAddress.value = '';
+                
+                // Add required attributes to manual fields
+                const requiredFields = ['deliveryAddress', 'deliveryCity', 'deliveryProvince'];
+                requiredFields.forEach(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    if (field) {
+                        field.setAttribute('required', 'required');
+                    }
+                });
+            }
+        }
+        
+        // Add event listeners for address options (legacy support)
+        // The main interaction is now through card clicks above
+        
         // Initialize the view
         handleDeliveryMethodChange();
         handleDeliverySpeedChange();
@@ -478,15 +709,54 @@
         
         // Validate delivery address if delivery is selected
         if (deliveryMethod === 'delivery') {
-            const requiredFields = ['deliveryName', 'deliveryPhone', 'deliveryAddress', 'deliveryCity', 'deliveryProvince'];
+            const useSavedAddress = document.getElementById('useSavedAddress');
+            const useDifferentAddress = document.getElementById('useDifferentAddress');
+            
+            // Check basic required fields
+            const basicRequiredFields = ['deliveryName', 'deliveryPhone'];
             let missingFields = [];
             
-            requiredFields.forEach(fieldId => {
+            basicRequiredFields.forEach(fieldId => {
                 const field = document.getElementById(fieldId);
-                if (!field.value.trim()) {
-                    missingFields.push(field.previousElementSibling.textContent.replace(' *', ''));
+                if (!field || !field.value.trim()) {
+                    missingFields.push(fieldId === 'deliveryName' ? 'Full Name' : 'Phone Number');
                 }
             });
+            
+            // Check address fields based on selection
+            if (useDifferentAddress && useDifferentAddress.checked) {
+                // Validate manual address fields
+                const addressFields = [
+                    {id: 'deliveryAddress', name: 'Street Address'},
+                    {id: 'deliveryCity', name: 'City'},
+                    {id: 'deliveryProvince', name: 'Province'}
+                ];
+                addressFields.forEach(field => {
+                    const element = document.getElementById(field.id);
+                    if (!element || !element.value.trim()) {
+                        missingFields.push(field.name);
+                    }
+                });
+            } else if (useSavedAddress && useSavedAddress.checked) {
+                // Check if saved address exists
+                const selectedAddress = document.getElementById('selectedDeliveryAddress');
+                if (!selectedAddress || !selectedAddress.value.trim()) {
+                    missingFields.push('Saved Address');
+                }
+            } else {
+                // No address option selected (no saved address available)
+                const addressFields = [
+                    {id: 'deliveryAddress', name: 'Street Address'},
+                    {id: 'deliveryCity', name: 'City'},
+                    {id: 'deliveryProvince', name: 'Province'}
+                ];
+                addressFields.forEach(field => {
+                    const element = document.getElementById(field.id);
+                    if (!element || !element.value.trim()) {
+                        missingFields.push(field.name);
+                    }
+                });
+            }
             
             if (missingFields.length > 0) {
                 errorDisplay.textContent = 'Please fill in all required delivery fields: ' + missingFields.join(', ');
@@ -503,14 +773,45 @@
         formData.append('_token', "{{ csrf_token() }}");
         formData.append('delivery_method', deliveryMethod);
         
+        // Add pickup information if pickup is selected
+        if (deliveryMethod === 'pickup') {
+            const pickupDate = document.getElementById('pickupDate');
+            const pickupTime = document.getElementById('pickupTime');
+            const pickupNotes = document.getElementById('pickupNotes');
+            
+            if (pickupDate && pickupDate.value) {
+                formData.append('pickup_date', pickupDate.value);
+            }
+            if (pickupTime && pickupTime.value) {
+                formData.append('pickup_time', pickupTime.value);
+            }
+            if (pickupNotes && pickupNotes.value) {
+                formData.append('pickup_notes', pickupNotes.value);
+            }
+        }
+        
         // Add delivery information if delivery is selected
         if (deliveryMethod === 'delivery') {
             formData.append('delivery_name', document.getElementById('deliveryName').value);
             formData.append('delivery_phone', document.getElementById('deliveryPhone').value);
-            formData.append('delivery_address', document.getElementById('deliveryAddress').value);
-            formData.append('delivery_city', document.getElementById('deliveryCity').value);
-            formData.append('delivery_province', document.getElementById('deliveryProvince').value);
-            formData.append('delivery_postal', document.getElementById('deliveryPostal').value);
+            
+            // Handle address based on selection
+            const useSavedAddress = document.getElementById('useSavedAddress');
+            const useDifferentAddress = document.getElementById('useDifferentAddress');
+            
+            if (useSavedAddress && useSavedAddress.checked) {
+                // Use saved address
+                formData.append('delivery_address', document.getElementById('selectedDeliveryAddress').value);
+                formData.append('use_saved_address', 'true');
+            } else {
+                // Use manually entered address
+                formData.append('delivery_address', document.getElementById('deliveryAddress').value);
+                formData.append('delivery_city', document.getElementById('deliveryCity').value);
+                formData.append('delivery_province', document.getElementById('deliveryProvince').value);
+                formData.append('delivery_postal', document.getElementById('deliveryPostal').value);
+                formData.append('use_saved_address', 'false');
+            }
+            
             formData.append('delivery_instructions', document.getElementById('deliveryInstructions').value);
             formData.append('delivery_speed', document.querySelector('input[name="delivery_speed"]:checked').value);
         }

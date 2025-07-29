@@ -52,6 +52,12 @@ Route::get('/search', [PostController::class, 'search'])->name('search');
 // Buy requests search route
 Route::get('/search-buy-requests', [BuyController::class, 'search'])->name('search.buy.requests');
 
+// Best Deals routes
+Route::get('/best-deals', [App\Http\Controllers\BestDealsController::class, 'index'])->name('deals.index');
+Route::post('/best-deals/auto-detect', [App\Http\Controllers\BestDealsController::class, 'autoDetectDeals'])->name('deals.auto-detect');
+Route::post('/best-deals/auto-promote', [App\Http\Controllers\BestDealsController::class, 'autoPromoteToFeatured'])->name('deals.auto-promote');
+Route::post('/best-deals/{post}/toggle-featured', [App\Http\Controllers\BestDealsController::class, 'toggleFeatured'])->name('deals.toggle-featured');
+
 // Add dedicated admin login route
 Route::post('/admin/login', [AdminLoginController::class, 'login'])->name('admin.login');
 
@@ -104,6 +110,11 @@ Route::group(['prefix' => 'admin', 'middleware' => [AdminMiddleware::class]], fu
     Route::get('/products/{id}/details', [AdminController::class, 'getProductDetails'])->name('admin.products.details');
     Route::delete('/products/{id}', [AdminController::class, 'deleteProduct'])->name('admin.products.delete');
     Route::put('/products/{id}/update', [AdminController::class, 'updateProduct'])->name('admin.products.update');
+    
+    // Deal management routes
+    Route::post('/deals/{id}/toggle-featured', [AdminController::class, 'toggleFeaturedDeal'])->name('admin.deals.toggle-featured');
+    Route::post('/deals/{id}/remove', [AdminController::class, 'removeDeal'])->name('admin.deals.remove');
+    Route::post('/deals/{id}/create', [AdminController::class, 'createDeal'])->name('admin.deals.create');
     
     // Add this route for retrieving product details in the admin product view
     Route::get('/admin/products/{id}/details', [App\Http\Controllers\AdminController::class, 'getProductDetails'])->name('admin.products.details');

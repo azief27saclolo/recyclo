@@ -623,20 +623,58 @@
                                 @enderror
                             </div>
 
-                            <div class="form-group">
-                                <label class="form-label" for="price" style="display: flex; align-items: center; gap: 8px;">
-                                    <i class="bi bi-currency-peso" style="color: var(--hoockers-green);"></i> Price per unit
-                                </label>
-                                <input type="text" name="price" id="price" class="form-control enhanced" 
-                                    style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; transition: all 0.3s ease;"
-                                    placeholder="Enter price..." value="{{ old('price') }}" required>
+                            <!-- Pricing Section -->
+                            <div class="pricing-section" style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e0e0e0;">
+                                <h4 style="color: var(--hoockers-green); margin-bottom: 15px; font-size: 18px; display: flex; align-items: center; gap: 8px;">
+                                    <i class="bi bi-tag-fill"></i> Pricing Information
+                                </h4>
+                                
+                                <div class="form-group">
+                                    <label class="form-label" for="price" style="display: flex; align-items: center; gap: 8px;">
+                                        <i class="bi bi-currency-peso" style="color: var(--hoockers-green);"></i> Current Price per unit *
+                                    </label>
+                                    <input type="text" name="price" id="price" class="form-control enhanced" 
+                                        style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; transition: all 0.3s ease;"
+                                        placeholder="Enter current selling price..." value="{{ old('price') }}" required>
+                                    @error('price')
+                                        <p class="error-message">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="original_price" style="display: flex; align-items: center; gap: 8px;">
+                                        <i class="bi bi-receipt" style="color: var(--hoockers-green);"></i> Original/Regular Price per unit
+                                        <span style="font-size: 12px; color: #666; font-weight: normal;">(Optional - for discounts)</span>
+                                    </label>
+                                    <input type="text" name="original_price" id="original_price" class="form-control enhanced" 
+                                        style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; transition: all 0.3s ease;"
+                                        placeholder="Enter original price if offering discount..." value="{{ old('original_price') }}">
+                                    <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">
+                                        <i class="bi bi-info-circle"></i> Set this higher than current price to create a discount deal
+                                    </small>
+                                    @error('original_price')
+                                        <p class="error-message">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <!-- Discount Calculator -->
+                                <div id="discountDisplay" style="display: none; padding: 15px; background: linear-gradient(45deg, #ff416c, #ff4b2b); color: white; border-radius: 8px; margin-top: 10px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <div>
+                                            <strong>🔥 Discount Deal!</strong>
+                                            <div id="discountPercentage" style="font-size: 24px; font-weight: bold;"></div>
+                                        </div>
+                                        <div style="text-align: right;">
+                                            <div style="font-size: 12px; opacity: 0.9;">Customers save:</div>
+                                            <div id="savingsAmount" style="font-size: 18px; font-weight: bold;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <button type="button" id="pricesGuideBtn" class="btn btn-link" 
                                     style="padding: 8px 12px; margin-top: 10px; color: white; background-color: var(--hoockers-green); display: inline-block; text-decoration: none; font-weight: 500; border-radius: 6px; width: auto; text-align: center; transition: all 0.3s ease;">
                                     <i class="bi bi-info-circle"></i> Prices Guide
                                 </button>
-                                @error('price')
-                                    <p class="error-message">{{ $message }}</p>
-                                @enderror
                             </div>
 
                             <div class="form-group">
@@ -1268,6 +1306,43 @@
 
         // Initialize map when DOM is loaded
         initMap();
+        
+        // Discount calculator functionality
+        const priceInput = document.getElementById('price');
+        const originalPriceInput = document.getElementById('original_price');
+        const discountDisplay = document.getElementById('discountDisplay');
+        const discountPercentage = document.getElementById('discountPercentage');
+        const savingsAmount = document.getElementById('savingsAmount');
+        
+        function calculateDiscount() {
+            const price = parseFloat(priceInput.value) || 0;
+            const originalPrice = parseFloat(originalPriceInput.value) || 0;
+            
+            if (originalPrice > 0 && price > 0 && originalPrice > price) {
+                const discount = ((originalPrice - price) / originalPrice) * 100;
+                const savings = originalPrice - price;
+                
+                discountPercentage.textContent = `${Math.round(discount)}% OFF`;
+                savingsAmount.textContent = `₱${savings.toFixed(2)}`;
+                discountDisplay.style.display = 'block';
+                
+                // Add success styling to inputs
+                originalPriceInput.style.borderColor = '#28a745';
+                priceInput.style.borderColor = '#28a745';
+            } else {
+                discountDisplay.style.display = 'none';
+                // Reset border colors
+                originalPriceInput.style.borderColor = '#e0e0e0';
+                priceInput.style.borderColor = '#e0e0e0';
+            }
+        }
+        
+        // Add event listeners for real-time calculation
+        priceInput.addEventListener('input', calculateDiscount);
+        originalPriceInput.addEventListener('input', calculateDiscount);
+        
+        // Initial calculation on page load
+        calculateDiscount();
     });
     
     function confirmLogout(event) {

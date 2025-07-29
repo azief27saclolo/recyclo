@@ -8,6 +8,8 @@ use App\Models\Post;
 use App\Models\Product;
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\DeliveryDetail;
+use App\Models\DeliveryMethod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -62,7 +64,8 @@ class OrderController extends Controller
                 // Create the order
                 DB::beginTransaction();
                 try {
-                    $order = Order::create([
+                    // Prepare order data (simplified)
+                    $orderData = [
                         'post_id' => $post->id,
                         'buyer_id' => Auth::id(),
                         'seller_id' => $post->user->id,
@@ -70,7 +73,46 @@ class OrderController extends Controller
                         'status' => 'pending',
                         'total_amount' => $post->price * $quantity,
                         'receipt_image' => $receiptPath,
-                    ]);
+                    ];
+                    
+                    $order = Order::create($orderData);
+                    
+                    // Create delivery details
+                    $deliveryMethodId = DeliveryMethod::where('name', $request->delivery_method ?? 'delivery')->first()->id;
+                    $deliveryFee = $request->delivery_method === 'pickup' ? 0 : 35.00;
+                    
+                    $deliveryData = [
+                        'order_id' => $order->id,
+                        'delivery_method_id' => $deliveryMethodId,
+                        'status' => 'pending',
+                        'delivery_fee' => $deliveryFee,
+                    ];
+                    
+                    // Add method-specific fields
+                    if ($request->delivery_method === 'pickup') {
+                        $deliveryData['pickup_date'] = $request->pickup_date;
+                        $deliveryData['pickup_time_slot'] = $request->pickup_time;
+                        $deliveryData['pickup_notes'] = $request->pickup_notes;
+                    } else {
+                        // Handle delivery address based on user selection
+                        if ($request->use_saved_address === 'true' && $request->delivery_address) {
+                            $deliveryData['delivery_address'] = $request->delivery_address;
+                        } else {
+                            // Construct address from individual fields
+                            $addressParts = [];
+                            if ($request->delivery_address) $addressParts[] = $request->delivery_address;
+                            if ($request->delivery_city) $addressParts[] = $request->delivery_city;
+                            if ($request->delivery_province) $addressParts[] = $request->delivery_province;
+                            if ($request->delivery_postal) $addressParts[] = $request->delivery_postal;
+                            
+                            $deliveryData['delivery_address'] = !empty($addressParts) 
+                                ? implode(', ', $addressParts) 
+                                : 'Customer will provide address';
+                        }
+                        $deliveryData['estimated_delivery_time'] = now()->addDays(3); // Default 3 days
+                    }
+                    
+                    DeliveryDetail::create($deliveryData);
                     
                     // Create order item
                     OrderItem::create([
@@ -83,6 +125,9 @@ class OrderController extends Controller
                     // Decrease post quantity
                     $post->quantity -= $quantity;
                     $post->save();
+                    
+                    // Increment orders count for deals tracking
+                    $post->incrementOrders();
                     
                     DB::commit();
                     
@@ -180,8 +225,8 @@ class OrderController extends Controller
                             return $item->quantity * $item->price;
                         });
                         
-                        // Create an order for this seller
-                        $order = Order::create([
+                        // Prepare order data (simplified)
+                        $orderData = [
                             'seller_id' => $sellerId,
                             'buyer_id' => Auth::id(),
                             'post_id' => $firstItem->product->post->id,
@@ -189,7 +234,47 @@ class OrderController extends Controller
                             'status' => 'pending',
                             'total_amount' => $totalAmount,
                             'receipt_image' => $receiptPath,
-                        ]);
+                        ];
+                        
+                        // Create an order for this seller
+                        $order = Order::create($orderData);
+                        
+                        // Create delivery details
+                        $deliveryMethodId = DeliveryMethod::where('name', $request->delivery_method ?? 'delivery')->first()->id;
+                        $deliveryFee = $request->delivery_method === 'pickup' ? 0 : 35.00;
+                        
+                        $deliveryData = [
+                            'order_id' => $order->id,
+                            'delivery_method_id' => $deliveryMethodId,
+                            'status' => 'pending',
+                            'delivery_fee' => $deliveryFee,
+                        ];
+                        
+                        // Add method-specific fields
+                        if ($request->delivery_method === 'pickup') {
+                            $deliveryData['pickup_date'] = $request->pickup_date;
+                            $deliveryData['pickup_time_slot'] = $request->pickup_time;
+                            $deliveryData['pickup_notes'] = $request->pickup_notes;
+                        } else {
+                            // Handle delivery address based on user selection
+                            if ($request->use_saved_address === 'true' && $request->delivery_address) {
+                                $deliveryData['delivery_address'] = $request->delivery_address;
+                            } else {
+                                // Construct address from individual fields
+                                $addressParts = [];
+                                if ($request->delivery_address) $addressParts[] = $request->delivery_address;
+                                if ($request->delivery_city) $addressParts[] = $request->delivery_city;
+                                if ($request->delivery_province) $addressParts[] = $request->delivery_province;
+                                if ($request->delivery_postal) $addressParts[] = $request->delivery_postal;
+                                
+                                $deliveryData['delivery_address'] = !empty($addressParts) 
+                                    ? implode(', ', $addressParts) 
+                                    : 'Customer will provide address';
+                            }
+                            $deliveryData['estimated_delivery_time'] = now()->addDays(3); // Default 3 days
+                        }
+                        
+                        DeliveryDetail::create($deliveryData);
                         
                         // Create order items for each product
                         foreach ($items as $item) {
@@ -200,6 +285,9 @@ class OrderController extends Controller
                                 'quantity' => $item->quantity,
                                 'price' => $item->price,
                             ]);
+                            
+                            // Increment orders count for deals tracking
+                            $item->product->post->incrementOrders();
                             
                             // No need to update stock here since it was already decreased when adding to cart
                         }
@@ -255,7 +343,7 @@ class OrderController extends Controller
 
     public function index()
     {
-        $orders = Auth::user()->boughtOrders()->with(['items.post', 'seller'])->get();
+        $orders = Auth::user()->boughtOrders()->with(['items.post', 'seller', 'deliveryDetail.deliveryMethod'])->get();
         return view('orders.index', ['orders' => $orders]);
     }
 
@@ -274,7 +362,7 @@ class OrderController extends Controller
                 $quantity = $request->quantity;
                 
                 // Find the post
-                $post = Post::with('user')->findOrFail($post_id);
+                $post = Post::with(['user.shop'])->findOrFail($post_id);
                 
                 // Check if user is trying to buy their own product
                 if ($post->user_id === Auth::id()) {
@@ -287,6 +375,26 @@ class OrderController extends Controller
                     return redirect()->route('posts.show', $post->id)
                         ->with('error', 'The requested quantity exceeds available stock.');
                 }
+                
+                // Get seller shop information
+                $shop = $post->user->shop;
+                \Log::info('Direct checkout shop data:', [
+                    'user_id' => $post->user_id,
+                    'shop_exists' => $shop ? 'yes' : 'no',
+                    'shop_name' => $shop ? $shop->shop_name : 'N/A',
+                    'shop_address' => $shop ? $shop->shop_address : 'N/A',
+                    'post_location' => $post->location,
+                    'user_location' => $post->user->location
+                ]);
+                
+                $sellerShopLocations = [
+                    $post->user_id => [
+                        'shop_name' => $shop ? $shop->shop_name : $post->user->username . "'s Shop",
+                        'shop_address' => $shop ? $shop->shop_address : ($post->location ?? $post->user->location ?? 'Location not specified'),
+                        'contact_number' => $post->user->number,
+                        'username' => $post->user->username
+                    ]
+                ];
                 
                 // Create a temporary cart-like structure for the view
                 $cartItem = new \stdClass();
@@ -306,7 +414,9 @@ class OrderController extends Controller
                     'totalPrice' => $totalPrice,
                     'post' => $post,
                     'directCheckout' => true,
-                    'quantity' => $quantity
+                    'quantity' => $quantity,
+                    'userLocation' => Auth::user()->location,
+                    'sellerShopLocations' => $sellerShopLocations
                 ]);
             } catch (\Exception $e) {
                 \Log::error('Direct checkout error: ' . $e->getMessage());
@@ -323,7 +433,33 @@ class OrderController extends Controller
         }
         
         // Load products and posts with eager loading to reduce database queries
-        $cart->load(['items.product.post.user', 'items.product.user.shop']);
+        $cart->load(['items.product.post.user.shop', 'items.product.user']);
+        
+        // Get shop locations for all sellers in the cart
+        $sellerShopLocations = [];
+        foreach ($cart->items as $item) {
+            if ($item->product && $item->product->post && $item->product->post->user) {
+                $sellerId = $item->product->post->user->id;
+                if (!isset($sellerShopLocations[$sellerId])) {
+                    $shop = $item->product->post->user->shop;
+                    \Log::info('Cart checkout shop data:', [
+                        'seller_id' => $sellerId,
+                        'shop_exists' => $shop ? 'yes' : 'no',
+                        'shop_name' => $shop ? $shop->shop_name : 'N/A',
+                        'shop_address' => $shop ? $shop->shop_address : 'N/A',
+                        'post_location' => $item->product->post->location,
+                        'user_location' => $item->product->post->user->location
+                    ]);
+                    
+                    $sellerShopLocations[$sellerId] = [
+                        'shop_name' => $shop ? $shop->shop_name : $item->product->post->user->username . "'s Shop",
+                        'shop_address' => $shop ? $shop->shop_address : ($item->product->post->location ?? $item->product->post->user->location ?? 'Location not specified'),
+                        'contact_number' => $item->product->post->user->number,
+                        'username' => $item->product->post->user->username
+                    ];
+                }
+            }
+        }
         
         // Check for missing or invalid products
         $validItems = 0;
@@ -343,7 +479,9 @@ class OrderController extends Controller
         return view('orders.checkout', [
             'cart' => $cart,
             'totalPrice' => $cart->total,
-            'directCheckout' => false
+            'directCheckout' => false,
+            'userLocation' => Auth::user()->location,
+            'sellerShopLocations' => $sellerShopLocations
         ]);
     }
 

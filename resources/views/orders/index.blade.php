@@ -22,10 +22,10 @@
                         </div>
                     </div>
                     <div class="stat-card" style="background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: flex; align-items: center;">
-                        <ion-icon name="time-outline" style="font-size: 40px; color: #517a5b; margin-right: 15px;"></ion-icon>
+                        <ion-icon name="cube-outline" style="font-size: 40px; color: #517a5b; margin-right: 15px;"></ion-icon>
                         <div class="stat-info">
                             <h3 style="font-size: 24px; margin: 0;">{{ $orders->where('status', 'delivering')->count() }}</h3>
-                            <p style="margin: 0; color: #666;">In Transit</p>
+                            <p style="margin: 0; color: #666;">Ready</p>
                         </div>
                     </div>
                     <div class="stat-card" style="background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: flex; align-items: center;">
@@ -50,8 +50,8 @@
                         <span class="badge" style="background: #517a5b; color: white; border-radius: 50%; width: 20px; height: 20px; display: inline-flex; justify-content: center; align-items: center; margin-left: 5px; font-size: 12px;">{{ $orders->whereIn('status', ['processing', 'approved'])->count() }}</span>
                     </button>
                     <button class="tab-btn" data-tab="to-ship" style="background: #f1f1f1; color: #333; border: none; padding: 10px 20px; border-radius: 8px; display: flex; align-items: center; white-space: nowrap; cursor: pointer;">
-                        <ion-icon name="airplane-outline" style="margin-right: 5px;"></ion-icon>
-                        Delivering
+                        <ion-icon name="cube-outline" style="margin-right: 5px;"></ion-icon>
+                        Ready
                         <span class="badge" style="background: #517a5b; color: white; border-radius: 50%; width: 20px; height: 20px; display: inline-flex; justify-content: center; align-items: center; margin-left: 5px; font-size: 12px;">{{ $orders->where('status', 'delivering')->count() }}</span>
                     </button>
                     <button class="tab-btn" data-tab="to-receive" style="background: #f1f1f1; color: #333; border: none; padding: 10px 20px; border-radius: 8px; display: flex; align-items: center; white-space: nowrap; cursor: pointer;">
@@ -84,7 +84,30 @@
                                                         <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
                                                         <p style="margin: 5px 0; color: #666;">Quantity: {{ $item->quantity }}kg</p>
                                                         <p style="margin: 5px 0; color: #666;">Price: ₱{{ $item->price }}.00 per kg</p>
-                                                        <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
+                                                        
+                                                        @if($order->deliveryDetail && $order->deliveryDetail->deliveryMethod->isPickup())
+                                                            <!-- Pickup Information -->
+                                                            <div style="background: #f8f9fa; padding: 10px; border-radius: 8px; margin: 10px 0;">
+                                                                <p style="margin: 0; color: #517a5b; font-weight: 600; font-size: 14px;">
+                                                                    <ion-icon name="location-outline" style="margin-right: 5px;"></ion-icon>
+                                                                    Pickup Details
+                                                                </p>
+                                                                @if($order->deliveryDetail->pickup_date)
+                                                                    <p style="margin: 5px 0; color: #666; font-size: 14px;">Date: {{ \Carbon\Carbon::parse($order->deliveryDetail->pickup_date)->format('M d, Y') }}</p>
+                                                                @endif
+                                                                @if($order->deliveryDetail->pickup_time_slot)
+                                                                    <p style="margin: 5px 0; color: #666; font-size: 14px;">Time: {{ $order->deliveryDetail->pickup_time_slot }}</p>
+                                                                @endif
+                                                                @if($order->deliveryDetail->pickup_notes)
+                                                                    <p style="margin: 5px 0; color: #666; font-size: 14px;">Notes: {{ $order->deliveryDetail->pickup_notes }}</p>
+                                                                @endif
+                                                            </div>
+                                                        @elseif($order->deliveryDetail)
+                                                            <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱{{ $order->deliveryDetail->delivery_fee }}.00</p>
+                                                        @else
+                                                            <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
+                                                        @endif
+                                                        
                                                         <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Subtotal: ₱{{ $item->quantity * $item->price }}.00</p>
                                                     </div>
                                                 </div>
@@ -143,7 +166,29 @@
                                                         <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
                                                         <p style="margin: 5px 0; color: #666;">Quantity: {{ $item->quantity }}kg</p>
                                                         <p style="margin: 5px 0; color: #666;">Price: ₱{{ $item->price }}.00 per kg</p>
-                                                        <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
+                                                        
+                                                        @if($order->deliveryDetail && $order->deliveryDetail->deliveryMethod->isPickup())
+                                                            <!-- Pickup Information -->
+                                                            <div style="background: #fff3cd; padding: 10px; border-radius: 8px; margin: 10px 0; border-left: 4px solid #ffc107;">
+                                                                <p style="margin: 0; color: #856404; font-weight: 600; font-size: 14px;">
+                                                                    <ion-icon name="bag-handle-outline" style="margin-right: 5px;"></ion-icon>
+                                                                    Processing Pickup Order
+                                                                </p>
+                                                                @if($order->deliveryDetail->pickup_date)
+                                                                    <p style="margin: 5px 0; color: #666; font-size: 14px;">Pickup Date: {{ \Carbon\Carbon::parse($order->deliveryDetail->pickup_date)->format('M d, Y') }}</p>
+                                                                @endif
+                                                                @if($order->deliveryDetail->pickup_time_slot)
+                                                                    <p style="margin: 5px 0; color: #666; font-size: 14px;">Time Slot: {{ $order->deliveryDetail->pickup_time_slot }}</p>
+                                                                @endif
+                                                                @if($order->deliveryDetail->pickup_notes)
+                                                                    <p style="margin: 5px 0; color: #666; font-size: 14px;">Notes: {{ $order->deliveryDetail->pickup_notes }}</p>
+                                                                @endif
+                                                                <p style="margin: 5px 0; color: #666; font-size: 14px;">Pickup Fee: ₱{{ $order->deliveryDetail->delivery_fee }}.00</p>
+                                                            </div>
+                                                        @else
+                                                            <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱{{ $order->deliveryDetail ? $order->deliveryDetail->delivery_fee : '35' }}.00</p>
+                                                        @endif
+                                                        
                                                         <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Subtotal: ₱{{ $item->quantity * $item->price }}.00</p>
                                                     </div>
                                                 </div>
@@ -202,7 +247,39 @@
                                                         <p style="margin: 5px 0; color: #666;">Order Date: {{ $order->created_at->format('M d, Y') }}</p>
                                                         <p style="margin: 5px 0; color: #666;">Quantity: {{ $item->quantity }}kg</p>
                                                         <p style="margin: 5px 0; color: #666;">Price: ₱{{ $item->price }}.00 per kg</p>
-                                                        <p style="margin: 5px 0; color: #666;">Delivery Fee: ₱35.00</p>
+                                                        
+                                                        @if($order->deliveryDetail && $order->deliveryDetail->deliveryMethod->isPickup())
+                                                            <!-- Pickup Information -->
+                                                            <div style="background: #e8f5e8; padding: 10px; border-radius: 8px; margin: 10px 0; border-left: 4px solid #28a745;">
+                                                                <p style="margin: 0; color: #28a745; font-weight: 600; font-size: 14px;">
+                                                                    <ion-icon name="bag-handle-outline" style="margin-right: 5px;"></ion-icon>
+                                                                    Ready for Pickup
+                                                                </p>
+                                                                @if($order->deliveryDetail->pickup_date)
+                                                                    <p style="margin: 5px 0; color: #666; font-size: 14px;">Pickup Date: {{ \Carbon\Carbon::parse($order->deliveryDetail->pickup_date)->format('M d, Y') }}</p>
+                                                                @endif
+                                                                @if($order->deliveryDetail->pickup_time_slot)
+                                                                    <p style="margin: 5px 0; color: #666; font-size: 14px;">Time Slot: {{ $order->deliveryDetail->pickup_time_slot }}</p>
+                                                                @endif
+                                                                @if($order->deliveryDetail->pickup_notes)
+                                                                    <p style="margin: 5px 0; color: #666; font-size: 14px;">Notes: {{ $order->deliveryDetail->pickup_notes }}</p>
+                                                                @endif
+                                                                <p style="margin: 5px 0; color: #666; font-size: 14px;">Pickup Fee: ₱{{ $order->deliveryDetail->delivery_fee }}.00</p>
+                                                            </div>
+                                                        @else
+                                                            <!-- Delivery Information -->
+                                                            <div style="background: #e3f2fd; padding: 10px; border-radius: 8px; margin: 10px 0; border-left: 4px solid #0d6efd;">
+                                                                <p style="margin: 0; color: #0d6efd; font-weight: 600; font-size: 14px;">
+                                                                    <ion-icon name="car-outline" style="margin-right: 5px;"></ion-icon>
+                                                                    Out for Delivery
+                                                                </p>
+                                                                <p style="margin: 5px 0; color: #666; font-size: 14px;">Delivery Fee: ₱{{ $order->deliveryDetail ? $order->deliveryDetail->delivery_fee : '35' }}.00</p>
+                                                                @if($order->deliveryDetail && $order->deliveryDetail->delivery_address)
+                                                                    <p style="margin: 5px 0; color: #666; font-size: 14px;">Address: {{ $order->deliveryDetail->delivery_address }}</p>
+                                                                @endif
+                                                            </div>
+                                                        @endif
+                                                        
                                                         <p style="margin: 10px 0; font-weight: 600; color: #517a5b;">Subtotal: ₱{{ $item->quantity * $item->price }}.00</p>
                                                     </div>
                                                 </div>
@@ -224,22 +301,34 @@
                                             </div>
                                         @endif
                                         <div class="order-status" style="margin-top: 10px;">
-                                            <span class="status-badge delivering" style="background: #0d6efd; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Delivering</span>
+                                            @if($order->deliveryDetail && $order->deliveryDetail->deliveryMethod->isPickup())
+                                                <span class="status-badge ready-pickup" style="background: #28a745; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Ready for Pickup</span>
+                                            @else
+                                                <span class="status-badge delivering" style="background: #0d6efd; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Delivering</span>
+                                            @endif
                                         </div>
                                         <div class="order-footer" style="background: #f8f9fa; padding: 15px; position: relative;">
-                                            <button class="btn btn-success confirm-receipt-btn" 
-                                                    data-order-id="{{ $order->id }}" 
-                                                    style="background: #198754; color: white; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer;">
-                                                <i class="bi bi-check-circle"></i> Receive Delivery
-                                            </button>
+                                            @if($order->deliveryDetail && $order->deliveryDetail->deliveryMethod->isPickup())
+                                                <button class="btn btn-success confirm-pickup-btn" 
+                                                        data-order-id="{{ $order->id }}" 
+                                                        style="background: #28a745; color: white; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer;">
+                                                    <i class="bi bi-bag-check"></i> Confirm Pickup
+                                                </button>
+                                            @else
+                                                <button class="btn btn-success confirm-receipt-btn" 
+                                                        data-order-id="{{ $order->id }}" 
+                                                        style="background: #198754; color: white; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer;">
+                                                    <i class="bi bi-check-circle"></i> Receive Delivery
+                                                </button>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
                             @endforeach
                         @else
                             <div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
-                                <ion-icon name="airplane-outline" style="font-size: 60px; color: #ccc;"></ion-icon>
-                                <p style="font-size: 18px; color: #666; margin-top: 10px;">No orders in transit</p>
+                                <ion-icon name="cube-outline" style="font-size: 60px; color: #ccc;"></ion-icon>
+                                <p style="font-size: 18px; color: #666; margin-top: 10px;">No orders ready</p>
                                 <a href="{{ route('posts') }}" style="background: #517a5b; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; display: inline-block; margin-top: 15px;">Start Shopping</a>
                             </div>
                         @endif
@@ -283,7 +372,11 @@
                                             </div>
                                         @endif
                                         <div class="order-status" style="margin-top: 10px;">
-                                            <span class="status-badge delivered" style="background: #6610f2; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Delivered</span>
+                                            @if($order->deliveryDetail && $order->deliveryDetail->deliveryMethod->isPickup())
+                                                <span class="status-badge picked-up" style="background: #28a745; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Picked Up</span>
+                                            @else
+                                                <span class="status-badge delivered" style="background: #6610f2; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Delivered</span>
+                                            @endif
                                         </div>
                                     </div>
                                     <div class="order-footer" style="background: #f8f9fa; padding: 15px; position: relative;">
@@ -298,7 +391,7 @@
                         @else
                             <div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
                                 <ion-icon name="checkbox-outline" style="font-size: 60px; color: #ccc;"></ion-icon>
-                                <p style="font-size: 18px; color: #666; margin-top: 10px;">No delivered orders</p>
+                                <p style="font-size: 18px; color: #666; margin-top: 10px;">No delivered/picked up orders</p>
                                 <a href="{{ route('posts') }}" style="background: #517a5b; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; display: inline-block; margin-top: 15px;">Start Shopping</a>
                             </div>
                         @endif
@@ -698,6 +791,65 @@
                                     text: 'Something went wrong. Please try again.',
                                     icon: 'error',
                                     confirmButtonColor: '#198754'
+                                });
+                            });
+                        }
+                    });
+                });
+            });
+
+            // Add event listeners for confirm pickup buttons
+            document.querySelectorAll('.confirm-pickup-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const orderId = this.getAttribute('data-order-id');
+                    
+                    Swal.fire({
+                        title: 'Confirm Pickup?',
+                        text: "Have you picked up this order?",
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#28a745',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, I picked it up',
+                        cancelButtonText: 'No, cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Send AJAX request to update order status to delivered
+                            fetch(`/orders/${orderId}/update-status`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                },
+                                body: JSON.stringify({ status: 'delivered' })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire({
+                                        title: 'Success!',
+                                        text: 'Order has been marked as picked up.',
+                                        icon: 'success',
+                                        confirmButtonColor: '#28a745'
+                                    }).then(() => {
+                                        window.location.reload();
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        title: 'Error!',
+                                        text: data.message || 'Something went wrong. Please try again.',
+                                        icon: 'error',
+                                        confirmButtonColor: '#28a745'
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: 'Something went wrong. Please try again.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#28a745'
                                 });
                             });
                         }
