@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Shop;
 use App\Models\Order;
+use App\Models\PaymentDistribution;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -482,6 +483,11 @@ class ShopController extends Controller
             
             \Log::info("Getting earnings chart for user: {$userId}, period: {$period}");
             
+            // Debug: Check if there are any payment distributions for this user
+            $totalPaymentCount = PaymentDistribution::where('seller_id', $userId)->count();
+            $completedPaymentCount = PaymentDistribution::where('seller_id', $userId)->where('status', 'completed')->count();
+            \Log::info("Total payments for user: {$totalPaymentCount}, Completed: {$completedPaymentCount}");
+            
             // Calculate date range based on period
             $startDate = match($period) {
                 '7d' => now()->subDays(7),
@@ -493,20 +499,25 @@ class ShopController extends Controller
 
             \Log::info("Date range: {$startDate} to " . now());
 
-            // Get orders data with proper date formatting
-            $orders = Order::where('seller_id', $userId)
+            // Get payment distribution data with proper date formatting
+            $payments = PaymentDistribution::where('seller_id', $userId)
                 ->where('status', 'completed')
                 ->where('created_at', '>=', $startDate)
-                ->selectRaw('DATE(created_at) as date, SUM(total_amount) as daily_total, COUNT(*) as order_count')
+                ->selectRaw('DATE(created_at) as date, SUM(order_amount) as daily_total, SUM(seller_amount) as daily_net, SUM(platform_fee) as daily_commission, COUNT(*) as payment_count')
                 ->groupBy('date')
                 ->orderBy('date')
                 ->get();
 
-            \Log::info("Found {$orders->count()} order records");
+            \Log::info("Found {$payments->count()} payment records");
+            
+            // Debug: Log the actual payment data
+            foreach ($payments as $payment) {
+                \Log::info("Payment data: date={$payment->date}, total={$payment->daily_total}, net={$payment->daily_net}, commission={$payment->daily_commission}");
+            }
 
-            // If no real orders exist, generate some sample data for testing
-            if ($orders->isEmpty()) {
-                \Log::info("No orders found, generating sample data");
+            // If no real payments exist, generate some sample data for testing
+            if ($payments->isEmpty()) {
+                \Log::info("No payments found, generating sample data");
                 return $this->generateSampleEarningsData($period, $startDate);
             }
 
@@ -521,25 +532,25 @@ class ShopController extends Controller
             // Format data for chart
             $chartData = [];
             foreach ($dateRange as $date) {
-                $orderData = $orders->firstWhere('date', $date);
-                $totalEarnings = $orderData ? $orderData->daily_total : 0;
-                $commission = $totalEarnings * 0.1; // 10% commission
-                $netEarnings = $totalEarnings - $commission;
+                $paymentData = $payments->firstWhere('date', $date);
+                $totalEarnings = $paymentData ? $paymentData->daily_total : 0;
+                $netEarnings = $paymentData ? $paymentData->daily_net : 0;
+                $commission = $paymentData ? $paymentData->daily_commission : 0;
 
                 $chartData[] = [
                     'date' => $date,
                     'totalEarnings' => (float) $totalEarnings,
                     'netEarnings' => (float) $netEarnings,
                     'commission' => (float) $commission,
-                    'orderCount' => $orderData ? $orderData->order_count : 0
+                    'paymentCount' => $paymentData ? $paymentData->payment_count : 0
                 ];
             }
 
             $summary = [
-                'totalEarnings' => (float) $orders->sum('daily_total'),
-                'netEarnings' => (float) ($orders->sum('daily_total') * 0.9),
-                'commission' => (float) ($orders->sum('daily_total') * 0.1),
-                'totalOrders' => (int) $orders->sum('order_count')
+                'totalEarnings' => (float) $payments->sum('daily_total'),
+                'netEarnings' => (float) $payments->sum('daily_net'),
+                'commission' => (float) $payments->sum('daily_commission'),
+                'totalPayments' => (int) $payments->sum('payment_count')
             ];
 
             \Log::info("Returning chart data with " . count($chartData) . " data points");
@@ -581,7 +592,9 @@ class ShopController extends Controller
 
         $chartData = [];
         $totalSampleEarnings = 0;
-        $totalSampleOrders = 0;
+        $totalSamplePayments = 0;
+        $totalSampleNet = 0;
+        $totalSampleCommission = 0;
 
         for ($i = $days - 1; $i >= 0; $i--) {
             $date = now()->subDays($i);
@@ -593,25 +606,27 @@ class ShopController extends Controller
             
             $commission = $totalEarnings * 0.1;
             $netEarnings = $totalEarnings - $commission;
-            $orderCount = $totalEarnings > 0 ? rand(1, 5) : 0;
+            $paymentCount = $totalEarnings > 0 ? rand(1, 5) : 0;
             
             $chartData[] = [
                 'date' => $date->format('Y-m-d'),
                 'totalEarnings' => (float) $totalEarnings,
                 'netEarnings' => (float) $netEarnings,
                 'commission' => (float) $commission,
-                'orderCount' => $orderCount
+                'paymentCount' => $paymentCount
             ];
 
             $totalSampleEarnings += $totalEarnings;
-            $totalSampleOrders += $orderCount;
+            $totalSampleNet += $netEarnings;
+            $totalSampleCommission += $commission;
+            $totalSamplePayments += $paymentCount;
         }
 
         $summary = [
             'totalEarnings' => (float) $totalSampleEarnings,
-            'netEarnings' => (float) ($totalSampleEarnings * 0.9),
-            'commission' => (float) ($totalSampleEarnings * 0.1),
-            'totalOrders' => $totalSampleOrders
+            'netEarnings' => (float) $totalSampleNet,
+            'commission' => (float) $totalSampleCommission,
+            'totalPayments' => $totalSamplePayments
         ];
 
         \Log::info("Generated sample data with total earnings: {$totalSampleEarnings}");
@@ -622,7 +637,7 @@ class ShopController extends Controller
             'period' => $period,
             'summary' => $summary,
             'hasRealData' => false,
-            'message' => 'Sample data generated for demonstration (no completed orders found)'
+            'message' => 'Sample data generated for demonstration (no completed payments found)'
         ]);
     }
 }

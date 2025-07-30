@@ -222,6 +222,21 @@ Route::middleware(['auth', 'verified'])->group(function() {
         return view('test-earnings-chart');
     });
 
+    // Debug route for payment distributions
+    Route::get('/debug-payments', function() {
+        $userId = Auth::id();
+        $payments = \App\Models\PaymentDistribution::where('seller_id', $userId)->get();
+        $orders = \App\Models\Order::where('seller_id', $userId)->where('status', 'completed')->get();
+        
+        return response()->json([
+            'user_id' => $userId,
+            'payment_distributions' => $payments,
+            'completed_orders' => $orders,
+            'payment_count' => $payments->count(),
+            'order_count' => $orders->count()
+        ]);
+    });
+
     // Cart Routes
     Route::middleware(['auth'])->group(function () {
         Route::get('/cart', [App\Http\Controllers\CartController::class, 'index'])->name('cart.index');
