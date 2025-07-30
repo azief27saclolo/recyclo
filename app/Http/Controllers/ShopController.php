@@ -470,4 +470,159 @@ class ShopController extends Controller
 
         return view('shops.show', compact('shop'));
     }
+
+    /**
+     * Get earnings chart data for the authenticated shop
+     */
+    public function getEarningsChart(Request $request)
+    {
+        try {
+            $period = $request->input('period', '30d');
+            $userId = Auth::id();
+            
+            \Log::info("Getting earnings chart for user: {$userId}, period: {$period}");
+            
+            // Calculate date range based on period
+            $startDate = match($period) {
+                '7d' => now()->subDays(7),
+                '30d' => now()->subDays(30),
+                '90d' => now()->subDays(90),
+                '1y' => now()->subYear(),
+                default => now()->subDays(30)
+            };
+
+            \Log::info("Date range: {$startDate} to " . now());
+
+            // Get orders data with proper date formatting
+            $orders = Order::where('seller_id', $userId)
+                ->where('status', 'completed')
+                ->where('created_at', '>=', $startDate)
+                ->selectRaw('DATE(created_at) as date, SUM(total_amount) as daily_total, COUNT(*) as order_count')
+                ->groupBy('date')
+                ->orderBy('date')
+                ->get();
+
+            \Log::info("Found {$orders->count()} order records");
+
+            // If no real orders exist, generate some sample data for testing
+            if ($orders->isEmpty()) {
+                \Log::info("No orders found, generating sample data");
+                return $this->generateSampleEarningsData($period, $startDate);
+            }
+
+            // Generate all dates in the range
+            $dateRange = [];
+            $current = $startDate->copy();
+            while ($current <= now()) {
+                $dateRange[] = $current->format('Y-m-d');
+                $current->addDay();
+            }
+
+            // Format data for chart
+            $chartData = [];
+            foreach ($dateRange as $date) {
+                $orderData = $orders->firstWhere('date', $date);
+                $totalEarnings = $orderData ? $orderData->daily_total : 0;
+                $commission = $totalEarnings * 0.1; // 10% commission
+                $netEarnings = $totalEarnings - $commission;
+
+                $chartData[] = [
+                    'date' => $date,
+                    'totalEarnings' => (float) $totalEarnings,
+                    'netEarnings' => (float) $netEarnings,
+                    'commission' => (float) $commission,
+                    'orderCount' => $orderData ? $orderData->order_count : 0
+                ];
+            }
+
+            $summary = [
+                'totalEarnings' => (float) $orders->sum('daily_total'),
+                'netEarnings' => (float) ($orders->sum('daily_total') * 0.9),
+                'commission' => (float) ($orders->sum('daily_total') * 0.1),
+                'totalOrders' => (int) $orders->sum('order_count')
+            ];
+
+            \Log::info("Returning chart data with " . count($chartData) . " data points");
+
+            return response()->json([
+                'success' => true,
+                'data' => $chartData,
+                'period' => $period,
+                'summary' => $summary,
+                'hasRealData' => true
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error fetching earnings chart data: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load earnings data',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Generate sample earnings data for testing when no real orders exist
+     */
+    private function generateSampleEarningsData($period, $startDate)
+    {
+        \Log::info("Generating sample earnings data for period: {$period}");
+        
+        $days = match($period) {
+            '7d' => 7,
+            '30d' => 30,
+            '90d' => 90,
+            '1y' => 365,
+            default => 30
+        };
+
+        $chartData = [];
+        $totalSampleEarnings = 0;
+        $totalSampleOrders = 0;
+
+        for ($i = $days - 1; $i >= 0; $i--) {
+            $date = now()->subDays($i);
+            
+            // Generate realistic sample data
+            $baseEarning = 200; // Base earning per day
+            $variance = rand(-100, 300); // Random variance
+            $totalEarnings = max(0, $baseEarning + $variance);
+            
+            $commission = $totalEarnings * 0.1;
+            $netEarnings = $totalEarnings - $commission;
+            $orderCount = $totalEarnings > 0 ? rand(1, 5) : 0;
+            
+            $chartData[] = [
+                'date' => $date->format('Y-m-d'),
+                'totalEarnings' => (float) $totalEarnings,
+                'netEarnings' => (float) $netEarnings,
+                'commission' => (float) $commission,
+                'orderCount' => $orderCount
+            ];
+
+            $totalSampleEarnings += $totalEarnings;
+            $totalSampleOrders += $orderCount;
+        }
+
+        $summary = [
+            'totalEarnings' => (float) $totalSampleEarnings,
+            'netEarnings' => (float) ($totalSampleEarnings * 0.9),
+            'commission' => (float) ($totalSampleEarnings * 0.1),
+            'totalOrders' => $totalSampleOrders
+        ];
+
+        \Log::info("Generated sample data with total earnings: {$totalSampleEarnings}");
+
+        return response()->json([
+            'success' => true,
+            'data' => $chartData,
+            'period' => $period,
+            'summary' => $summary,
+            'hasRealData' => false,
+            'message' => 'Sample data generated for demonstration (no completed orders found)'
+        ]);
+    }
 }
