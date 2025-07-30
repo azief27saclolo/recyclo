@@ -25,13 +25,13 @@
                         <ion-icon name="cube-outline" style="font-size: 40px; color: #517a5b; margin-right: 15px;"></ion-icon>
                         <div class="stat-info">
                             <h3 style="font-size: 24px; margin: 0;">{{ $orders->where('status', 'delivering')->count() }}</h3>
-                            <p style="margin: 0; color: #666;">Ready</p>
+                            <p style="margin: 0; color: #666;">Ready/Delivering</p>
                         </div>
                     </div>
                     <div class="stat-card" style="background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: flex; align-items: center;">
                         <ion-icon name="checkmark-circle-outline" style="font-size: 40px; color: #517a5b; margin-right: 15px;"></ion-icon>
                         <div class="stat-info">
-                            <h3 style="font-size: 24px; margin: 0;">{{ $orders->where('status', 'delivered')->count() }}</h3>
+                            <h3 style="font-size: 24px; margin: 0;">{{ $orders->where('status', 'completed')->count() }}</h3>
                             <p style="margin: 0; color: #666;">Completed</p>
                         </div>
                     </div>
@@ -51,13 +51,13 @@
                     </button>
                     <button class="tab-btn" data-tab="to-ship" style="background: #f1f1f1; color: #333; border: none; padding: 10px 20px; border-radius: 8px; display: flex; align-items: center; white-space: nowrap; cursor: pointer;">
                         <ion-icon name="cube-outline" style="margin-right: 5px;"></ion-icon>
-                        Ready
+                        Ready/Delivering
                         <span class="badge" style="background: #517a5b; color: white; border-radius: 50%; width: 20px; height: 20px; display: inline-flex; justify-content: center; align-items: center; margin-left: 5px; font-size: 12px;">{{ $orders->where('status', 'delivering')->count() }}</span>
                     </button>
                     <button class="tab-btn" data-tab="to-receive" style="background: #f1f1f1; color: #333; border: none; padding: 10px 20px; border-radius: 8px; display: flex; align-items: center; white-space: nowrap; cursor: pointer;">
                         <ion-icon name="checkbox-outline" style="margin-right: 5px;"></ion-icon>
-                        Delivered
-                        <span class="badge" style="background: #517a5b; color: white; border-radius: 50%; width: 20px; height: 20px; display: inline-flex; justify-content: center; align-items: center; margin-left: 5px; font-size: 12px;">{{ $orders->where('status', 'delivered')->count() }}</span>
+                        Awaiting Completion
+                        <span class="badge" style="background: #517a5b; color: white; border-radius: 50%; width: 20px; height: 20px; display: inline-flex; justify-content: center; align-items: center; margin-left: 5px; font-size: 12px;">{{ $orders->where('status', 'delivered')->filter(function($order) { return $order->deliveryDetail && $order->deliveryDetail->deliveryMethod->isDelivery(); })->count() }}</span>
                     </button>
                     <button class="tab-btn" data-tab="completed" style="background: #f1f1f1; color: #333; border: none; padding: 10px 20px; border-radius: 8px; display: flex; align-items: center; white-space: nowrap; cursor: pointer;">
                         <ion-icon name="checkmark-done-outline" style="margin-right: 5px;"></ion-icon>
@@ -231,7 +231,7 @@
                         @endif
                     </div>
 
-                    <!-- Delivering Orders Tab Content -->
+                    <!-- Ready/Delivering Orders Tab Content -->
                     <div class="order-cards" id="to-ship-orders" style="display: none; flex-direction: column; gap: 20px;">
                         @if($orders->where('status', 'delivering')->count() > 0)
                             @foreach($orders->where('status', 'delivering') as $order)
@@ -304,21 +304,21 @@
                                             @if($order->deliveryDetail && $order->deliveryDetail->deliveryMethod->isPickup())
                                                 <span class="status-badge ready-pickup" style="background: #28a745; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Ready for Pickup</span>
                                             @else
-                                                <span class="status-badge delivering" style="background: #0d6efd; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Delivering</span>
+                                                <span class="status-badge delivering" style="background: #0d6efd; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Out for Delivery</span>
                                             @endif
                                         </div>
                                         <div class="order-footer" style="background: #f8f9fa; padding: 15px; position: relative;">
                                             @if($order->deliveryDetail && $order->deliveryDetail->deliveryMethod->isPickup())
                                                 <button class="btn btn-success confirm-pickup-btn" 
                                                         data-order-id="{{ $order->id }}" 
-                                                        style="background: #28a745; color: white; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer;">
-                                                    <i class="bi bi-bag-check"></i> Confirm Pickup
+                                                        style="background: #28a745; color: white; padding: 8px 15px; border-radius: 10px; width: 100%; cursor: pointer; border: none;">
+                                                    <i class="bi bi-bag-check"></i> Complete Pickup
                                                 </button>
                                             @else
                                                 <button class="btn btn-success confirm-receipt-btn" 
                                                         data-order-id="{{ $order->id }}" 
-                                                        style="background: #198754; color: white; padding: 8px 15px; border-radius: 10px; flex: 1; cursor: pointer;">
-                                                    <i class="bi bi-check-circle"></i> Receive Delivery
+                                                        style="background: #198754; color: white; padding: 8px 15px; border-radius: 10px; width: 100%; cursor: pointer; border: none;">
+                                                    <i class="bi bi-check-circle"></i> Confirm Delivery
                                                 </button>
                                             @endif
                                         </div>
@@ -328,16 +328,21 @@
                         @else
                             <div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
                                 <ion-icon name="cube-outline" style="font-size: 60px; color: #ccc;"></ion-icon>
-                                <p style="font-size: 18px; color: #666; margin-top: 10px;">No orders ready</p>
+                                <p style="font-size: 18px; color: #666; margin-top: 10px;">No orders ready for pickup or delivery</p>
                                 <a href="{{ route('posts') }}" style="background: #517a5b; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; display: inline-block; margin-top: 15px;">Start Shopping</a>
                             </div>
                         @endif
                     </div>
 
-                    <!-- Delivered Orders Tab Content -->
+                    <!-- Delivered Orders Awaiting Completion Tab Content (Only for Delivery Orders) -->
                     <div class="order-cards" id="to-receive-orders" style="display: none; flex-direction: column; gap: 20px;">
-                        @if($orders->where('status', 'delivered')->count() > 0)
-                            @foreach($orders->where('status', 'delivered') as $order)
+                        @php
+                            $deliveredDeliveryOrders = $orders->where('status', 'delivered')->filter(function($order) {
+                                return $order->deliveryDetail && $order->deliveryDetail->deliveryMethod->isDelivery();
+                            });
+                        @endphp
+                        @if($deliveredDeliveryOrders->count() > 0)
+                            @foreach($deliveredDeliveryOrders as $order)
                                 <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; width: 100%;">
                                     <div class="order-header" style="padding: 15px;">
                                         @if($order->items->count() > 0)
@@ -372,11 +377,7 @@
                                             </div>
                                         @endif
                                         <div class="order-status" style="margin-top: 10px;">
-                                            @if($order->deliveryDetail && $order->deliveryDetail->deliveryMethod->isPickup())
-                                                <span class="status-badge picked-up" style="background: #28a745; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Picked Up</span>
-                                            @else
-                                                <span class="status-badge delivered" style="background: #6610f2; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Delivered</span>
-                                            @endif
+                                            <span class="status-badge delivered" style="background: #6610f2; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block;">Delivered</span>
                                         </div>
                                     </div>
                                     <div class="order-footer" style="background: #f8f9fa; padding: 15px; position: relative;">
@@ -391,7 +392,7 @@
                         @else
                             <div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
                                 <ion-icon name="checkbox-outline" style="font-size: 60px; color: #ccc;"></ion-icon>
-                                <p style="font-size: 18px; color: #666; margin-top: 10px;">No delivered/picked up orders</p>
+                                <p style="font-size: 18px; color: #666; margin-top: 10px;">No delivered orders awaiting completion</p>
                                 <a href="{{ route('posts') }}" style="background: #517a5b; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; display: inline-block; margin-top: 15px;">Start Shopping</a>
                             </div>
                         @endif
@@ -814,21 +815,21 @@
                         cancelButtonText: 'No, cancel'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            // Send AJAX request to update order status to delivered
+                            // Send AJAX request to update order status to completed (for pickup orders)
                             fetch(`/orders/${orderId}/update-status`, {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
                                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                                 },
-                                body: JSON.stringify({ status: 'delivered' })
+                                body: JSON.stringify({ status: 'completed' })
                             })
                             .then(response => response.json())
                             .then(data => {
                                 if (data.success) {
                                     Swal.fire({
                                         title: 'Success!',
-                                        text: 'Order has been marked as picked up.',
+                                        text: 'Order has been completed! Thank you for your purchase.',
                                         icon: 'success',
                                         confirmButtonColor: '#28a745'
                                     }).then(() => {
