@@ -214,6 +214,14 @@ Route::middleware(['auth', 'verified'])->group(function() {
     Route::get('/shop/orders', [ShopController::class, 'getOrders'])->name('shop.orders');
     Route::get('/shop/orders/{order}', [ShopController::class, 'getOrderDetails'])->name('shop.orders.details');
 
+    // Add earnings chart API route
+    Route::get('/shop/earnings-chart', [ShopController::class, 'getEarningsChart'])->name('shop.earnings.chart');
+
+    // Test route for earnings chart
+    Route::get('/test-earnings-chart', function() {
+        return view('test-earnings-chart');
+    });
+
     // Cart Routes
     Route::middleware(['auth'])->group(function () {
         Route::get('/cart', [App\Http\Controllers\CartController::class, 'index'])->name('cart.index');
