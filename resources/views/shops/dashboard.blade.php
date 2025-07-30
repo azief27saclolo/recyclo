@@ -719,52 +719,74 @@
             box-shadow: 0 4px 15px rgba(81, 122, 91, 0.2);
         }
 
-        /* Earnings Modal Styles */
+        /* Modern Earnings Modal Styles */
         .earnings-summary-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
         }
 
         .earnings-summary-card {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 28px;
             display: flex;
             align-items: center;
-            gap: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
+            gap: 24px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .earnings-summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(81, 122, 91, 0.02) 0%, rgba(81, 122, 91, 0.05) 100%);
+            z-index: -1;
         }
 
         .earnings-summary-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            border-color: rgba(81, 122, 91, 0.3);
         }
 
         .earnings-summary-card .card-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
+            width: 72px;
+            height: 72px;
+            border-radius: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 28px;
+            color: white;
+            position: relative;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease;
+        }
+
+        .earnings-summary-card:hover .card-icon {
+            transform: scale(1.1) rotate(5deg);
         }
 
         .total-earnings .card-icon {
-            background: linear-gradient(135deg, #517A5B 0%, #3a5c42 100%);
-            color: white;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
         }
 
         .net-earnings .card-icon {
-            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-            color: white;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
         }
 
         .commission-paid .card-icon {
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-            color: white;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
         }
 
         .earnings-summary-card .card-content {
@@ -773,50 +795,269 @@
 
         .earnings-summary-card h3 {
             margin: 0;
-            font-size: 16px;
-            color: #666;
+            font-size: 13px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
         }
 
         .earnings-summary-card .amount {
-            margin: 5px 0;
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0;
+            line-height: 1.2;
         }
 
         .earnings-summary-card .label {
             font-size: 12px;
-            color: #888;
+            color: #94a3b8;
+            margin: 4px 0 0 0;
+            font-weight: 500;
         }
 
         .recent-earnings {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 32px;
+            margin-top: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
 
         .recent-earnings h3 {
-            margin: 0 0 20px 0;
-            color: #333;
+            margin: 0 0 24px 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .recent-earnings h3::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: linear-gradient(135deg, #10b981, #3b82f6);
+            border-radius: 50%;
         }
 
         .earnings-table {
             width: 100%;
             border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
         .earnings-table th,
         .earnings-table td {
-            padding: 12px;
+            padding: 16px 20px;
             text-align: left;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #f1f5f9;
         }
 
         .earnings-table th {
-            background: #f8f9fa;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
             font-weight: 600;
-            color: #666;
+            color: #475569;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .earnings-table tr:hover {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            transform: scale(1.01);
+        }
+
+        .table-responsive {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Modern Chart Section Styles */
+        .chart-section {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            padding: 32px;
+            margin: 40px 0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #10b981, #3b82f6, #f59e0b);
+            border-radius: 24px 24px 0 0;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .chart-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chart-title::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: linear-gradient(135deg, #10b981, #3b82f6);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.2); }
+        }
+
+        .period-selector {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .period-selector select {
+            appearance: none;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px 40px 12px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 140px;
+        }
+
+        .period-selector select:hover {
+            border-color: #517A5B;
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(81, 122, 91, 0.2);
+        }
+
+        .period-selector select:focus {
+            outline: none;
+            border-color: #517A5B;
+            box-shadow: 0 0 0 4px rgba(81, 122, 91, 0.1);
+        }
+
+        .period-selector::after {
+            content: '▼';
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            pointer-events: none;
+            font-size: 12px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 420px;
+            background: linear-gradient(135deg, #fafbfc 0%, #f1f5f9 100%);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Chart loading animation */
+        .chart-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            z-index: 10;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #517A5B;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Modern Modal Enhancements */
+        .modal-header .close:hover {
+            color: #517A5B;
+            transform: scale(1.1) rotate(90deg);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .chart-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            
+            .chart-title {
+                font-size: 20px;
+            }
+            
+            .earnings-summary-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .chart-container {
+                height: 300px;
+                padding: 16px;
+            }
+            
+            .chart-section {
+                padding: 20px;
+            }
         }
 
         .earnings-table tr:hover {
@@ -3671,15 +3912,15 @@
         }
     </script>
 
-    <!-- Earnings Modal -->
+    <!-- Modern Earnings Modal -->
     <div id="earningsModal" class="modal">
-        <div class="modal-content" style="max-width: 1000px;">
-            <div class="modal-header">
-                <h2 class="modal-title">Earnings Overview</h2>
-                <span class="close">&times;</span>
+        <div class="modal-content" style="max-width: 1200px; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border: none; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);">
+            <div class="modal-header" style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px 20px 0 0;">
+                <h2 class="modal-title" style="font-size: 28px; font-weight: 800; background: linear-gradient(135deg, #1e293b 0%, #517A5B 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">💰 Earnings Dashboard</h2>
+                <span class="close" style="font-size: 28px; color: #64748b; transition: all 0.3s ease;">&times;</span>
             </div>
-            <div class="modal-body">
-                <!-- Earnings Summary Cards -->
+            <div class="modal-body" style="padding: 40px;">
+                <!-- Modern Earnings Summary Cards -->
                 <div class="earnings-summary-grid">
                     <div class="earnings-summary-card total-earnings" id="totalEarningsCard" style="cursor: pointer;">
                         <div class="card-icon">
@@ -3750,25 +3991,31 @@
                     </div>
                 </div>
 
-                <!-- Chart Section -->
-                <div style="margin: 30px 0;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h3>Earnings Trend</h3>
-                        <select id="chartPeriod" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; background: white;">
-                            <option value="7d">Last 7 Days</option>
-                            <option value="30d" selected>Last 30 Days</option>
-                            <option value="90d">Last 90 Days</option>
-                            <option value="1y">Last Year</option>
-                        </select>
+                <!-- Modern Chart Section -->
+                <div class="chart-section">
+                    <div class="chart-header">
+                        <h3 class="chart-title">📈 Earnings Trend</h3>
+                        <div class="period-selector">
+                            <select id="chartPeriod">
+                                <option value="7d">Last 7 Days</option>
+                                <option value="30d" selected>Last 30 Days</option>
+                                <option value="90d">Last 90 Days</option>
+                                <option value="1y">Last Year</option>
+                            </select>
+                        </div>
                     </div>
-                    <div style="position: relative; height: 400px; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <div class="chart-container">
+                        <div class="chart-loading" id="chartLoading" style="display: none;">
+                            <div class="loading-spinner"></div>
+                            <div class="loading-text">Loading earnings data...</div>
+                        </div>
                         <canvas id="earningsChart"></canvas>
                     </div>
                 </div>
 
-                <!-- Recent Earnings Table -->
+                <!-- Modern Recent Earnings Table -->
                 <div class="recent-earnings">
-                    <h3>Recent Earnings</h3>
+                    <h3>💳 Recent Transactions</h3>
                     <div class="table-responsive">
                         <table class="earnings-table">
                             <thead>
@@ -3790,16 +4037,18 @@
                                 @endphp
                                 
                                 @forelse($recentOrders as $order)
-                                    <tr>
-                                        <td>{{ $order->created_at->format('M d, Y') }}</td>
-                                        <td>#{{ $order->id }}</td>
-                                        <td>₱{{ number_format($order->total_amount, 2) }}</td>
-                                        <td>₱{{ number_format($order->total_amount * 0.1, 2) }}</td>
-                                        <td>₱{{ number_format($order->total_amount * 0.9, 2) }}</td>
+                                    <tr style="transition: all 0.3s ease;">
+                                        <td style="font-weight: 600; color: #475569;">{{ $order->created_at->format('M d, Y') }}</td>
+                                        <td style="font-family: monospace; color: #517A5B; font-weight: 600;">#{{ $order->id }}</td>
+                                        <td style="font-weight: 700; color: #1e293b;">₱{{ number_format($order->total_amount, 2) }}</td>
+                                        <td style="color: #f59e0b; font-weight: 600;">₱{{ number_format($order->total_amount * 0.1, 2) }}</td>
+                                        <td style="color: #10b981; font-weight: 700;">₱{{ number_format($order->total_amount * 0.9, 2) }}</td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="text-center">No recent earnings</td>
+                                        <td colspan="5" style="text-align: center; color: #94a3b8; font-style: italic; padding: 40px;">
+                                            🎯 No recent earnings to display
+                                        </td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -3813,7 +4062,7 @@
     <script>
         // ... existing script code ...
 
-        // Earnings Modal Functionality
+        // Modern Earnings Modal Functionality
         const earningsModal = document.getElementById('earningsModal');
         const earningsStatCard = document.getElementById('earningsStatCard');
         const earningsCloseBtn = earningsModal.querySelector('.close');
@@ -3822,37 +4071,46 @@
         // Open earnings modal when earnings card is clicked
         earningsStatCard.addEventListener('click', function() {
             earningsModal.style.display = 'block';
-            initEarningsChart();
+            document.body.style.overflow = 'hidden'; // Prevent background scroll
+            setTimeout(() => {
+                initEarningsChart();
+            }, 300); // Add slight delay for smooth transition
         });
 
         // Close earnings modal when X is clicked
         earningsCloseBtn.addEventListener('click', function() {
-            earningsModal.style.display = 'none';
-            if (earningsChart) {
-                earningsChart.destroy();
-                earningsChart = null;
-            }
+            closeEarningsModal();
         });
 
         // Close earnings modal when clicking outside
         window.addEventListener('click', function(e) {
             if (e.target === earningsModal) {
-                earningsModal.style.display = 'none';
-                if (earningsChart) {
-                    earningsChart.destroy();
-                    earningsChart = null;
-                }
+                closeEarningsModal();
             }
         });
+
+        // Close modal function
+        function closeEarningsModal() {
+            earningsModal.style.display = 'none';
+            document.body.style.overflow = 'auto'; // Restore scroll
+            if (earningsChart) {
+                earningsChart.destroy();
+                earningsChart = null;
+            }
+        }
 
         // Period selector change handler
         document.getElementById('chartPeriod').addEventListener('change', function() {
             loadEarningsData(this.value);
         });
 
-        // Initialize earnings chart
+        // Initialize modern earnings chart
         function initEarningsChart() {
             const ctx = document.getElementById('earningsChart').getContext('2d');
+            
+            if (earningsChart) {
+                earningsChart.destroy();
+            }
             
             earningsChart = new Chart(ctx, {
                 type: 'line',
@@ -3860,53 +4118,108 @@
                     labels: [],
                     datasets: [
                         {
-                            label: 'Total Earnings',
+                            label: '💰 Total Earnings',
                             data: [],
-                            borderColor: '#517A5B',
-                            backgroundColor: 'rgba(81, 122, 91, 0.1)',
-                            borderWidth: 3,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderWidth: 4,
                             fill: true,
-                            tension: 0.4
+                            tension: 0.4,
+                            pointBackgroundColor: '#10b981',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 3,
+                            pointRadius: 6,
+                            pointHoverRadius: 8,
+                            pointHoverBackgroundColor: '#059669',
+                            pointHoverBorderColor: '#ffffff',
+                            pointHoverBorderWidth: 4
                         },
                         {
-                            label: 'Net Earnings',
+                            label: '💵 Net Earnings',
                             data: [],
-                            borderColor: '#2563eb',
-                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                            borderWidth: 2,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 3,
                             fill: false,
-                            tension: 0.4
+                            tension: 0.4,
+                            pointBackgroundColor: '#3b82f6',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            pointHoverBackgroundColor: '#1d4ed8',
+                            pointHoverBorderColor: '#ffffff'
                         },
                         {
-                            label: 'Commission',
+                            label: '💸 Commission',
                             data: [],
-                            borderColor: '#dc2626',
-                            backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
                             borderWidth: 2,
                             fill: false,
-                            tension: 0.4
+                            tension: 0.4,
+                            pointBackgroundColor: '#f59e0b',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                            pointRadius: 3,
+                            pointHoverRadius: 5,
+                            pointHoverBackgroundColor: '#d97706',
+                            pointHoverBorderColor: '#ffffff'
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            top: 20,
+                            right: 20,
+                            bottom: 20,
+                            left: 20
+                        }
+                    },
                     plugins: {
                         title: {
-                            display: true,
-                            text: 'Earnings Overview',
-                            font: { size: 16, weight: 'bold' }
+                            display: false
                         },
                         legend: {
                             display: true,
-                            position: 'top'
+                            position: 'top',
+                            align: 'center',
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                padding: 25,
+                                font: {
+                                    size: 14,
+                                    weight: '600'
+                                },
+                                color: '#475569'
+                            }
                         },
                         tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            titleColor: '#1e293b',
+                            bodyColor: '#475569',
+                            borderColor: 'rgba(81, 122, 91, 0.2)',
+                            borderWidth: 1,
+                            cornerRadius: 12,
+                            padding: 16,
+                            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
                             mode: 'index',
                             intersect: false,
+                            titleFont: {
+                                size: 14,
+                                weight: '700'
+                            },
+                            bodyFont: {
+                                size: 13,
+                                weight: '500'
+                            },
                             callbacks: {
                                 label: function(context) {
-                                    return context.dataset.label + ': ₱' + context.parsed.y.toFixed(2);
+                                    return context.dataset.label + ': ₱' + context.parsed.y.toLocaleString('en-US', {minimumFractionDigits: 2});
                                 }
                             }
                         }
@@ -3914,21 +4227,43 @@
                     scales: {
                         x: {
                             display: true,
-                            title: {
+                            grid: {
                                 display: true,
-                                text: 'Date'
+                                color: 'rgba(148, 163, 184, 0.1)',
+                                lineWidth: 1
+                            },
+                            ticks: {
+                                color: '#64748b',
+                                font: {
+                                    size: 12,
+                                    weight: '500'
+                                },
+                                padding: 8
+                            },
+                            border: {
+                                display: false
                             }
                         },
                         y: {
                             display: true,
-                            title: {
+                            grid: {
                                 display: true,
-                                text: 'Amount (₱)'
+                                color: 'rgba(148, 163, 184, 0.1)',
+                                lineWidth: 1
                             },
                             ticks: {
+                                color: '#64748b',
+                                font: {
+                                    size: 12,
+                                    weight: '500'
+                                },
+                                padding: 12,
                                 callback: function(value) {
-                                    return '₱' + value.toFixed(2);
+                                    return '₱' + value.toLocaleString('en-US', {minimumFractionDigits: 0});
                                 }
+                            },
+                            border: {
+                                display: false
                             }
                         }
                     },
@@ -3936,17 +4271,27 @@
                         mode: 'nearest',
                         axis: 'x',
                         intersect: false
+                    },
+                    animation: {
+                        duration: 1500,
+                        easing: 'easeInOutQuart'
+                    },
+                    hover: {
+                        animationDuration: 400
                     }
                 }
             });
 
-            // Load initial data
+            // Load initial data with loading animation
             loadEarningsData('30d');
         }
 
-        // Load earnings data from API
+        // Load earnings data with modern loading states
         function loadEarningsData(period = '30d') {
             console.log('Loading earnings data for period:', period);
+            
+            // Show loading animation
+            showChartLoading(true);
             
             fetch(`/shop/earnings-chart?period=${period}`, {
                 method: 'GET',
@@ -3965,23 +4310,45 @@
             .then(data => {
                 console.log('Earnings API Response:', data);
                 
+                // Hide loading animation
+                showChartLoading(false);
+                
                 if (data.success && data.data) {
                     updateChart(data.data);
                     updateSummaryCards(data.summary);
+                    
+                    // Show success indicator if using sample data
+                    if (!data.hasRealData) {
+                        showChartMessage('📊 Sample data shown for demonstration', 'info');
+                    }
                 } else {
                     console.error('API returned error:', data.message);
-                    // Use fallback data if API fails
                     generateFallbackData(period);
                 }
             })
             .catch(error => {
                 console.error('Error loading earnings data:', error);
-                // Use fallback data if fetch fails
+                showChartLoading(false);
                 generateFallbackData(period);
+                showChartMessage('⚠️ Using sample data (API unavailable)', 'warning');
             });
         }
 
-        // Update chart with new data
+        // Show/hide loading animation
+        function showChartLoading(show) {
+            const loadingElement = document.getElementById('chartLoading');
+            if (loadingElement) {
+                loadingElement.style.display = show ? 'flex' : 'none';
+            }
+        }
+
+        // Show chart message
+        function showChartMessage(message, type) {
+            // You can implement a toast notification or status message here
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        // Update chart with modern animations
         function updateChart(chartData) {
             if (!earningsChart) return;
 
@@ -3999,22 +4366,49 @@
             earningsChart.data.datasets[1].data = netEarnings;
             earningsChart.data.datasets[2].data = commission;
             
-            earningsChart.update();
-            console.log('Chart updated with data:', { labels, totalEarnings, netEarnings, commission });
+            earningsChart.update('active');
+            console.log('Chart updated with modern styling:', { labels, totalEarnings, netEarnings, commission });
         }
 
-        // Update summary cards
+        // Update summary cards with modern animations
         function updateSummaryCards(summary) {
             if (summary) {
-                document.getElementById('totalEarningsAmount').textContent = '₱' + summary.totalEarnings.toFixed(2);
-                document.getElementById('netEarningsAmount').textContent = '₱' + summary.netEarnings.toFixed(2);
-                document.getElementById('commissionAmount').textContent = '₱' + summary.commission.toFixed(2);
+                animateValue('totalEarningsAmount', summary.totalEarnings);
+                animateValue('netEarningsAmount', summary.netEarnings);
+                animateValue('commissionAmount', summary.commission);
             }
         }
 
-        // Generate fallback data for testing
+        // Animate counter values
+        function animateValue(elementId, endValue) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            const startValue = 0;
+            const duration = 1500;
+            const startTime = performance.now();
+            
+            function updateValue(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Easing function for smooth animation
+                const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+                const currentValue = startValue + (endValue - startValue) * easeOutQuart;
+                
+                element.textContent = '₱' + currentValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                
+                if (progress < 1) {
+                    requestAnimationFrame(updateValue);
+                }
+            }
+            
+            requestAnimationFrame(updateValue);
+        }
+
+        // Generate enhanced fallback data
         function generateFallbackData(period) {
-            console.log('Generating fallback data for period:', period);
+            console.log('Generating enhanced fallback data for period:', period);
             
             const days = period === '7d' ? 7 : period === '30d' ? 30 : period === '90d' ? 90 : 365;
             const fallbackData = [];
@@ -4023,8 +4417,10 @@
                 const date = new Date();
                 date.setDate(date.getDate() - i);
                 
-                // Generate random earnings data for demonstration
-                const totalEarnings = Math.random() * 1000 + 100;
+                // Generate more realistic earnings data with trends
+                const trend = Math.sin((i / days) * Math.PI) * 0.3 + 0.7; // Creates a natural curve
+                const baseEarning = 150 + (Math.random() * 400 * trend);
+                const totalEarnings = Math.max(0, baseEarning + (Math.random() - 0.5) * 200);
                 const commission = totalEarnings * 0.1;
                 const netEarnings = totalEarnings - commission;
                 
@@ -4033,11 +4429,11 @@
                     totalEarnings: totalEarnings,
                     netEarnings: netEarnings,
                     commission: commission,
-                    orderCount: Math.floor(Math.random() * 10) + 1
+                    orderCount: totalEarnings > 50 ? Math.floor(Math.random() * 8) + 1 : 0
                 });
             }
             
-            console.log('Generated fallback data:', fallbackData);
+            console.log('Generated enhanced fallback data:', fallbackData);
             updateChart(fallbackData);
             
             // Update summary with fallback totals
