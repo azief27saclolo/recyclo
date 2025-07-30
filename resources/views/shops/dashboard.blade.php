@@ -4484,6 +4484,11 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
+                            // If the order status is set to completed, update the earnings display
+                            if (status === 'completed' && data.orderAmount) {
+                                updateEarningsCard(data.orderAmount);
+                            }
+
                             Swal.fire({
                                 title: 'Success!',
                                 text: `Order has been ${status === 'completed' ? 'accepted' : 'rejected'}`,
@@ -5039,6 +5044,11 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
+                        // If the order status is set to completed, update the earnings display
+                        if (status === 'completed' && data.orderAmount) {
+                            updateEarningsCard(data.orderAmount);
+                        }
+
                         Swal.fire({
                             title: 'Success!',
                             text: 'Order status updated successfully',
@@ -5473,6 +5483,11 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
+                            // If the order status is set to completed, update the earnings display
+                            if (newStatus === 'completed' && data.orderAmount) {
+                                updateEarningsCard(data.orderAmount);
+                            }
+
                             // Update the status badge in the UI
                             const statusBadge = document.querySelector(`[data-order-id="${orderId}"]`).closest('.order-card').querySelector('.order-status');
                             if (statusBadge) {
@@ -5506,6 +5521,36 @@
                     });
                 }
             });
+        }
+
+        // Function to update the earnings card in real-time when an order is completed
+        function updateEarningsCard(orderAmount) {
+            // Get the earnings stat card number element
+            const earningsElement = document.querySelector('.earnings-card .stat-number');
+            if (!earningsElement) return;
+            
+            // Get the current earnings value (remove currency symbol and commas)
+            let currentValue = earningsElement.textContent.trim();
+            currentValue = parseFloat(currentValue.replace('₱', '').replace(/,/g, '')) || 0;
+            
+            // Calculate new earnings with 10% fee deducted
+            const newOrderAmount = parseFloat(orderAmount) * 0.9; // Apply 10% commission fee
+            const newTotalEarnings = currentValue + newOrderAmount;
+            
+            // Update the display with formatted number
+            earningsElement.textContent = '₱' + newTotalEarnings.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            
+            // Add animation effect to highlight the change
+            earningsElement.style.transition = 'transform 0.3s ease, color 0.3s ease';
+            earningsElement.style.transform = 'scale(1.1)';
+            earningsElement.style.color = '#FFEB3B';
+            
+            setTimeout(() => {
+                earningsElement.style.transform = 'scale(1)';
+                earningsElement.style.color = 'white';
+            }, 500);
+            
+            console.log(`Earnings updated: Added ₱${newOrderAmount.toFixed(2)} (after 10% fee from ₱${orderAmount})`);
         }
 
         // ... existing code ...
