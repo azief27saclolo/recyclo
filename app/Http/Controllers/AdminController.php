@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\Admin;
 use App\Models\Post;
 use App\Models\Category;
+use App\Models\PaymentDistribution;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -607,7 +608,7 @@ class AdminController extends Controller
 
     public function orders()
     {
-        $orders = Order::with(['buyer', 'seller', 'post', 'user'])->latest()->get();
+        $orders = Order::with(['buyer', 'seller', 'post', 'user', 'paymentDistribution'])->latest()->get();
         return view('admin.orders', compact('orders'));
     }
 
@@ -647,15 +648,24 @@ class AdminController extends Controller
             
             $order = Order::findOrFail($orderId);
             
+            // Begin transaction for atomicity
+            DB::beginTransaction();
+            
             // Update to 'processing' status for consistency with UI
             DB::table('orders')
                 ->where('id', $orderId)
                 ->update(['status' => 'processing']);
             
-            \Log::info('Order approved successfully', ['order_id' => $orderId]);
+            // Create payment distribution for the seller
+            $order->createPaymentDistribution(5); // 5% platform fee
             
-            return redirect()->back()->with('success', 'Order #' . $orderId . ' has been approved successfully.');
+            DB::commit();
+            
+            \Log::info('Order approved successfully with payment distribution created', ['order_id' => $orderId]);
+            
+            return redirect()->back()->with('success', 'Order #' . $orderId . ' has been approved and payment distribution created successfully.');
         } catch (\Exception $e) {
+            DB::rollBack();
             \Log::error('Failed to approve order', [
                 'order_id' => $orderId,
                 'error' => $e->getMessage(),
@@ -2363,5 +2373,141 @@ class AdminController extends Controller
                 'message' => 'Failed to create deal: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Show transfer money modal for a specific order
+     */
+    public function showTransferModal(Order $order)
+    {
+        // Load the order with relationships
+        $order->load(['buyer', 'seller', 'post', 'paymentDistribution']);
+        
+        // Check if payment distribution exists, if not create one
+        if (!$order->paymentDistribution) {
+            $order->createPaymentDistribution();
+            $order->load('paymentDistribution');
+        }
+
+        return response()->json([
+            'success' => true,
+            'order' => [
+                'id' => $order->id,
+                'buyer_name' => $order->buyer ? $order->buyer->username : 'Unknown',
+                'seller_name' => $order->seller ? $order->seller->username : 'Unknown',
+                'product_name' => $order->post ? $order->post->title : 'Unknown',
+                'total_amount' => $order->total_amount,
+                'payment_distribution' => $order->paymentDistribution ? [
+                    'id' => $order->paymentDistribution->id,
+                    'order_amount' => $order->paymentDistribution->order_amount,
+                    'platform_fee' => $order->paymentDistribution->platform_fee,
+                    'seller_amount' => $order->paymentDistribution->seller_amount,
+                    'status' => $order->paymentDistribution->status,
+                    'recipient_contact' => $order->paymentDistribution->recipient_contact,
+                    'reference_number' => $order->paymentDistribution->reference_number,
+                    'paid_at' => $order->paymentDistribution->paid_at,
+                ] : null
+            ]
+        ]);
+    }
+
+    /**
+     * Process payment transfer to seller
+     */
+    public function transferPayment(Request $request, Order $order)
+    {
+        $request->validate([
+            'reference_number' => 'required|string|max:255',
+            'recipient_contact' => 'required|string|max:255',
+            'payment_method' => 'required|in:gcash,bank_transfer,cash',
+            'payment_proof' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'notes' => 'nullable|string|max:1000'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Get or create payment distribution
+            $paymentDistribution = $order->paymentDistribution;
+            if (!$paymentDistribution) {
+                $paymentDistribution = $order->createPaymentDistribution();
+            }
+
+            // Handle file upload
+            $proofPath = null;
+            if ($request->hasFile('payment_proof')) {
+                $proofPath = $request->file('payment_proof')->store('payment-proofs', 'public');
+            }
+
+            // Update payment distribution
+            $paymentDistribution->update([
+                'admin_id' => auth()->user()->id,
+                'reference_number' => $request->reference_number,
+                'recipient_contact' => $request->recipient_contact,
+                'payment_method' => $request->payment_method,
+                'payment_proof' => $proofPath,
+                'notes' => $request->notes,
+                'status' => 'completed',
+                'paid_at' => now(),
+                'amount_paid' => $paymentDistribution->seller_amount
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Payment of ₱" . number_format($paymentDistribution->seller_amount, 2) . " has been successfully transferred to " . $order->seller->username . "!"
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Failed to transfer payment', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to transfer payment: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get payment distribution details for an order
+     */
+    public function getPaymentDistribution(Order $order)
+    {
+        $order->load(['paymentDistribution.admin', 'seller', 'buyer']);
+        
+        if (!$order->paymentDistribution) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No payment distribution found for this order'
+            ], 404);
+        }
+
+        $distribution = $order->paymentDistribution;
+
+        return response()->json([
+            'success' => true,
+            'distribution' => [
+                'id' => $distribution->id,
+                'order_amount' => $distribution->order_amount,
+                'platform_fee' => $distribution->platform_fee,
+                'seller_amount' => $distribution->seller_amount,
+                'amount_paid' => $distribution->amount_paid,
+                'payment_method' => $distribution->payment_method,
+                'reference_number' => $distribution->reference_number,
+                'recipient_contact' => $distribution->recipient_contact,
+                'status' => $distribution->status,
+                'notes' => $distribution->notes,
+                'payment_proof' => $distribution->payment_proof ? asset('storage/' . $distribution->payment_proof) : null,
+                'paid_at' => $distribution->paid_at ? $distribution->paid_at->format('M d, Y g:i A') : null,
+                'admin_name' => $distribution->admin ? $distribution->admin->username : 'N/A',
+                'seller_name' => $order->seller->username,
+                'created_at' => $distribution->created_at->format('M d, Y g:i A')
+            ]
+        ]);
     }
 }

@@ -136,6 +136,11 @@ Route::group(['prefix' => 'admin', 'middleware' => [AdminMiddleware::class]], fu
     // Add correctly defined delete order route
     Route::get('/orders/{orderId}/delete', [AdminController::class, 'deleteOrder'])->name('admin.orders.delete');
 
+    // Payment Transfer Routes
+    Route::get('/orders/{order}/transfer-modal', [AdminController::class, 'showTransferModal'])->name('admin.orders.transfer-modal');
+    Route::post('/orders/{order}/transfer-payment', [AdminController::class, 'transferPayment'])->name('admin.orders.transfer-payment');
+    Route::get('/orders/{order}/payment-distribution', [AdminController::class, 'getPaymentDistribution'])->name('admin.orders.payment-distribution');
+
     // User management routes
     Route::post('/users/{user}/update-role', [AdminController::class, 'updateUserRole'])->name('admin.users.update-role');
     Route::post('/shops/{shop}/activate', [AdminController::class, 'activateShop'])->name('admin.shops.activate');
