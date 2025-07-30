@@ -4953,7 +4953,7 @@
                 <div class="orders-timeline">
                     <h3>Recent Orders</h3>
                     <div class="orders-list">
-                        @forelse(\App\Models\Order::where('seller_id', Auth::id())->with(['buyer', 'items.post', 'deliveryDetail.deliveryMethod'])->latest()->get() as $order)
+                        @forelse(\App\Models\Order::where('seller_id', Auth::id())->with(['buyer', 'items.post'])->latest()->get() as $order)
                             <div class="order-card">
                                 <div class="order-header">
                                     <div class="order-info">
@@ -4964,29 +4964,13 @@
                                                 <i class="bi bi-person"></i>
                                                 {{ $order->buyer->username }}
                                             </span>
-                                            <!-- Delivery Method Indicator -->
-                                            @if($order->deliveryDetail && $order->deliveryDetail->deliveryMethod)
-                                                <span class="delivery-method-info" style="background: {{ $order->deliveryDetail->deliveryMethod->isPickup() ? '#e8f5e8' : '#e3f2fd' }}; color: {{ $order->deliveryDetail->deliveryMethod->isPickup() ? '#28a745' : '#0d6efd' }}; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 500;">
-                                                    @if($order->deliveryDetail->deliveryMethod->isPickup())
-                                                        <i class="bi bi-bag-handle"></i> Pickup Order
-                                                    @else
-                                                        <i class="bi bi-truck"></i> Delivery Order
-                                                    @endif
-                                                </span>
-                                            @endif
                                             <button class="report-btn" data-user-id="{{ $order->buyer->id }}" data-order-id="{{ $order->id }}">
                                                 <i class="fas fa-flag"></i> Report User
                                             </button>
                                             @if($order->status === 'processing')
-                                                @if($order->deliveryDetail && $order->deliveryDetail->deliveryMethod->isPickup())
-                                                    <button onclick="updateOrderStatus({{ $order->id }}, 'delivering')" class="pickup-btn" style="background-color: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
-                                                        <i class="bi bi-bag-check"></i> Ready for Pickup
-                                                    </button>
-                                                @else
-                                                    <button onclick="updateOrderStatus({{ $order->id }}, 'delivering')" class="delivery-btn" style="background-color: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
-                                                        <i class="bi bi-truck"></i> For Delivery
-                                                    </button>
-                                                @endif
+                                                <button onclick="updateOrderStatus({{ $order->id }}, 'delivering')" class="delivery-btn" style="background-color: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                                    <i class="bi bi-truck"></i> For Delivery
+                                                </button>
                                             @endif
                                         </div>
                                     </div>
@@ -5018,35 +5002,6 @@
                                             </span>
                                         </div>
                                     @endif
-
-                                    <!-- Delivery Details Section -->
-                                    @if($order->deliveryDetail)
-                                        <div class="delivery-details" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                                            @if($order->deliveryDetail->deliveryMethod->isPickup())
-                                                <h5 style="margin: 0 0 10px 0; color: #28a745; display: flex; align-items: center; gap: 8px;">
-                                                    <i class="bi bi-bag-handle"></i> Pickup Information
-                                                </h5>
-                                                @if($order->deliveryDetail->pickup_date)
-                                                    <p style="margin: 5px 0; color: #666;"><strong>Pickup Date:</strong> {{ \Carbon\Carbon::parse($order->deliveryDetail->pickup_date)->format('M d, Y') }}</p>
-                                                @endif
-                                                @if($order->deliveryDetail->pickup_time_slot)
-                                                    <p style="margin: 5px 0; color: #666;"><strong>Time Slot:</strong> {{ $order->deliveryDetail->pickup_time_slot }}</p>
-                                                @endif
-                                                @if($order->deliveryDetail->pickup_notes)
-                                                    <p style="margin: 5px 0; color: #666;"><strong>Notes:</strong> {{ $order->deliveryDetail->pickup_notes }}</p>
-                                                @endif
-                                                <p style="margin: 5px 0; color: #666;"><strong>Pickup Fee:</strong> ₱{{ number_format($order->deliveryDetail->delivery_fee, 2) }}</p>
-                                            @else
-                                                <h5 style="margin: 0 0 10px 0; color: #0d6efd; display: flex; align-items: center; gap: 8px;">
-                                                    <i class="bi bi-truck"></i> Delivery Information
-                                                </h5>
-                                                @if($order->deliveryDetail->delivery_address)
-                                                    <p style="margin: 5px 0; color: #666;"><strong>Address:</strong> {{ $order->deliveryDetail->delivery_address }}</p>
-                                                @endif
-                                                <p style="margin: 5px 0; color: #666;"><strong>Delivery Fee:</strong> ₱{{ number_format($order->deliveryDetail->delivery_fee, 2) }}</p>
-                                            @endif
-                                        </div>
-                                    @endif
                                     <div class="products-list">
                                         @foreach($order->items as $item)
                                             <div class="product-item">
@@ -5064,22 +5019,14 @@
                                     <div class="order-summary">
                                         <div class="summary-row">
                                             <span>Subtotal</span>
-                                            <span>₱{{ number_format($order->total_amount - ($order->deliveryDetail ? $order->deliveryDetail->delivery_fee : 35), 2) }}</span>
-                                        </div>
-                                        <div class="summary-row">
-                                            <span>{{ $order->deliveryDetail && $order->deliveryDetail->deliveryMethod->isPickup() ? 'Pickup Fee' : 'Delivery Fee' }}</span>
-                                            <span>₱{{ number_format($order->deliveryDetail ? $order->deliveryDetail->delivery_fee : 35, 2) }}</span>
-                                        </div>
-                                        <div class="summary-row total">
-                                            <span>Total Amount</span>
                                             <span>₱{{ number_format($order->total_amount, 2) }}</span>
                                         </div>
                                         <div class="summary-row">
                                             <span>Commission (10%)</span>
-                                            <span>-₱{{ number_format($order->total_amount * 0.1, 2) }}</span>
+                                            <span>₱{{ number_format($order->total_amount * 0.1, 2) }}</span>
                                         </div>
-                                        <div class="summary-row total" style="border-top: 2px solid #28a745; font-weight: 700; color: #28a745;">
-                                            <span>Your Earnings</span>
+                                        <div class="summary-row total">
+                                            <span>Net Amount</span>
                                             <span>₱{{ number_format($order->total_amount * 0.9, 2) }}</span>
                                         </div>
                                     </div>
@@ -5123,60 +5070,9 @@
         color: #333;
     }
 
-    .order-meta {
-        display: flex;
-        gap: 15px;
-        align-items: center;
-        flex-wrap: wrap;
-        margin-top: 8px;
-    }
-
-    .delivery-method-info {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        font-weight: 500;
-        border-radius: 12px;
-        padding: 4px 10px;
-        font-size: 11px;
-        white-space: nowrap;
-    }
-
-    .delivery-details {
-        background: #f8f9fa;
-        border-radius: 8px;
-        padding: 15px;
-        margin-bottom: 15px;
-    }
-
-    .delivery-details h5 {
-        margin: 0 0 10px 0;
-        font-size: 14px;
-        font-weight: 600;
-    }
-
-    .delivery-details p {
-        margin: 5px 0;
-        font-size: 13px;
-        line-height: 1.4;
-    }
-
-    .pickup-btn {
-        background-color: #28a745 !important;
-        transition: background-color 0.3s ease;
-    }
-
-    .pickup-btn:hover {
-        background-color: #218838 !important;
-    }
-
-    .delivery-btn {
-        background-color: #007bff !important;
-        transition: background-color 0.3s ease;
-    }
-
-    .delivery-btn:hover {
-        background-color: #0056b3 !important;
+    .order-date {
+        color: #666;
+        font-size: 0.9em;
     }
 
     .order-status {

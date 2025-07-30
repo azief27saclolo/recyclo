@@ -651,16 +651,19 @@ class AdminController extends Controller
             // Begin transaction for atomicity
             DB::beginTransaction();
             
-            // Update to 'approved' status - payment distribution will be created when admin processes payment transfer
+            // Update to 'processing' status for consistency with UI
             DB::table('orders')
                 ->where('id', $orderId)
-                ->update(['status' => 'approved']);
+                ->update(['status' => 'processing']);
+            
+            // Create payment distribution for the seller
+            $order->createPaymentDistribution(5); // 5% platform fee
             
             DB::commit();
             
-            \Log::info('Order approved successfully', ['order_id' => $orderId]);
+            \Log::info('Order approved successfully with payment distribution created', ['order_id' => $orderId]);
             
-            return redirect()->back()->with('success', 'Order #' . $orderId . ' has been approved successfully.');
+            return redirect()->back()->with('success', 'Order #' . $orderId . ' has been approved and payment distribution created successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Failed to approve order', [
@@ -2378,47 +2381,12 @@ class AdminController extends Controller
     public function showTransferModal(Order $order)
     {
         // Load the order with relationships
-        $order->load(['buyer', 'seller', 'post.user', 'paymentDistribution']);
+        $order->load(['buyer', 'seller', 'post', 'paymentDistribution']);
         
-        // Check if order is completed first
-        if ($order->status !== 'completed') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Payment can only be transferred after the order has been completed.'
-            ], 400);
-        }
-        
-        // Try to get seller from different sources
-        $sellerId = $order->seller_id;
-        $sellerName = 'Unknown';
-        
-        if ($order->seller) {
-            $sellerName = $order->seller->username;
-        } elseif (!$sellerId && $order->post && $order->post->user) {
-            // If seller_id is null, try to get it from the post's user
-            $sellerId = $order->post->user->id;
-            $sellerName = $order->post->user->username;
-        }
-        
-        // Check if we have a valid seller
-        if (!$sellerId && !($order->post && $order->post->user)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Seller not found for this order.'
-            ], 400);
-        }
-        
-        // Calculate payment distribution amounts (even if record doesn't exist yet)
-        $orderAmount = $order->total_amount;
-        $platformFee = $orderAmount * 0.10; // 10% platform fee
-        $sellerAmount = $orderAmount - $platformFee;
-
-        // Get seller contact information
-        $sellerContact = '';
-        if ($order->seller && $order->seller->number) {
-            $sellerContact = $order->seller->number;
-        } elseif ($order->post && $order->post->user && $order->post->user->number) {
-            $sellerContact = $order->post->user->number;
+        // Check if payment distribution exists, if not create one
+        if (!$order->paymentDistribution) {
+            $order->createPaymentDistribution();
+            $order->load('paymentDistribution');
         }
 
         return response()->json([
@@ -2426,20 +2394,19 @@ class AdminController extends Controller
             'order' => [
                 'id' => $order->id,
                 'buyer_name' => $order->buyer ? $order->buyer->username : 'Unknown',
-                'seller_name' => $sellerName,
-                'seller_contact' => $sellerContact,
+                'seller_name' => $order->seller ? $order->seller->username : 'Unknown',
                 'product_name' => $order->post ? $order->post->title : 'Unknown',
                 'total_amount' => $order->total_amount,
-                'payment_distribution' => [
-                    'id' => $order->paymentDistribution ? $order->paymentDistribution->id : null,
-                    'order_amount' => $orderAmount,
-                    'platform_fee' => $platformFee,
-                    'seller_amount' => $sellerAmount,
-                    'status' => $order->paymentDistribution ? $order->paymentDistribution->status : 'pending',
-                    'recipient_contact' => $order->paymentDistribution ? $order->paymentDistribution->recipient_contact : null,
-                    'reference_number' => $order->paymentDistribution ? $order->paymentDistribution->reference_number : null,
-                    'paid_at' => $order->paymentDistribution ? $order->paymentDistribution->paid_at : null,
-                ]
+                'payment_distribution' => $order->paymentDistribution ? [
+                    'id' => $order->paymentDistribution->id,
+                    'order_amount' => $order->paymentDistribution->order_amount,
+                    'platform_fee' => $order->paymentDistribution->platform_fee,
+                    'seller_amount' => $order->paymentDistribution->seller_amount,
+                    'status' => $order->paymentDistribution->status,
+                    'recipient_contact' => $order->paymentDistribution->recipient_contact,
+                    'reference_number' => $order->paymentDistribution->reference_number,
+                    'paid_at' => $order->paymentDistribution->paid_at,
+                ] : null
             ]
         ]);
     }
@@ -2460,70 +2427,10 @@ class AdminController extends Controller
         try {
             DB::beginTransaction();
 
-            // Check if order is completed first
-            if ($order->status !== 'completed') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Payment can only be transferred after the order has been completed.'
-                ], 400);
-            }
-
-            // Load the seller relationship to avoid null issues
-            $order->load('seller', 'post.user');
-            
-            // Try to get seller_id from different sources
-            $sellerId = $order->seller_id;
-            if (!$sellerId && $order->post && $order->post->user) {
-                // If seller_id is null, try to get it from the post's user
-                $sellerId = $order->post->user->id;
-                \Log::info('Using seller ID from post user', [
-                    'order_id' => $order->id,
-                    'seller_id_from_post' => $sellerId
-                ]);
-            }
-            
-            // Debug logging
-            \Log::info('Transfer Payment Debug', [
-                'order_id' => $order->id,
-                'seller_id_from_order' => $order->seller_id,
-                'seller_id_final' => $sellerId,
-                'seller_exists' => $order->seller ? 'yes' : 'no',
-                'post_id' => $order->post_id,
-                'post_exists' => $order->post ? 'yes' : 'no',
-                'post_user_exists' => ($order->post && $order->post->user) ? 'yes' : 'no'
-            ]);
-            
-            // Check if we have a valid seller ID
-            if (!$sellerId) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No seller found for this order. The order may be invalid or the seller account may have been deleted.'
-                ], 400);
-            }
-
-            // Check if admin is authenticated using session
-            if (!session()->has('admin_logged_in') || !session()->get('admin_logged_in')) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Admin authentication required.'
-                ], 401);
-            }
-            
-            $adminId = session()->get('admin_id');
-            if (!$adminId) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Admin session invalid.'
-                ], 401);
-            }
-
-            // Check if payment distribution already exists and is completed
+            // Get or create payment distribution
             $paymentDistribution = $order->paymentDistribution;
-            if ($paymentDistribution && $paymentDistribution->status === 'completed') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Payment has already been transferred for this order.'
-                ], 400);
+            if (!$paymentDistribution) {
+                $paymentDistribution = $order->createPaymentDistribution();
             }
 
             // Handle file upload
@@ -2532,84 +2439,24 @@ class AdminController extends Controller
                 $proofPath = $request->file('payment_proof')->store('payment-proofs', 'public');
             }
 
-            // Calculate payment distribution amounts
-            $orderAmount = $order->total_amount;
-            $platformFee = $orderAmount * 0.10; // 10% platform fee
-            $sellerAmount = $orderAmount - $platformFee;
-
-            // Create or update payment distribution
-            if (!$paymentDistribution) {
-                // Debug logging before creation
-                \Log::info('Creating PaymentDistribution with data', [
-                    'order_id' => $order->id,
-                    'seller_id' => $sellerId,
-                    'admin_id' => $adminId,
-                    'admin_session_exists' => session()->has('admin_logged_in') ? 'yes' : 'no',
-                    'order_amount' => $orderAmount,
-                    'platform_fee' => $platformFee,
-                    'seller_amount' => $sellerAmount,
-                ]);
-                
-                try {
-                    // Create new payment distribution record when admin submits transfer
-                    $paymentDistribution = PaymentDistribution::create([
-                        'order_id' => $order->id,
-                        'seller_id' => $sellerId, // Use the sellerId we determined above
-                        'admin_id' => $adminId, // Use session-based admin ID
-                        'order_amount' => $orderAmount,
-                        'platform_fee' => $platformFee,
-                        'seller_amount' => $sellerAmount,
-                        'reference_number' => $request->reference_number,
-                        'recipient_contact' => $request->recipient_contact,
-                        'payment_method' => $request->payment_method,
-                        'payment_proof' => $proofPath,
-                        'notes' => $request->notes,
-                        'status' => 'completed',
-                        'paid_at' => now(),
-                        'amount_paid' => $sellerAmount
-                    ]);
-                    
-                    \Log::info('PaymentDistribution created successfully', [
-                        'payment_distribution_id' => $paymentDistribution->id
-                    ]);
-                } catch (\Exception $e) {
-                    \Log::error('Failed to create PaymentDistribution', [
-                        'error' => $e->getMessage(),
-                        'trace' => $e->getTraceAsString()
-                    ]);
-                    throw $e; // Re-throw to be caught by outer try-catch
-                }
-            } else {
-                // Update existing payment distribution
-                $paymentDistribution->update([
-                    'admin_id' => $adminId, // Use session-based admin ID
-                    'reference_number' => $request->reference_number,
-                    'recipient_contact' => $request->recipient_contact,
-                    'payment_method' => $request->payment_method,
-                    'payment_proof' => $proofPath,
-                    'notes' => $request->notes,
-                    'status' => 'completed',
-                    'paid_at' => now(),
-                    'amount_paid' => $sellerAmount
-                ]);
-            }
-
-            // Update order status to 'paid' when payment is completed
-            $order->update(['status' => 'paid']);
+            // Update payment distribution
+            $paymentDistribution->update([
+                'admin_id' => auth()->user()->id,
+                'reference_number' => $request->reference_number,
+                'recipient_contact' => $request->recipient_contact,
+                'payment_method' => $request->payment_method,
+                'payment_proof' => $proofPath,
+                'notes' => $request->notes,
+                'status' => 'completed',
+                'paid_at' => now(),
+                'amount_paid' => $paymentDistribution->seller_amount
+            ]);
 
             DB::commit();
 
-            // Get seller name for response message
-            $sellerName = 'the seller';
-            if ($order->seller && $order->seller->username) {
-                $sellerName = $order->seller->username;
-            } elseif ($order->post && $order->post->user && $order->post->user->username) {
-                $sellerName = $order->post->user->username;
-            }
-
             return response()->json([
                 'success' => true,
-                'message' => "Payment of ₱" . number_format($sellerAmount, 2) . " has been successfully transferred to " . $sellerName . "!"
+                'message' => "Payment of ₱" . number_format($paymentDistribution->seller_amount, 2) . " has been successfully transferred to " . $order->seller->username . "!"
             ]);
 
         } catch (\Exception $e) {

@@ -500,7 +500,7 @@ class OrderController extends Controller
 
         // Validate the status
         $validStatus = $request->validate([
-            'status' => 'required|in:processing,delivering,delivered,for_pickup,cancelled,completed,paid'
+            'status' => 'required|in:processing,delivering,delivered,for_pickup,cancelled,completed'
         ]);
                    
         $newStatus = $validStatus['status'];

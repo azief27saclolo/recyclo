@@ -110,7 +110,7 @@ class Order extends Model
     /**
      * Create payment distribution when order is approved
      */
-    public function createPaymentDistribution($platformFeePercentage = 10)
+    public function createPaymentDistribution($platformFeePercentage = 5)
     {
         if ($this->paymentDistribution) {
             return $this->paymentDistribution;

@@ -19,16 +19,6 @@
         .icon-btn-transfer:hover {
             background-color: #218838;
         }
-        .icon-btn-warning {
-            background-color: #ffc107;
-            color: #212529;
-            cursor: default;
-        }
-        .icon-btn-success {
-            background-color: #28a745;
-            color: white;
-            cursor: default;
-        }
         .order-info-section {
             background: #f8f9fa;
             padding: 15px;
@@ -111,7 +101,6 @@
                         </button>
                         <button class="tab-btn" data-tab="approved">Approved</button>
                         <button class="tab-btn" data-tab="completed">Completed</button>
-                        <button class="tab-btn" data-tab="paid">Paid</button>
                         <button class="tab-btn" data-tab="cancelled">Cancelled</button>
                     </div>
                 </div>
@@ -173,14 +162,10 @@
                                                 </button>
                                             @endif
 
-                                            @if($order->status === 'completed' && (!$order->paymentDistribution || $order->paymentDistribution->status !== 'completed'))
+                                            @if($order->status == 'processing' || $order->status == 'approved')
                                                 <button type="button" class="icon-btn icon-btn-transfer transfer-money-btn" data-order-id="{{ $order->id }}" title="Transfer Money to Seller">
                                                     <i class="bi bi-cash-coin"></i>
                                                 </button>
-                                            @elseif($order->paymentDistribution && $order->paymentDistribution->status === 'completed' || $order->status === 'paid')
-                                                <span class="icon-btn icon-btn-success" title="Seller Has Been Paid" style="background: #28a745; color: white; cursor: default;">
-                                                    <i class="bi bi-check-circle"></i>
-                                                </span>
                                             @endif
                                             
                                             @if($order->status == 'pending')
@@ -219,12 +204,6 @@
                                                             @method('PUT')
                                                             <input type="hidden" name="status" value="completed">
                                                             <button type="submit" class="dropdown-option">Completed</button>
-                                                        </form>
-                                                        <form action="/admin/orders/{{ $order->id }}/status" method="POST">
-                                                            @csrf
-                                                            @method('PUT')
-                                                            <input type="hidden" name="status" value="paid">
-                                                            <button type="submit" class="dropdown-option">Paid</button>
                                                         </form>
                                                         <form action="/admin/orders/{{ $order->id }}/status" method="POST">
                                                             @csrf
@@ -379,28 +358,24 @@
             const closeTransferModal = document.getElementById('closeTransferModal');
             const cancelTransferBtn = document.getElementById('cancelTransferBtn');
             const transferForm = document.getElementById('transferForm');
+            const transferMoneyBtns = document.querySelectorAll('.transfer-money-btn');
             let currentOrderId = null;
 
-            // Use event delegation to handle dynamically loaded buttons
-            document.addEventListener('click', function(e) {
-                if (e.target.closest('.transfer-money-btn')) {
-                    const btn = e.target.closest('.transfer-money-btn');
-                    currentOrderId = btn.getAttribute('data-order-id');
-                    console.log('Setting currentOrderId to:', currentOrderId); // Debug log
+            transferMoneyBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    currentOrderId = this.getAttribute('data-order-id');
                     loadTransferModal(currentOrderId);
-                }
+                });
             });
 
             closeTransferModal.addEventListener('click', function() {
                 transferModal.style.display = 'none';
                 transferForm.reset();
-                currentOrderId = null; // Reset the currentOrderId
             });
 
             cancelTransferBtn.addEventListener('click', function() {
                 transferModal.style.display = 'none';
                 transferForm.reset();
-                currentOrderId = null; // Reset the currentOrderId
             });
 
             // Transfer form submission
@@ -408,76 +383,6 @@
                 e.preventDefault();
                 submitTransfer();
             });
-
-            // Move submitTransfer function inside this scope to access currentOrderId
-            function submitTransfer() {
-                // Check if currentOrderId is set
-                if (!currentOrderId) {
-                    Swal.fire({
-                        title: 'Error',
-                        text: 'Order ID is not set. Please try again.',
-                        icon: 'error',
-                        confirmButtonColor: '#dc3545'
-                    });
-                    return;
-                }
-
-                const formData = new FormData(transferForm);
-                
-                Swal.fire({
-                    title: 'Confirm Transfer',
-                    text: 'Are you sure you want to transfer this payment to the seller?',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#28a745',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Yes, Transfer Now!',
-                    cancelButtonText: 'Cancel'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        console.log('Submitting transfer for order:', currentOrderId); // Debug log
-                        fetch(`/admin/orders/${currentOrderId}/transfer-payment`, {
-                            method: 'POST',
-                            body: formData,
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                            }
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                Swal.fire({
-                                    title: 'Transfer Successful!',
-                                    text: data.message,
-                                    icon: 'success',
-                                    confirmButtonColor: '#28a745'
-                                }).then(() => {
-                                    transferModal.style.display = 'none';
-                                    transferForm.reset();
-                                    currentOrderId = null; // Reset the currentOrderId
-                                    location.reload();
-                                });
-                            } else {
-                                Swal.fire({
-                                    title: 'Transfer Failed',
-                                    text: data.message || 'Failed to transfer payment',
-                                    icon: 'error',
-                                    confirmButtonColor: '#dc3545'
-                                });
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            Swal.fire({
-                                title: 'Transfer Failed',
-                                text: 'Failed to transfer payment. Please try again.',
-                                icon: 'error',
-                                confirmButtonColor: '#dc3545'
-                            });
-                        });
-                    }
-                });
-            }
             
             window.addEventListener('click', function(event) {
                 if (event.target == receiptModal) {
@@ -486,7 +391,6 @@
                 if (event.target == transferModal) {
                     transferModal.style.display = 'none';
                     transferForm.reset();
-                    currentOrderId = null; // Reset the currentOrderId
                 }
             });
 
@@ -563,7 +467,6 @@
         });
 
         function loadTransferModal(orderId) {
-            console.log('Loading transfer modal for order:', orderId); // Debug log
             fetch(`/admin/orders/${orderId}/transfer-modal`)
                 .then(response => response.json())
                 .then(data => {
@@ -586,12 +489,12 @@
                                             <span>₱${Number(payment?.order_amount || order.total_amount).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
                                         </div>
                                         <div class="breakdown-row">
-                                            <span>Platform Fee (10%):</span>
-                                            <span class="text-danger">-₱${Number(payment?.platform_fee || (order.total_amount * 0.10)).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                                            <span>Platform Fee (5%):</span>
+                                            <span class="text-danger">-₱${Number(payment?.platform_fee || (order.total_amount * 0.05)).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
                                         </div>
                                         <div class="breakdown-row">
                                             <span>Amount to Transfer:</span>
-                                            <span class="text-success">₱${Number(payment?.seller_amount || (order.total_amount * 0.90)).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                                            <span class="text-success">₱${Number(payment?.seller_amount || (order.total_amount * 0.95)).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
                                         </div>
                                     </div>
                                     ${payment?.status === 'completed' ? `
@@ -599,46 +502,73 @@
                                             <i class="bi bi-check-circle"></i> Payment already transferred on ${payment.paid_at}
                                             <br><small>Reference: ${payment.reference_number}</small>
                                         </div>
-                                    ` : `
-                                        <div class="alert alert-info">
-                                            <i class="bi bi-info-circle"></i> Ready to transfer payment to seller
-                                        </div>
-                                    `}
+                                    ` : ''}
                                 </div>
                             </div>
                         `;
 
-                        // Auto-populate seller contact if available
-                        if (order.seller_contact && order.seller_contact.trim() !== '') {
-                            document.getElementById('recipient_contact').value = order.seller_contact;
+                        if (payment?.status === 'completed') {
+                            document.getElementById('confirmTransferBtn').style.display = 'none';
+                            document.querySelectorAll('#transferForm input, #transferForm select, #transferForm textarea').forEach(el => {
+                                el.disabled = true;
+                            });
                         }
-
-                        // Enable/disable form based on payment status
-                        const isCompleted = payment?.status === 'completed';
-                        document.getElementById('confirmTransferBtn').style.display = isCompleted ? 'none' : 'block';
-                        document.querySelectorAll('#transferForm input, #transferForm select, #transferForm textarea').forEach(el => {
-                            el.disabled = isCompleted;
-                        });
 
                         transferModal.style.display = 'block';
                     } else {
-                        Swal.fire({
-                            title: 'Cannot Transfer Payment',
-                            text: data.message || 'Failed to load transfer details',
-                            icon: 'warning',
-                            confirmButtonColor: '#517A5B'
-                        });
+                        Swal.fire('Error', data.message || 'Failed to load transfer details', 'error');
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    Swal.fire({
-                        title: 'Error',
-                        text: 'Failed to load transfer details. Please try again.',
-                        icon: 'error',
-                        confirmButtonColor: '#dc3545'
-                    });
+                    Swal.fire('Error', 'Failed to load transfer details', 'error');
                 });
+        }
+
+        function submitTransfer() {
+            const formData = new FormData(transferForm);
+            
+            Swal.fire({
+                title: 'Confirm Transfer',
+                text: 'Are you sure you want to transfer this payment to the seller?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Transfer Now!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/admin/orders/${currentOrderId}/transfer-payment`, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Transfer Successful!',
+                                text: data.message,
+                                icon: 'success',
+                                confirmButtonColor: '#28a745'
+                            }).then(() => {
+                                transferModal.style.display = 'none';
+                                transferForm.reset();
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Error', data.message || 'Failed to transfer payment', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire('Error', 'Failed to transfer payment', 'error');
+                    });
+                }
+            });
         }
 
         function confirmLogout() {
