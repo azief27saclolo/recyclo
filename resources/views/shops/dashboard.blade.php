@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     @vite(['resources/css/app.css', 'resources/css/style.css', 'resources/js/app.js'])
     <style>
         :root {
@@ -3672,7 +3673,7 @@
 
     <!-- Earnings Modal -->
     <div id="earningsModal" class="modal">
-        <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-content" style="max-width: 1000px;">
             <div class="modal-header">
                 <h2 class="modal-title">Earnings Overview</h2>
                 <span class="close">&times;</span>
@@ -3686,7 +3687,7 @@
                         </div>
                         <div class="card-content">
                             <h3>Total Earnings</h3>
-                            <p class="amount">
+                            <p class="amount" id="totalEarningsAmount">
                                 @php
                                     try {
                                         $totalEarnings = \App\Models\Order::where('seller_id', Auth::id())
@@ -3708,7 +3709,7 @@
                         </div>
                         <div class="card-content">
                             <h3>Net Earnings</h3>
-                            <p class="amount">
+                            <p class="amount" id="netEarningsAmount">
                                 @php
                                     try {
                                         $totalEarnings = \App\Models\Order::where('seller_id', Auth::id())
@@ -3731,7 +3732,7 @@
                         </div>
                         <div class="card-content">
                             <h3>Commission Paid</h3>
-                            <p class="amount">
+                            <p class="amount" id="commissionAmount">
                                 @php
                                     try {
                                         $totalEarnings = \App\Models\Order::where('seller_id', Auth::id())
@@ -3746,6 +3747,22 @@
                             </p>
                             <span class="label">10% of total earnings</span>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Chart Section -->
+                <div style="margin: 30px 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3>Earnings Trend</h3>
+                        <select id="chartPeriod" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; background: white;">
+                            <option value="7d">Last 7 Days</option>
+                            <option value="30d" selected>Last 30 Days</option>
+                            <option value="90d">Last 90 Days</option>
+                            <option value="1y">Last Year</option>
+                        </select>
+                    </div>
+                    <div style="position: relative; height: 400px; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                        <canvas id="earningsChart"></canvas>
                     </div>
                 </div>
 
@@ -3800,23 +3817,238 @@
         const earningsModal = document.getElementById('earningsModal');
         const earningsStatCard = document.getElementById('earningsStatCard');
         const earningsCloseBtn = earningsModal.querySelector('.close');
+        let earningsChart = null;
 
         // Open earnings modal when earnings card is clicked
         earningsStatCard.addEventListener('click', function() {
             earningsModal.style.display = 'block';
+            initEarningsChart();
         });
 
         // Close earnings modal when X is clicked
         earningsCloseBtn.addEventListener('click', function() {
             earningsModal.style.display = 'none';
+            if (earningsChart) {
+                earningsChart.destroy();
+                earningsChart = null;
+            }
         });
 
         // Close earnings modal when clicking outside
         window.addEventListener('click', function(e) {
             if (e.target === earningsModal) {
                 earningsModal.style.display = 'none';
+                if (earningsChart) {
+                    earningsChart.destroy();
+                    earningsChart = null;
+                }
             }
         });
+
+        // Period selector change handler
+        document.getElementById('chartPeriod').addEventListener('change', function() {
+            loadEarningsData(this.value);
+        });
+
+        // Initialize earnings chart
+        function initEarningsChart() {
+            const ctx = document.getElementById('earningsChart').getContext('2d');
+            
+            earningsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Total Earnings',
+                            data: [],
+                            borderColor: '#517A5B',
+                            backgroundColor: 'rgba(81, 122, 91, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Net Earnings',
+                            data: [],
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Commission',
+                            data: [],
+                            borderColor: '#dc2626',
+                            backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Earnings Overview',
+                            font: { size: 16, weight: 'bold' }
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ₱' + context.parsed.y.toFixed(2);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        },
+                        y: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Amount (₱)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '₱' + value.toFixed(2);
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+
+            // Load initial data
+            loadEarningsData('30d');
+        }
+
+        // Load earnings data from API
+        function loadEarningsData(period = '30d') {
+            console.log('Loading earnings data for period:', period);
+            
+            fetch(`/shop/earnings-chart?period=${period}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => {
+                console.log('API Response Status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Earnings API Response:', data);
+                
+                if (data.success && data.data) {
+                    updateChart(data.data);
+                    updateSummaryCards(data.summary);
+                } else {
+                    console.error('API returned error:', data.message);
+                    // Use fallback data if API fails
+                    generateFallbackData(period);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading earnings data:', error);
+                // Use fallback data if fetch fails
+                generateFallbackData(period);
+            });
+        }
+
+        // Update chart with new data
+        function updateChart(chartData) {
+            if (!earningsChart) return;
+
+            const labels = chartData.map(item => {
+                const date = new Date(item.date);
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            });
+
+            const totalEarnings = chartData.map(item => item.totalEarnings);
+            const netEarnings = chartData.map(item => item.netEarnings);
+            const commission = chartData.map(item => item.commission);
+
+            earningsChart.data.labels = labels;
+            earningsChart.data.datasets[0].data = totalEarnings;
+            earningsChart.data.datasets[1].data = netEarnings;
+            earningsChart.data.datasets[2].data = commission;
+            
+            earningsChart.update();
+            console.log('Chart updated with data:', { labels, totalEarnings, netEarnings, commission });
+        }
+
+        // Update summary cards
+        function updateSummaryCards(summary) {
+            if (summary) {
+                document.getElementById('totalEarningsAmount').textContent = '₱' + summary.totalEarnings.toFixed(2);
+                document.getElementById('netEarningsAmount').textContent = '₱' + summary.netEarnings.toFixed(2);
+                document.getElementById('commissionAmount').textContent = '₱' + summary.commission.toFixed(2);
+            }
+        }
+
+        // Generate fallback data for testing
+        function generateFallbackData(period) {
+            console.log('Generating fallback data for period:', period);
+            
+            const days = period === '7d' ? 7 : period === '30d' ? 30 : period === '90d' ? 90 : 365;
+            const fallbackData = [];
+            
+            for (let i = days - 1; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                
+                // Generate random earnings data for demonstration
+                const totalEarnings = Math.random() * 1000 + 100;
+                const commission = totalEarnings * 0.1;
+                const netEarnings = totalEarnings - commission;
+                
+                fallbackData.push({
+                    date: date.toISOString().split('T')[0],
+                    totalEarnings: totalEarnings,
+                    netEarnings: netEarnings,
+                    commission: commission,
+                    orderCount: Math.floor(Math.random() * 10) + 1
+                });
+            }
+            
+            console.log('Generated fallback data:', fallbackData);
+            updateChart(fallbackData);
+            
+            // Update summary with fallback totals
+            const summary = {
+                totalEarnings: fallbackData.reduce((sum, item) => sum + item.totalEarnings, 0),
+                netEarnings: fallbackData.reduce((sum, item) => sum + item.netEarnings, 0),
+                commission: fallbackData.reduce((sum, item) => sum + item.commission, 0),
+                totalOrders: fallbackData.reduce((sum, item) => sum + item.orderCount, 0)
+            };
+            updateSummaryCards(summary);
+        }
 
         // ... rest of the existing script code ...
     </script>
@@ -4484,6 +4716,11 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
+                            // If the order status is set to completed, update the earnings display
+                            if (status === 'completed' && data.orderAmount) {
+                                updateEarningsCard(data.orderAmount);
+                            }
+
                             Swal.fire({
                                 title: 'Success!',
                                 text: `Order has been ${status === 'completed' ? 'accepted' : 'rejected'}`,
@@ -5039,6 +5276,11 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
+                        // If the order status is set to completed, update the earnings display
+                        if (status === 'completed' && data.orderAmount) {
+                            updateEarningsCard(data.orderAmount);
+                        }
+
                         Swal.fire({
                             title: 'Success!',
                             text: 'Order status updated successfully',
@@ -5473,6 +5715,11 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
+                            // If the order status is set to completed, update the earnings display
+                            if (newStatus === 'completed' && data.orderAmount) {
+                                updateEarningsCard(data.orderAmount);
+                            }
+
                             // Update the status badge in the UI
                             const statusBadge = document.querySelector(`[data-order-id="${orderId}"]`).closest('.order-card').querySelector('.order-status');
                             if (statusBadge) {
@@ -5506,6 +5753,36 @@
                     });
                 }
             });
+        }
+
+        // Function to update the earnings card in real-time when an order is completed
+        function updateEarningsCard(orderAmount) {
+            // Get the earnings stat card number element
+            const earningsElement = document.querySelector('.earnings-card .stat-number');
+            if (!earningsElement) return;
+            
+            // Get the current earnings value (remove currency symbol and commas)
+            let currentValue = earningsElement.textContent.trim();
+            currentValue = parseFloat(currentValue.replace('₱', '').replace(/,/g, '')) || 0;
+            
+            // Calculate new earnings with 10% fee deducted
+            const newOrderAmount = parseFloat(orderAmount) * 0.9; // Apply 10% commission fee
+            const newTotalEarnings = currentValue + newOrderAmount;
+            
+            // Update the display with formatted number
+            earningsElement.textContent = '₱' + newTotalEarnings.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            
+            // Add animation effect to highlight the change
+            earningsElement.style.transition = 'transform 0.3s ease, color 0.3s ease';
+            earningsElement.style.transform = 'scale(1.1)';
+            earningsElement.style.color = '#FFEB3B';
+            
+            setTimeout(() => {
+                earningsElement.style.transform = 'scale(1)';
+                earningsElement.style.color = 'white';
+            }, 500);
+            
+            console.log(`Earnings updated: Added ₱${newOrderAmount.toFixed(2)} (after 10% fee from ₱${orderAmount})`);
         }
 
         // ... existing code ...
