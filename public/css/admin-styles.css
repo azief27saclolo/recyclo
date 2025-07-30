@@ -299,9 +299,30 @@ body {
     color: #155724;
 }
 
+.badge.paid {
+    background-color: #e7f3ff;
+    color: #004085;
+    border: 1px solid #bee5eb;
+}
+
 .badge.cancelled {
     background-color: #f8d7da;
     color: #721c24;
+}
+
+.badge.processing {
+    background-color: #e2e3e5;
+    color: #383d41;
+}
+
+.badge.delivering {
+    background-color: #cce7ff;
+    color: #004085;
+}
+
+.badge.delivered {
+    background-color: #d1ecf1;
+    color: #0c5460;
 }
 
 .btn {

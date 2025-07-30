@@ -55,7 +55,7 @@ class PaymentDistribution extends Model
         ]);
     }
 
-    public function calculatePlatformFee($percentage = 5)
+    public function calculatePlatformFee($percentage = 10)
     {
         $fee = ($this->order_amount * $percentage) / 100;
         $this->platform_fee = $fee;
