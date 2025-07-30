@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Shop;
 use App\Models\Order;
+use App\Models\PaymentDistribution;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -469,5 +470,174 @@ class ShopController extends Controller
         $shop->posts->load('product');
 
         return view('shops.show', compact('shop'));
+    }
+
+    /**
+     * Get earnings chart data for the authenticated shop
+     */
+    public function getEarningsChart(Request $request)
+    {
+        try {
+            $period = $request->input('period', '30d');
+            $userId = Auth::id();
+            
+            \Log::info("Getting earnings chart for user: {$userId}, period: {$period}");
+            
+            // Debug: Check if there are any payment distributions for this user
+            $totalPaymentCount = PaymentDistribution::where('seller_id', $userId)->count();
+            $completedPaymentCount = PaymentDistribution::where('seller_id', $userId)->where('status', 'completed')->count();
+            \Log::info("Total payments for user: {$totalPaymentCount}, Completed: {$completedPaymentCount}");
+            
+            // Calculate date range based on period
+            $startDate = match($period) {
+                '7d' => now()->subDays(7),
+                '30d' => now()->subDays(30),
+                '90d' => now()->subDays(90),
+                '1y' => now()->subYear(),
+                default => now()->subDays(30)
+            };
+
+            \Log::info("Date range: {$startDate} to " . now());
+
+            // Get payment distribution data with proper date formatting
+            $payments = PaymentDistribution::where('seller_id', $userId)
+                ->where('status', 'completed')
+                ->where('created_at', '>=', $startDate)
+                ->selectRaw('DATE(created_at) as date, SUM(order_amount) as daily_total, SUM(seller_amount) as daily_net, SUM(platform_fee) as daily_commission, COUNT(*) as payment_count')
+                ->groupBy('date')
+                ->orderBy('date')
+                ->get();
+
+            \Log::info("Found {$payments->count()} payment records");
+            
+            // Debug: Log the actual payment data
+            foreach ($payments as $payment) {
+                \Log::info("Payment data: date={$payment->date}, total={$payment->daily_total}, net={$payment->daily_net}, commission={$payment->daily_commission}");
+            }
+
+            // If no real payments exist, generate some sample data for testing
+            if ($payments->isEmpty()) {
+                \Log::info("No payments found, generating sample data");
+                return $this->generateSampleEarningsData($period, $startDate);
+            }
+
+            // Generate all dates in the range
+            $dateRange = [];
+            $current = $startDate->copy();
+            while ($current <= now()) {
+                $dateRange[] = $current->format('Y-m-d');
+                $current->addDay();
+            }
+
+            // Format data for chart
+            $chartData = [];
+            foreach ($dateRange as $date) {
+                $paymentData = $payments->firstWhere('date', $date);
+                $totalEarnings = $paymentData ? $paymentData->daily_total : 0;
+                $netEarnings = $paymentData ? $paymentData->daily_net : 0;
+                $commission = $paymentData ? $paymentData->daily_commission : 0;
+
+                $chartData[] = [
+                    'date' => $date,
+                    'totalEarnings' => (float) $totalEarnings,
+                    'netEarnings' => (float) $netEarnings,
+                    'commission' => (float) $commission,
+                    'paymentCount' => $paymentData ? $paymentData->payment_count : 0
+                ];
+            }
+
+            $summary = [
+                'totalEarnings' => (float) $payments->sum('daily_total'),
+                'netEarnings' => (float) $payments->sum('daily_net'),
+                'commission' => (float) $payments->sum('daily_commission'),
+                'totalPayments' => (int) $payments->sum('payment_count')
+            ];
+
+            \Log::info("Returning chart data with " . count($chartData) . " data points");
+
+            return response()->json([
+                'success' => true,
+                'data' => $chartData,
+                'period' => $period,
+                'summary' => $summary,
+                'hasRealData' => true
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error fetching earnings chart data: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load earnings data',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Generate sample earnings data for testing when no real orders exist
+     */
+    private function generateSampleEarningsData($period, $startDate)
+    {
+        \Log::info("Generating sample earnings data for period: {$period}");
+        
+        $days = match($period) {
+            '7d' => 7,
+            '30d' => 30,
+            '90d' => 90,
+            '1y' => 365,
+            default => 30
+        };
+
+        $chartData = [];
+        $totalSampleEarnings = 0;
+        $totalSamplePayments = 0;
+        $totalSampleNet = 0;
+        $totalSampleCommission = 0;
+
+        for ($i = $days - 1; $i >= 0; $i--) {
+            $date = now()->subDays($i);
+            
+            // Generate realistic sample data
+            $baseEarning = 200; // Base earning per day
+            $variance = rand(-100, 300); // Random variance
+            $totalEarnings = max(0, $baseEarning + $variance);
+            
+            $commission = $totalEarnings * 0.1;
+            $netEarnings = $totalEarnings - $commission;
+            $paymentCount = $totalEarnings > 0 ? rand(1, 5) : 0;
+            
+            $chartData[] = [
+                'date' => $date->format('Y-m-d'),
+                'totalEarnings' => (float) $totalEarnings,
+                'netEarnings' => (float) $netEarnings,
+                'commission' => (float) $commission,
+                'paymentCount' => $paymentCount
+            ];
+
+            $totalSampleEarnings += $totalEarnings;
+            $totalSampleNet += $netEarnings;
+            $totalSampleCommission += $commission;
+            $totalSamplePayments += $paymentCount;
+        }
+
+        $summary = [
+            'totalEarnings' => (float) $totalSampleEarnings,
+            'netEarnings' => (float) $totalSampleNet,
+            'commission' => (float) $totalSampleCommission,
+            'totalPayments' => $totalSamplePayments
+        ];
+
+        \Log::info("Generated sample data with total earnings: {$totalSampleEarnings}");
+
+        return response()->json([
+            'success' => true,
+            'data' => $chartData,
+            'period' => $period,
+            'summary' => $summary,
+            'hasRealData' => false,
+            'message' => 'Sample data generated for demonstration (no completed payments found)'
+        ]);
     }
 }

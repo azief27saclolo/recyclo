@@ -98,4 +98,53 @@ class Order extends Model
     {
         return $this->deliveryDetail && $this->deliveryDetail->deliveryMethod->isDelivery();
     }
+
+    /**
+     * Get the payment distribution for the order.
+     */
+    public function paymentDistribution()
+    {
+        return $this->hasOne(PaymentDistribution::class);
+    }
+
+    /**
+     * Create payment distribution when order is approved
+     */
+    public function createPaymentDistribution($platformFeePercentage = 10)
+    {
+        if ($this->paymentDistribution) {
+            return $this->paymentDistribution;
+        }
+
+        $platformFee = ($this->total_amount * $platformFeePercentage) / 100;
+        $sellerAmount = $this->total_amount - $platformFee;
+
+        return PaymentDistribution::create([
+            'order_id' => $this->id,
+            'seller_id' => $this->seller_id,
+            'order_amount' => $this->total_amount,
+            'platform_fee' => $platformFee,
+            'seller_amount' => $sellerAmount,
+            'status' => 'pending'
+        ]);
+    }
+
+    /**
+     * Check if payment has been transferred to seller
+     */
+    public function isPaymentTransferred()
+    {
+        return $this->paymentDistribution && $this->paymentDistribution->status === 'completed';
+    }
+
+    /**
+     * Get payment transfer status
+     */
+    public function getPaymentStatusAttribute()
+    {
+        if (!$this->paymentDistribution) {
+            return 'not_created';
+        }
+        return $this->paymentDistribution->status;
+    }
 }

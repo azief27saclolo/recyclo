@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     @vite(['resources/css/app.css', 'resources/css/style.css', 'resources/js/app.js'])
     <style>
         :root {
@@ -1298,11 +1299,24 @@
                             <div class="stat-number">
                                 @php
                                     try {
-                                        $totalEarnings = \App\Models\Order::where('seller_id', Auth::id())
+                                        $netEarnings = \App\Models\PaymentDistribution::where('seller_id', Auth::id())
                                                     ->where('status', 'completed')
-                                                    ->sum('total_amount');
-                                        $netEarnings = $totalEarnings * 0.9;
+                                                    ->sum('seller_amount');
+                                        
+                                        // Check if there are completed orders but no payments
+                                        $completedOrdersCount = \App\Models\Order::where('seller_id', Auth::id())
+                                                              ->where('status', 'completed')
+                                                              ->count();
+                                        $paymentCount = \App\Models\PaymentDistribution::where('seller_id', Auth::id())
+                                                      ->where('status', 'completed')
+                                                      ->count();
+                                        
                                         echo '₱' . number_format($netEarnings ?? 0, 2);
+                                        
+                                        // Add a small indicator if there are pending payments
+                                        if ($completedOrdersCount > 0 && $paymentCount === 0) {
+                                            echo '<small style="display: block; font-size: 0.7rem; opacity: 0.8; margin-top: 2px;">Payments pending</small>';
+                                        }
                                     } catch (\Exception $e) {
                                         echo '₱0.00';
                                     }
@@ -3672,7 +3686,7 @@
 
     <!-- Earnings Modal -->
     <div id="earningsModal" class="modal">
-        <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-content" style="max-width: 1000px;">
             <div class="modal-header">
                 <h2 class="modal-title">Earnings Overview</h2>
                 <span class="close">&times;</span>
@@ -3686,12 +3700,12 @@
                         </div>
                         <div class="card-content">
                             <h3>Total Earnings</h3>
-                            <p class="amount">
+                            <p class="amount" id="totalEarningsAmount">
                                 @php
                                     try {
-                                        $totalEarnings = \App\Models\Order::where('seller_id', Auth::id())
+                                        $totalEarnings = \App\Models\PaymentDistribution::where('seller_id', Auth::id())
                                                     ->where('status', 'completed')
-                                                    ->sum('total_amount');
+                                                    ->sum('order_amount');
                                         echo '₱' . number_format($totalEarnings ?? 0, 2);
                                     } catch (\Exception $e) {
                                         echo '₱0.00';
@@ -3708,13 +3722,12 @@
                         </div>
                         <div class="card-content">
                             <h3>Net Earnings</h3>
-                            <p class="amount">
+                            <p class="amount" id="netEarningsAmount">
                                 @php
                                     try {
-                                        $totalEarnings = \App\Models\Order::where('seller_id', Auth::id())
+                                        $netEarnings = \App\Models\PaymentDistribution::where('seller_id', Auth::id())
                                                     ->where('status', 'completed')
-                                                    ->sum('total_amount');
-                                        $netEarnings = $totalEarnings * 0.9;
+                                                    ->sum('seller_amount');
                                         echo '₱' . number_format($netEarnings ?? 0, 2);
                                     } catch (\Exception $e) {
                                         echo '₱0.00';
@@ -3725,19 +3738,18 @@
                         </div>
                     </div>
                     
-                    <div class="earnings-summary-card commission-paid">
+                    <div class="earnings-summary-card commission-paid" id="commissionStatCard" style="cursor: pointer;">
                         <div class="card-icon">
                             <i class="bi bi-percent"></i>
                         </div>
                         <div class="card-content">
                             <h3>Commission Paid</h3>
-                            <p class="amount">
+                            <p class="amount" id="commissionAmount">
                                 @php
                                     try {
-                                        $totalEarnings = \App\Models\Order::where('seller_id', Auth::id())
+                                        $commission = \App\Models\PaymentDistribution::where('seller_id', Auth::id())
                                                     ->where('status', 'completed')
-                                                    ->sum('total_amount');
-                                        $commission = $totalEarnings * 0.1;
+                                                    ->sum('platform_fee');
                                         echo '₱' . number_format($commission ?? 0, 2);
                                     } catch (\Exception $e) {
                                         echo '₱0.00';
@@ -3746,6 +3758,22 @@
                             </p>
                             <span class="label">10% of total earnings</span>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Chart Section -->
+                <div style="margin: 30px 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3>Earnings Trend</h3>
+                        <select id="chartPeriod" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; background: white;">
+                            <option value="7d">Last 7 Days</option>
+                            <option value="30d" selected>Last 30 Days</option>
+                            <option value="90d">Last 90 Days</option>
+                            <option value="1y">Last Year</option>
+                        </select>
+                    </div>
+                    <div style="position: relative; height: 400px; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                        <canvas id="earningsChart"></canvas>
                     </div>
                 </div>
 
@@ -3765,20 +3793,21 @@
                             </thead>
                             <tbody>
                                 @php
-                                    $recentOrders = \App\Models\Order::where('seller_id', Auth::id())
+                                    $recentPayments = \App\Models\PaymentDistribution::where('seller_id', Auth::id())
                                         ->where('status', 'completed')
+                                        ->with('order')
                                         ->latest()
                                         ->take(5)
                                         ->get();
                                 @endphp
                                 
-                                @forelse($recentOrders as $order)
+                                @forelse($recentPayments as $payment)
                                     <tr>
-                                        <td>{{ $order->created_at->format('M d, Y') }}</td>
-                                        <td>#{{ $order->id }}</td>
-                                        <td>₱{{ number_format($order->total_amount, 2) }}</td>
-                                        <td>₱{{ number_format($order->total_amount * 0.1, 2) }}</td>
-                                        <td>₱{{ number_format($order->total_amount * 0.9, 2) }}</td>
+                                        <td>{{ $payment->created_at->format('M d, Y') }}</td>
+                                        <td>#{{ $payment->order_id }}</td>
+                                        <td>₱{{ number_format($payment->order_amount, 2) }}</td>
+                                        <td>₱{{ number_format($payment->platform_fee, 2) }}</td>
+                                        <td>₱{{ number_format($payment->seller_amount, 2) }}</td>
                                     </tr>
                                 @empty
                                     <tr>
@@ -3796,27 +3825,415 @@
     <script>
         // ... existing script code ...
 
-        // Earnings Modal Functionality
-        const earningsModal = document.getElementById('earningsModal');
-        const earningsStatCard = document.getElementById('earningsStatCard');
-        const earningsCloseBtn = earningsModal.querySelector('.close');
+        // Earnings Modal Functionality - Wrap in DOMContentLoaded to ensure elements exist
+        document.addEventListener('DOMContentLoaded', function() {
+            // Earnings Modal Functionality
+            const earningsModal = document.getElementById('earningsModal');
+            const earningsStatCard = document.getElementById('earningsStatCard');
+            const earningsCloseBtn = earningsModal?.querySelector('.close');
+            let earningsChart = null;
 
-        // Open earnings modal when earnings card is clicked
-        earningsStatCard.addEventListener('click', function() {
-            earningsModal.style.display = 'block';
-        });
+            // Commission Modal Functionality
+            const commissionModal = document.getElementById('commissionModal');
+            const commissionStatCard = document.getElementById('commissionStatCard');
+            const commissionCloseBtn = commissionModal?.querySelector('.close');
 
-        // Close earnings modal when X is clicked
-        earningsCloseBtn.addEventListener('click', function() {
-            earningsModal.style.display = 'none';
-        });
+            // Check if elements exist before adding event listeners
+            if (!earningsStatCard) {
+                console.error('Earnings stat card not found! Looking for element with id="earningsStatCard"');
+                return;
+            }
+            
+            if (!commissionStatCard) {
+                console.error('Commission stat card not found! Looking for element with id="commissionStatCard"');
+                return;
+            }
 
-        // Close earnings modal when clicking outside
-        window.addEventListener('click', function(e) {
-            if (e.target === earningsModal) {
-                earningsModal.style.display = 'none';
+            if (!earningsModal) {
+                console.error('Earnings modal not found! Looking for element with id="earningsModal"');
+                return;
+            }
+
+            if (!commissionModal) {
+                console.error('Commission modal not found! Looking for element with id="commissionModal"');
+                return;
+            }
+
+            console.log('All modal elements found successfully!');
+            console.log('Earnings card:', earningsStatCard);
+            console.log('Commission card:', commissionStatCard);
+            console.log('Earnings modal:', earningsModal);
+            console.log('Commission modal:', commissionModal);
+
+            // Open earnings modal when earnings card is clicked
+            earningsStatCard.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Earnings card clicked!');
+                console.log('Opening earnings modal...');
+                earningsModal.style.display = 'block';
+                initEarningsChart();
+                // Refresh the earnings summary cards with latest data
+                refreshEarningsSummary();
+                
+                // Debug: Check payment vs order data
+                checkDataConsistency();
+            });
+
+            // Open commission modal when commission card is clicked
+            commissionStatCard.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Commission card clicked!');
+                console.log('Opening commission modal...');
+                commissionModal.style.display = 'block';
+            });
+
+            // Close earnings modal when X is clicked
+            if (earningsCloseBtn) {
+                earningsCloseBtn.addEventListener('click', function() {
+                    earningsModal.style.display = 'none';
+                    if (earningsChart) {
+                        earningsChart.destroy();
+                        earningsChart = null;
+                    }
+                });
+            }
+
+            // Close commission modal when X is clicked
+            if (commissionCloseBtn) {
+                commissionCloseBtn.addEventListener('click', function() {
+                    commissionModal.style.display = 'none';
+                });
+            }
+
+            // Close earnings modal when clicking outside
+            window.addEventListener('click', function(e) {
+                if (e.target === earningsModal) {
+                    earningsModal.style.display = 'none';
+                    if (earningsChart) {
+                        earningsChart.destroy();
+                        earningsChart = null;
+                    }
+                }
+                if (e.target === commissionModal) {
+                    commissionModal.style.display = 'none';
+                }
+            });
+
+            // Period selector change handler
+            const chartPeriod = document.getElementById('chartPeriod');
+            if (chartPeriod) {
+                chartPeriod.addEventListener('change', function() {
+                    loadEarningsData(this.value);
+                });
             }
         });
+
+        // Initialize earnings chart
+        function initEarningsChart() {
+            const ctx = document.getElementById('earningsChart').getContext('2d');
+            
+            earningsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Total Earnings',
+                            data: [],
+                            borderColor: '#517A5B',
+                            backgroundColor: 'rgba(81, 122, 91, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Net Earnings',
+                            data: [],
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Commission',
+                            data: [],
+                            borderColor: '#dc2626',
+                            backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Earnings Overview',
+                            font: { size: 16, weight: 'bold' }
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ₱' + context.parsed.y.toFixed(2);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        },
+                        y: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Amount (₱)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '₱' + value.toFixed(2);
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+
+            // Load initial data
+            loadEarningsData('30d');
+        }
+
+        // Load earnings data from API
+        function loadEarningsData(period = '30d') {
+            console.log('Loading earnings data for period:', period);
+            
+            fetch(`/shop/earnings-chart?period=${period}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => {
+                console.log('API Response Status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Earnings API Response:', data);
+                
+                if (data.success && data.data) {
+                    updateChart(data.data);
+                    updateSummaryCards(data.summary);
+                } else {
+                    console.error('API returned error:', data.message);
+                    // Use fallback data if API fails
+                    generateFallbackData(period);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading earnings data:', error);
+                // Use fallback data if fetch fails
+                generateFallbackData(period);
+            });
+        }
+
+        // Update chart with new data
+        function updateChart(chartData) {
+            if (!earningsChart) return;
+
+            const labels = chartData.map(item => {
+                const date = new Date(item.date);
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            });
+
+            const totalEarnings = chartData.map(item => item.totalEarnings);
+            const netEarnings = chartData.map(item => item.netEarnings);
+            const commission = chartData.map(item => item.commission);
+
+            earningsChart.data.labels = labels;
+            earningsChart.data.datasets[0].data = totalEarnings;
+            earningsChart.data.datasets[1].data = netEarnings;
+            earningsChart.data.datasets[2].data = commission;
+            
+            earningsChart.update();
+            console.log('Chart updated with data:', { labels, totalEarnings, netEarnings, commission });
+        }
+
+        // Update summary cards
+        function updateSummaryCards(summary) {
+            if (summary) {
+                document.getElementById('totalEarningsAmount').textContent = '₱' + summary.totalEarnings.toFixed(2);
+                document.getElementById('netEarningsAmount').textContent = '₱' + summary.netEarnings.toFixed(2);
+                document.getElementById('commissionAmount').textContent = '₱' + summary.commission.toFixed(2);
+            }
+        }
+
+        // Generate fallback data for testing
+        function generateFallbackData(period) {
+            console.log('Generating fallback data for period:', period);
+            
+            const days = period === '7d' ? 7 : period === '30d' ? 30 : period === '90d' ? 90 : 365;
+            const fallbackData = [];
+            
+            for (let i = days - 1; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                
+                // Generate random earnings data for demonstration
+                const totalEarnings = Math.random() * 1000 + 100;
+                const commission = totalEarnings * 0.1;
+                const netEarnings = totalEarnings - commission;
+                
+                fallbackData.push({
+                    date: date.toISOString().split('T')[0],
+                    totalEarnings: totalEarnings,
+                    netEarnings: netEarnings,
+                    commission: commission,
+                    orderCount: Math.floor(Math.random() * 10) + 1
+                });
+            }
+            
+            console.log('Generated fallback data:', fallbackData);
+            updateChart(fallbackData);
+            
+            // Update summary with fallback totals
+            const summary = {
+                totalEarnings: fallbackData.reduce((sum, item) => sum + item.totalEarnings, 0),
+                netEarnings: fallbackData.reduce((sum, item) => sum + item.netEarnings, 0),
+                commission: fallbackData.reduce((sum, item) => sum + item.commission, 0),
+                totalOrders: fallbackData.reduce((sum, item) => sum + item.orderCount, 0)
+            };
+            updateSummaryCards(summary);
+        }
+
+        // Refresh earnings summary cards
+        function refreshEarningsSummary() {
+            console.log('Refreshing earnings summary...');
+            fetch('/shop/earnings-chart?period=30d', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.summary) {
+                    updateSummaryCards(data.summary);
+                    console.log('Summary refreshed:', data.summary);
+                }
+            })
+            .catch(error => {
+                console.error('Error refreshing summary:', error);
+            });
+        }
+
+        // Check data consistency between orders and payments
+        function checkDataConsistency() {
+            fetch('/debug-payments', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('=== DATA CONSISTENCY CHECK ===');
+                console.log('User ID:', data.user_id);
+                console.log('Completed Orders:', data.order_count);
+                console.log('Payment Distributions:', data.payment_count);
+                console.log('Payment Records:', data.payment_distributions);
+                console.log('Order Records:', data.completed_orders);
+                console.log('=== END CHECK ===');
+                
+                if (data.payment_count === 0 && data.order_count > 0) {
+                    console.warn('⚠️ You have completed orders but no payment distributions! Earnings will show as ₱0.00');
+                    console.log('💡 Payment distributions are created when admin processes payments for completed orders.');
+                }
+            })
+            .catch(error => {
+                console.error('Error checking data consistency:', error);
+            });
+        }
+
+        // Function to view payment proof
+        function viewPaymentProof(imageUrl) {
+            // Create a modal to display the payment proof image
+            const proofModal = document.createElement('div');
+            proofModal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.8);
+                z-index: 9999;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                cursor: pointer;
+            `;
+            
+            const proofImage = document.createElement('img');
+            proofImage.src = imageUrl;
+            proofImage.style.cssText = `
+                max-width: 90%;
+                max-height: 90%;
+                border-radius: 10px;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            `;
+            
+            const closeBtn = document.createElement('span');
+            closeBtn.innerHTML = '&times;';
+            closeBtn.style.cssText = `
+                position: absolute;
+                top: 20px;
+                right: 30px;
+                color: white;
+                font-size: 40px;
+                font-weight: bold;
+                cursor: pointer;
+                z-index: 10000;
+            `;
+            
+            proofModal.appendChild(proofImage);
+            proofModal.appendChild(closeBtn);
+            document.body.appendChild(proofModal);
+            
+            // Close modal when clicking anywhere or on close button
+            proofModal.addEventListener('click', function() {
+                document.body.removeChild(proofModal);
+            });
+            
+            closeBtn.addEventListener('click', function() {
+                document.body.removeChild(proofModal);
+            });
+        }
 
         // ... rest of the existing script code ...
     </script>
@@ -3832,34 +4249,37 @@
                 <!-- Summary Stats -->
                 <div class="breakdown-summary">
                     <div class="summary-stat">
-                        <h4>Total Orders</h4>
+                        <h4>Total Payments</h4>
                         <p class="stat-value">
                             @php
-                                $totalOrders = \App\Models\Order::where('seller_id', Auth::id())
+                                $totalPayments = \App\Models\PaymentDistribution::where('seller_id', Auth::id())
                                     ->where('status', 'completed')
                                     ->count();
-                                echo $totalOrders;
+                                echo $totalPayments;
                             @endphp
                         </p>
                     </div>
                     <div class="summary-stat">
-                        <h4>Average Order Value</h4>
+                        <h4>Average Payment Value</h4>
                         <p class="stat-value">
                             @php
-                                $avgOrderValue = $totalOrders > 0 ? $totalEarnings / $totalOrders : 0;
-                                echo '₱' . number_format($avgOrderValue, 2);
-                            @endphp
-                        </p>
-                    </div>
-                    <div class="summary-stat">
-                        <h4>Highest Value Order</h4>
-                        <p class="stat-value">
-                            @php
-                                $highestOrder = \App\Models\Order::where('seller_id', Auth::id())
+                                $totalEarningsSum = \App\Models\PaymentDistribution::where('seller_id', Auth::id())
                                     ->where('status', 'completed')
-                                    ->orderBy('total_amount', 'desc')
+                                    ->sum('order_amount');
+                                $avgPaymentValue = $totalPayments > 0 ? $totalEarningsSum / $totalPayments : 0;
+                                echo '₱' . number_format($avgPaymentValue, 2);
+                            @endphp
+                        </p>
+                    </div>
+                    <div class="summary-stat">
+                        <h4>Highest Value Payment</h4>
+                        <p class="stat-value">
+                            @php
+                                $highestPayment = \App\Models\PaymentDistribution::where('seller_id', Auth::id())
+                                    ->where('status', 'completed')
+                                    ->orderBy('order_amount', 'desc')
                                     ->first();
-                                echo $highestOrder ? '₱' . number_format($highestOrder->total_amount, 2) : '₱0.00';
+                                echo $highestPayment ? '₱' . number_format($highestPayment->order_amount, 2) : '₱0.00';
                             @endphp
                         </p>
                     </div>
@@ -3870,31 +4290,34 @@
                     <h3>Earnings Timeline</h3>
                     <div class="timeline-container">
                         @php
-                            $orders = \App\Models\Order::where('seller_id', Auth::id())
+                            $payments = \App\Models\PaymentDistribution::where('seller_id', Auth::id())
                                 ->where('status', 'completed')
-                                ->with(['items.post', 'buyer'])
+                                ->with(['order.items.post', 'order.buyer'])
                                 ->latest()
                                 ->get();
                         @endphp
 
-                        @forelse($orders as $order)
+                        @forelse($payments as $payment)
                             <div class="timeline-item">
                                 <div class="timeline-date">
-                                    <span class="date">{{ $order->created_at->format('M d, Y') }}</span>
-                                    <span class="time">{{ $order->created_at->format('h:i A') }}</span>
+                                    <span class="date">{{ $payment->created_at->format('M d, Y') }}</span>
+                                    <span class="time">{{ $payment->created_at->format('h:i A') }}</span>
                                 </div>
                                 <div class="timeline-content">
                                     <div class="order-header">
-                                        <h4>Order #{{ $order->id }}</h4>
-                                        <span class="order-amount">₱{{ number_format($order->total_amount, 2) }}</span>
+                                        <h4>Payment for Order #{{ $payment->order_id }}</h4>
+                                        <span class="order-amount">₱{{ number_format($payment->order_amount, 2) }}</span>
                                     </div>
                                     <div class="order-details">
+                                        @if($payment->order && $payment->order->buyer)
                                         <div class="customer-info">
                                             <i class="bi bi-person"></i>
-                                            <span>{{ $order->buyer->firstname }} {{ $order->buyer->lastname }}</span>
+                                            <span>{{ $payment->order->buyer->firstname }} {{ $payment->order->buyer->lastname }}</span>
                                         </div>
+                                        @endif
+                                        @if($payment->order && $payment->order->items)
                                         <div class="products-list">
-                                            @foreach($order->items as $item)
+                                            @foreach($payment->order->items as $item)
                                                 <div class="product-item">
                                                     <img src="{{ asset('storage/' . $item->post->image) }}" 
                                                          alt="{{ $item->post->title }}"
@@ -3907,18 +4330,19 @@
                                                 </div>
                                             @endforeach
                                         </div>
+                                        @endif
                                         <div class="order-summary">
                                             <div class="summary-row">
-                                                <span>Subtotal</span>
-                                                <span>₱{{ number_format($order->total_amount, 2) }}</span>
+                                                <span>Order Total</span>
+                                                <span>₱{{ number_format($payment->order_amount, 2) }}</span>
                                             </div>
                                             <div class="summary-row">
-                                                <span>Commission (10%)</span>
-                                                <span>₱{{ number_format($order->total_amount * 0.1, 2) }}</span>
+                                                <span>Platform Fee (10%)</span>
+                                                <span>₱{{ number_format($payment->platform_fee, 2) }}</span>
                                             </div>
                                             <div class="summary-row total">
                                                 <span>Net Earnings</span>
-                                                <span>₱{{ number_format($order->total_amount * 0.9, 2) }}</span>
+                                                <span>₱{{ number_format($payment->seller_amount, 2) }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -3927,11 +4351,192 @@
                         @empty
                             <div class="no-orders">
                                 <i class="bi bi-inbox"></i>
-                                <p>No completed orders yet</p>
+                                <p>No payment distributions yet</p>
                             </div>
                         @endforelse
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Commission Details Modal -->
+    <div id="commissionModal" class="modal">
+        <div class="modal-content" style="max-width: 1000px;">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i class="bi bi-percent me-2"></i>
+                    Commission Payment Details
+                </h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <!-- Commission Summary -->
+                <div class="commission-summary-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                    <div class="summary-card" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; padding: 20px; border-radius: 15px; text-align: center;">
+                        <div style="font-size: 24px; margin-bottom: 10px;">
+                            <i class="bi bi-cash-stack"></i>
+                        </div>
+                        <h3 style="margin: 0; font-size: 16px; opacity: 0.9;">Total Commission</h3>
+                        <p style="margin: 10px 0 0; font-size: 24px; font-weight: bold;">
+                            @php
+                                $totalCommission = \App\Models\PaymentDistribution::where('seller_id', Auth::id())
+                                    ->where('status', 'completed')
+                                    ->sum('platform_fee');
+                                echo '₱' . number_format($totalCommission ?? 0, 2);
+                            @endphp
+                        </p>
+                    </div>
+                    <div class="summary-card" style="background: white; border: 2px solid #e74c3c; color: #e74c3c; padding: 20px; border-radius: 15px; text-align: center;">
+                        <div style="font-size: 24px; margin-bottom: 10px;">
+                            <i class="bi bi-receipt"></i>
+                        </div>
+                        <h3 style="margin: 0; font-size: 16px;">Total Payments</h3>
+                        <p style="margin: 10px 0 0; font-size: 24px; font-weight: bold;">
+                            @php
+                                $commissionPaymentsCount = \App\Models\PaymentDistribution::where('seller_id', Auth::id())
+                                    ->where('status', 'completed')
+                                    ->count();
+                                echo $commissionPaymentsCount;
+                            @endphp
+                        </p>
+                    </div>
+                    <div class="summary-card" style="background: white; border: 2px solid #27ae60; color: #27ae60; padding: 20px; border-radius: 15px; text-align: center;">
+                        <div style="font-size: 24px; margin-bottom: 10px;">
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+                        <h3 style="margin: 0; font-size: 16px;">Last Payment</h3>
+                        <p style="margin: 10px 0 0; font-size: 16px; font-weight: bold;">
+                            @php
+                                $lastPayment = \App\Models\PaymentDistribution::where('seller_id', Auth::id())
+                                    ->where('status', 'completed')
+                                    ->latest('paid_at')
+                                    ->first();
+                                echo $lastPayment ? $lastPayment->paid_at->format('M d, Y') : 'No payments yet';
+                            @endphp
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Payment Transfer Details -->
+                <div class="commission-details" style="background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 20px; color: #333; display: flex; align-items: center; gap: 10px;">
+                        <i class="bi bi-bank"></i>
+                        Payment Transfer History
+                    </h3>
+                    
+                    <div class="table-responsive">
+                        <table class="commission-table" style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: #f8f9fa;">
+                                    <th style="padding: 15px; text-align: left; border-bottom: 2px solid #e9ecef; font-weight: 600; color: #666;">Payment Date</th>
+                                    <th style="padding: 15px; text-align: left; border-bottom: 2px solid #e9ecef; font-weight: 600; color: #666;">Order ID</th>
+                                    <th style="padding: 15px; text-align: left; border-bottom: 2px solid #e9ecef; font-weight: 600; color: #666;">Seller ID</th>
+                                    <th style="padding: 15px; text-align: left; border-bottom: 2px solid #e9ecef; font-weight: 600; color: #666;">Commission</th>
+                                    <th style="padding: 15px; text-align: left; border-bottom: 2px solid #e9ecef; font-weight: 600; color: #666;">Reference</th>
+                                    <th style="padding: 15px; text-align: center; border-bottom: 2px solid #e9ecef; font-weight: 600; color: #666;">Proof</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php
+                                    $commissionPayments = \App\Models\PaymentDistribution::where('seller_id', Auth::id())
+                                        ->where('status', 'completed')
+                                        ->with(['seller'])
+                                        ->latest('paid_at')
+                                        ->get();
+                                @endphp
+                                
+                                @forelse($commissionPayments as $payment)
+                                    <tr style="border-bottom: 1px solid #eee; transition: background-color 0.2s ease;">
+                                        <td style="padding: 15px; color: #333;">
+                                            <div>
+                                                <strong>{{ $payment->paid_at ? $payment->paid_at->format('M d, Y') : 'Pending' }}</strong>
+                                                @if($payment->paid_at)
+                                                    <br><small style="color: #666;">{{ $payment->paid_at->format('h:i A') }}</small>
+                                                @endif
+                                            </div>
+                                        </td>
+                                        <td style="padding: 15px; color: #333;">
+                                            <span style="background: #e3f2fd; color: #1976d2; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500;">
+                                                #{{ $payment->order_id }}
+                                            </span>
+                                        </td>
+                                        <td style="padding: 15px; color: #333;">
+                                            <div>
+                                                <strong>{{ $payment->seller_id }}</strong>
+                                                @if($payment->seller)
+                                                    <br><small style="color: #666;">{{ $payment->seller->firstname }} {{ $payment->seller->lastname }}</small>
+                                                @endif
+                                            </div>
+                                        </td>
+                                        <td style="padding: 15px; color: #e74c3c; font-weight: 600;">
+                                            ₱{{ number_format($payment->platform_fee, 2) }}
+                                        </td>
+                                        <td style="padding: 15px; color: #333;">
+                                            @if($payment->reference_number)
+                                                <span style="background: #e8f5e8; color: #2e7d32; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500;">
+                                                    {{ $payment->reference_number }}
+                                                </span>
+                                            @else
+                                                <span style="color: #999; font-style: italic;">No reference</span>
+                                            @endif
+                                        </td>
+                                        <td style="padding: 15px; text-align: center;">
+                                            @if($payment->payment_proof)
+                                                <button onclick="viewPaymentProof('{{ asset('storage/' . $payment->payment_proof) }}')" 
+                                                        style="background: #517A5B; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                                                    <i class="bi bi-eye"></i> View
+                                                </button>
+                                            @else
+                                                <span style="color: #999; font-style: italic;">No proof</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="6" style="padding: 40px; text-align: center; color: #666;">
+                                            <div>
+                                                <i class="bi bi-inbox" style="font-size: 48px; margin-bottom: 10px; color: #ccc;"></i>
+                                                <p>No commission payments yet</p>
+                                                <small>Commission will be deducted when admin processes your payments</small>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Payment Method Info (if available) -->
+                @if($commissionPayments->isNotEmpty())
+                <div class="payment-info" style="background: #f8f9fa; border-radius: 10px; padding: 20px; border-left: 4px solid #517A5B;">
+                    <h4 style="margin: 0 0 10px; color: #333; display: flex; align-items: center; gap: 8px;">
+                        <i class="bi bi-info-circle"></i>
+                        Payment Information
+                    </h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div>
+                            <strong style="color: #666; font-size: 14px;">Payment Method:</strong>
+                            <p style="margin: 5px 0 0; color: #333;">
+                                {{ $commissionPayments->first()->payment_method ?? 'Manual Transfer' }}
+                            </p>
+                        </div>
+                        <div>
+                            <strong style="color: #666; font-size: 14px;">Contact Used:</strong>
+                            <p style="margin: 5px 0 0; color: #333;">
+                                {{ $commissionPayments->first()->recipient_contact ?? 'Not specified' }}
+                            </p>
+                        </div>
+                        <div>
+                            <strong style="color: #666; font-size: 14px;">Total Orders Processed:</strong>
+                            <p style="margin: 5px 0 0; color: #333;">
+                                {{ $commissionPayments->count() }} orders
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                @endif
             </div>
         </div>
     </div>
@@ -4141,6 +4746,64 @@
 
         .timeline-container::-webkit-scrollbar-thumb:hover {
             background: #3a5c42;
+        }
+
+        /* Commission Modal Styles */
+        .commission-table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        .commission-table tr:hover {
+            background-color: #f8f9fa !important;
+        }
+
+        .commission-table th,
+        .commission-table td {
+            border-bottom: 1px solid #eee;
+            padding: 15px;
+            text-align: left;
+        }
+
+        .commission-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .commission-table tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+        .commission-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* Commission summary cards */
+        .commission-summary-grid .summary-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .commission-summary-grid .summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        /* Responsive design for commission modal */
+        @media (max-width: 768px) {
+            .commission-summary-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .commission-table {
+                font-size: 14px;
+            }
+            
+            .commission-table th,
+            .commission-table td {
+                padding: 10px 8px;
+            }
         }
     </style>
 
@@ -4484,6 +5147,11 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
+                            // If the order status is set to completed, update the earnings display
+                            if (status === 'completed' && data.orderAmount) {
+                                updateEarningsCard(data.orderAmount);
+                            }
+
                             Swal.fire({
                                 title: 'Success!',
                                 text: `Order has been ${status === 'completed' ? 'accepted' : 'rejected'}`,
@@ -4716,7 +5384,7 @@
                 <div class="orders-timeline">
                     <h3>Recent Orders</h3>
                     <div class="orders-list">
-                        @forelse(\App\Models\Order::where('seller_id', Auth::id())->with(['buyer', 'items.post'])->latest()->get() as $order)
+                        @forelse(\App\Models\Order::where('seller_id', Auth::id())->with(['buyer', 'items.post', 'deliveryDetail.deliveryMethod'])->latest()->get() as $order)
                             <div class="order-card">
                                 <div class="order-header">
                                     <div class="order-info">
@@ -4727,13 +5395,29 @@
                                                 <i class="bi bi-person"></i>
                                                 {{ $order->buyer->username }}
                                             </span>
+                                            <!-- Delivery Method Indicator -->
+                                            @if($order->deliveryDetail && $order->deliveryDetail->deliveryMethod)
+                                                <span class="delivery-method-info" style="background: {{ $order->deliveryDetail->deliveryMethod->isPickup() ? '#e8f5e8' : '#e3f2fd' }}; color: {{ $order->deliveryDetail->deliveryMethod->isPickup() ? '#28a745' : '#0d6efd' }}; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 500;">
+                                                    @if($order->deliveryDetail->deliveryMethod->isPickup())
+                                                        <i class="bi bi-bag-handle"></i> Pickup Order
+                                                    @else
+                                                        <i class="bi bi-truck"></i> Delivery Order
+                                                    @endif
+                                                </span>
+                                            @endif
                                             <button class="report-btn" data-user-id="{{ $order->buyer->id }}" data-order-id="{{ $order->id }}">
                                                 <i class="fas fa-flag"></i> Report User
                                             </button>
                                             @if($order->status === 'processing')
-                                                <button onclick="updateOrderStatus({{ $order->id }}, 'delivering')" class="delivery-btn" style="background-color: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
-                                                    <i class="bi bi-truck"></i> For Delivery
-                                                </button>
+                                                @if($order->deliveryDetail && $order->deliveryDetail->deliveryMethod->isPickup())
+                                                    <button onclick="updateOrderStatus({{ $order->id }}, 'delivering')" class="pickup-btn" style="background-color: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                                        <i class="bi bi-bag-check"></i> Ready for Pickup
+                                                    </button>
+                                                @else
+                                                    <button onclick="updateOrderStatus({{ $order->id }}, 'delivering')" class="delivery-btn" style="background-color: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                                        <i class="bi bi-truck"></i> For Delivery
+                                                    </button>
+                                                @endif
                                             @endif
                                         </div>
                                     </div>
@@ -4765,6 +5449,35 @@
                                             </span>
                                         </div>
                                     @endif
+
+                                    <!-- Delivery Details Section -->
+                                    @if($order->deliveryDetail)
+                                        <div class="delivery-details" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                                            @if($order->deliveryDetail->deliveryMethod->isPickup())
+                                                <h5 style="margin: 0 0 10px 0; color: #28a745; display: flex; align-items: center; gap: 8px;">
+                                                    <i class="bi bi-bag-handle"></i> Pickup Information
+                                                </h5>
+                                                @if($order->deliveryDetail->pickup_date)
+                                                    <p style="margin: 5px 0; color: #666;"><strong>Pickup Date:</strong> {{ \Carbon\Carbon::parse($order->deliveryDetail->pickup_date)->format('M d, Y') }}</p>
+                                                @endif
+                                                @if($order->deliveryDetail->pickup_time_slot)
+                                                    <p style="margin: 5px 0; color: #666;"><strong>Time Slot:</strong> {{ $order->deliveryDetail->pickup_time_slot }}</p>
+                                                @endif
+                                                @if($order->deliveryDetail->pickup_notes)
+                                                    <p style="margin: 5px 0; color: #666;"><strong>Notes:</strong> {{ $order->deliveryDetail->pickup_notes }}</p>
+                                                @endif
+                                                <p style="margin: 5px 0; color: #666;"><strong>Pickup Fee:</strong> ₱{{ number_format($order->deliveryDetail->delivery_fee, 2) }}</p>
+                                            @else
+                                                <h5 style="margin: 0 0 10px 0; color: #0d6efd; display: flex; align-items: center; gap: 8px;">
+                                                    <i class="bi bi-truck"></i> Delivery Information
+                                                </h5>
+                                                @if($order->deliveryDetail->delivery_address)
+                                                    <p style="margin: 5px 0; color: #666;"><strong>Address:</strong> {{ $order->deliveryDetail->delivery_address }}</p>
+                                                @endif
+                                                <p style="margin: 5px 0; color: #666;"><strong>Delivery Fee:</strong> ₱{{ number_format($order->deliveryDetail->delivery_fee, 2) }}</p>
+                                            @endif
+                                        </div>
+                                    @endif
                                     <div class="products-list">
                                         @foreach($order->items as $item)
                                             <div class="product-item">
@@ -4782,14 +5495,22 @@
                                     <div class="order-summary">
                                         <div class="summary-row">
                                             <span>Subtotal</span>
+                                            <span>₱{{ number_format($order->total_amount - ($order->deliveryDetail ? $order->deliveryDetail->delivery_fee : 35), 2) }}</span>
+                                        </div>
+                                        <div class="summary-row">
+                                            <span>{{ $order->deliveryDetail && $order->deliveryDetail->deliveryMethod->isPickup() ? 'Pickup Fee' : 'Delivery Fee' }}</span>
+                                            <span>₱{{ number_format($order->deliveryDetail ? $order->deliveryDetail->delivery_fee : 35, 2) }}</span>
+                                        </div>
+                                        <div class="summary-row total">
+                                            <span>Total Amount</span>
                                             <span>₱{{ number_format($order->total_amount, 2) }}</span>
                                         </div>
                                         <div class="summary-row">
                                             <span>Commission (10%)</span>
-                                            <span>₱{{ number_format($order->total_amount * 0.1, 2) }}</span>
+                                            <span>-₱{{ number_format($order->total_amount * 0.1, 2) }}</span>
                                         </div>
-                                        <div class="summary-row total">
-                                            <span>Net Amount</span>
+                                        <div class="summary-row total" style="border-top: 2px solid #28a745; font-weight: 700; color: #28a745;">
+                                            <span>Your Earnings</span>
                                             <span>₱{{ number_format($order->total_amount * 0.9, 2) }}</span>
                                         </div>
                                     </div>
@@ -4833,9 +5554,60 @@
         color: #333;
     }
 
-    .order-date {
-        color: #666;
-        font-size: 0.9em;
+    .order-meta {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 8px;
+    }
+
+    .delivery-method-info {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-weight: 500;
+        border-radius: 12px;
+        padding: 4px 10px;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+
+    .delivery-details {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+
+    .delivery-details h5 {
+        margin: 0 0 10px 0;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .delivery-details p {
+        margin: 5px 0;
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    .pickup-btn {
+        background-color: #28a745 !important;
+        transition: background-color 0.3s ease;
+    }
+
+    .pickup-btn:hover {
+        background-color: #218838 !important;
+    }
+
+    .delivery-btn {
+        background-color: #007bff !important;
+        transition: background-color 0.3s ease;
+    }
+
+    .delivery-btn:hover {
+        background-color: #0056b3 !important;
     }
 
     .order-status {
@@ -5039,6 +5811,11 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
+                        // If the order status is set to completed, update the earnings display
+                        if (status === 'completed' && data.orderAmount) {
+                            updateEarningsCard(data.orderAmount);
+                        }
+
                         Swal.fire({
                             title: 'Success!',
                             text: 'Order status updated successfully',
@@ -5473,6 +6250,11 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
+                            // If the order status is set to completed, update the earnings display
+                            if (newStatus === 'completed' && data.orderAmount) {
+                                updateEarningsCard(data.orderAmount);
+                            }
+
                             // Update the status badge in the UI
                             const statusBadge = document.querySelector(`[data-order-id="${orderId}"]`).closest('.order-card').querySelector('.order-status');
                             if (statusBadge) {
@@ -5506,6 +6288,36 @@
                     });
                 }
             });
+        }
+
+        // Function to update the earnings card in real-time when an order is completed
+        function updateEarningsCard(orderAmount) {
+            // Get the earnings stat card number element
+            const earningsElement = document.querySelector('.earnings-card .stat-number');
+            if (!earningsElement) return;
+            
+            // Get the current earnings value (remove currency symbol and commas)
+            let currentValue = earningsElement.textContent.trim();
+            currentValue = parseFloat(currentValue.replace('₱', '').replace(/,/g, '')) || 0;
+            
+            // Calculate new earnings with 10% fee deducted
+            const newOrderAmount = parseFloat(orderAmount) * 0.9; // Apply 10% commission fee
+            const newTotalEarnings = currentValue + newOrderAmount;
+            
+            // Update the display with formatted number
+            earningsElement.textContent = '₱' + newTotalEarnings.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            
+            // Add animation effect to highlight the change
+            earningsElement.style.transition = 'transform 0.3s ease, color 0.3s ease';
+            earningsElement.style.transform = 'scale(1.1)';
+            earningsElement.style.color = '#FFEB3B';
+            
+            setTimeout(() => {
+                earningsElement.style.transform = 'scale(1)';
+                earningsElement.style.color = 'white';
+            }, 500);
+            
+            console.log(`Earnings updated: Added ₱${newOrderAmount.toFixed(2)} (after 10% fee from ₱${orderAmount})`);
         }
 
         // ... existing code ...

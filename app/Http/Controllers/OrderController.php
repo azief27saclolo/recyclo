@@ -500,19 +500,32 @@ class OrderController extends Controller
 
         // Validate the status
         $validStatus = $request->validate([
-            'status' => 'required|in:processing,delivering,delivered,for_pickup,cancelled,completed'
+            'status' => 'required|in:processing,delivering,delivered,for_pickup,cancelled,completed,paid'
         ]);
                    
         $newStatus = $validStatus['status'];
         $orderAmount = null;
 
-        // If buyer is marking as completed, only allow if current status is 'delivered'
+        // If buyer is marking as completed, allow if current status is 'delivered' OR if it's a pickup order going from 'delivering'
         if ($order->buyer_id === Auth::id() && $newStatus === 'completed') {
-            if ($order->status !== 'delivered') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'You can only mark orders as completed when they are delivered.'
-                ], 400);
+            $isPickupOrder = $order->deliveryDetail && $order->deliveryDetail->deliveryMethod->isPickup();
+            
+            if ($isPickupOrder) {
+                // For pickup orders, allow completion from 'delivering' status (ready for pickup)
+                if (!in_array($order->status, ['delivering', 'delivered'])) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Pickup orders can only be completed when ready for pickup or delivered.'
+                    ], 400);
+                }
+            } else {
+                // For delivery orders, only allow completion from 'delivered' status
+                if ($order->status !== 'delivered') {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'You can only mark orders as completed when they are delivered.'
+                    ], 400);
+                }
             }
         }
         

@@ -136,6 +136,11 @@ Route::group(['prefix' => 'admin', 'middleware' => [AdminMiddleware::class]], fu
     // Add correctly defined delete order route
     Route::get('/orders/{orderId}/delete', [AdminController::class, 'deleteOrder'])->name('admin.orders.delete');
 
+    // Payment Transfer Routes
+    Route::get('/orders/{order}/transfer-modal', [AdminController::class, 'showTransferModal'])->name('admin.orders.transfer-modal');
+    Route::post('/orders/{order}/transfer-payment', [AdminController::class, 'transferPayment'])->name('admin.orders.transfer-payment');
+    Route::get('/orders/{order}/payment-distribution', [AdminController::class, 'getPaymentDistribution'])->name('admin.orders.payment-distribution');
+
     // User management routes
     Route::post('/users/{user}/update-role', [AdminController::class, 'updateUserRole'])->name('admin.users.update-role');
     Route::post('/shops/{shop}/activate', [AdminController::class, 'activateShop'])->name('admin.shops.activate');
@@ -208,6 +213,29 @@ Route::middleware(['auth', 'verified'])->group(function() {
     // Add new routes for shop orders
     Route::get('/shop/orders', [ShopController::class, 'getOrders'])->name('shop.orders');
     Route::get('/shop/orders/{order}', [ShopController::class, 'getOrderDetails'])->name('shop.orders.details');
+
+    // Add earnings chart API route
+    Route::get('/shop/earnings-chart', [ShopController::class, 'getEarningsChart'])->name('shop.earnings.chart');
+
+    // Test route for earnings chart
+    Route::get('/test-earnings-chart', function() {
+        return view('test-earnings-chart');
+    });
+
+    // Debug route for payment distributions
+    Route::get('/debug-payments', function() {
+        $userId = Auth::id();
+        $payments = \App\Models\PaymentDistribution::where('seller_id', $userId)->get();
+        $orders = \App\Models\Order::where('seller_id', $userId)->where('status', 'completed')->get();
+        
+        return response()->json([
+            'user_id' => $userId,
+            'payment_distributions' => $payments,
+            'completed_orders' => $orders,
+            'payment_count' => $payments->count(),
+            'order_count' => $orders->count()
+        ]);
+    });
 
     // Cart Routes
     Route::middleware(['auth'])->group(function () {

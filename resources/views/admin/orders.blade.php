@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Orders Management - Recyclo Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -10,6 +11,72 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- External CSS file -->
     <link href="{{ asset('css/admin-styles.css') }}" rel="stylesheet">
+    <style>
+        .icon-btn-transfer {
+            background-color: #28a745;
+            color: white;
+        }
+        .icon-btn-transfer:hover {
+            background-color: #218838;
+        }
+        .icon-btn-warning {
+            background-color: #ffc107;
+            color: #212529;
+            cursor: default;
+        }
+        .icon-btn-success {
+            background-color: #28a745;
+            color: white;
+            cursor: default;
+        }
+        .order-info-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .transfer-form-section .form-group {
+            margin-bottom: 15px;
+        }
+        .transfer-form-section label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            display: block;
+        }
+        .transfer-form-section .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .transfer-form-section .form-control:focus {
+            border-color: #28a745;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.25);
+        }
+        .payment-breakdown {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 10px 0;
+        }
+        .payment-breakdown .breakdown-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .payment-breakdown .breakdown-row:last-child {
+            margin-bottom: 0;
+            font-weight: bold;
+            border-top: 1px solid #dee2e6;
+            padding-top: 8px;
+        }
+        .text-success { color: #28a745 !important; }
+        .text-danger { color: #dc3545 !important; }
+        .text-muted { color: #6c757d !important; }
+    </style>
 </head>
 <body>
     <div class="admin-container">
@@ -44,6 +111,7 @@
                         </button>
                         <button class="tab-btn" data-tab="approved">Approved</button>
                         <button class="tab-btn" data-tab="completed">Completed</button>
+                        <button class="tab-btn" data-tab="paid">Paid</button>
                         <button class="tab-btn" data-tab="cancelled">Cancelled</button>
                     </div>
                 </div>
@@ -104,6 +172,16 @@
                                                     <i class="bi bi-receipt"></i>
                                                 </button>
                                             @endif
+
+                                            @if($order->status === 'completed' && (!$order->paymentDistribution || $order->paymentDistribution->status !== 'completed'))
+                                                <button type="button" class="icon-btn icon-btn-transfer transfer-money-btn" data-order-id="{{ $order->id }}" title="Transfer Money to Seller">
+                                                    <i class="bi bi-cash-coin"></i>
+                                                </button>
+                                            @elseif($order->paymentDistribution && $order->paymentDistribution->status === 'completed' || $order->status === 'paid')
+                                                <span class="icon-btn icon-btn-success" title="Seller Has Been Paid" style="background: #28a745; color: white; cursor: default;">
+                                                    <i class="bi bi-check-circle"></i>
+                                                </span>
+                                            @endif
                                             
                                             @if($order->status == 'pending')
                                                 <form action="{{ route('admin.orders.approve', ['orderId' => $order->id]) }}" method="POST" style="display: inline;">
@@ -141,6 +219,12 @@
                                                             @method('PUT')
                                                             <input type="hidden" name="status" value="completed">
                                                             <button type="submit" class="dropdown-option">Completed</button>
+                                                        </form>
+                                                        <form action="/admin/orders/{{ $order->id }}/status" method="POST">
+                                                            @csrf
+                                                            @method('PUT')
+                                                            <input type="hidden" name="status" value="paid">
+                                                            <button type="submit" class="dropdown-option">Paid</button>
                                                         </form>
                                                         <form action="/admin/orders/{{ $order->id }}/status" method="POST">
                                                             @csrf
@@ -186,6 +270,65 @@
         </div>
     </div>
 
+    <!-- Transfer Money Modal -->
+    <div id="transferModal" class="modal">
+        <div class="modal-content" style="width: 90%; max-width: 600px;">
+            <div class="modal-header">
+                <h4><i class="bi bi-cash-coin"></i> Transfer Money to Seller</h4>
+                <span class="modal-close" id="closeTransferModal">&times;</span>
+            </div>
+            <form id="transferForm" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div id="transferOrderInfo" class="order-info-section">
+                        <!-- Order information will be loaded here -->
+                    </div>
+                    
+                    <div class="transfer-form-section">
+                        <div class="form-group">
+                            <label for="payment_method">Payment Method *</label>
+                            <select id="payment_method" name="payment_method" class="form-control" required>
+                                <option value="gcash">GCash</option>
+                                <option value="bank_transfer">Bank Transfer</option>
+                                <option value="cash">Cash</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="recipient_contact">Recipient Contact (GCash Number/Bank Details) *</label>
+                            <input type="text" id="recipient_contact" name="recipient_contact" class="form-control" 
+                                   placeholder="09XXXXXXXXX or Bank Account Details" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="reference_number">Reference Number *</label>
+                            <input type="text" id="reference_number" name="reference_number" class="form-control" 
+                                   placeholder="GCash Reference or Bank Transaction ID" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="payment_proof">Payment Proof (Screenshot)</label>
+                            <input type="file" id="payment_proof" name="payment_proof" class="form-control" 
+                                   accept="image/*">
+                            <small class="text-muted">Upload screenshot of payment confirmation</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="notes">Notes (Optional)</label>
+                            <textarea id="notes" name="notes" class="form-control" rows="3" 
+                                      placeholder="Additional notes about the transfer..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancelTransferBtn">Cancel</button>
+                    <button type="submit" class="btn btn-success" id="confirmTransferBtn">
+                        <i class="bi bi-check-circle"></i> Confirm Transfer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             @if (session('success'))
@@ -208,6 +351,7 @@
                 });
             @endif
 
+            // Receipt Modal Functionality
             const receiptModal = document.getElementById('receiptModal');
             const receiptImage = document.getElementById('receiptImage');
             const closeReceiptModal = document.getElementById('closeReceiptModal');
@@ -229,10 +373,120 @@
             closeReceiptBtn.addEventListener('click', function() {
                 receiptModal.style.display = 'none';
             });
+
+            // Transfer Money Modal Functionality
+            const transferModal = document.getElementById('transferModal');
+            const closeTransferModal = document.getElementById('closeTransferModal');
+            const cancelTransferBtn = document.getElementById('cancelTransferBtn');
+            const transferForm = document.getElementById('transferForm');
+            let currentOrderId = null;
+
+            // Use event delegation to handle dynamically loaded buttons
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.transfer-money-btn')) {
+                    const btn = e.target.closest('.transfer-money-btn');
+                    currentOrderId = btn.getAttribute('data-order-id');
+                    console.log('Setting currentOrderId to:', currentOrderId); // Debug log
+                    loadTransferModal(currentOrderId);
+                }
+            });
+
+            closeTransferModal.addEventListener('click', function() {
+                transferModal.style.display = 'none';
+                transferForm.reset();
+                currentOrderId = null; // Reset the currentOrderId
+            });
+
+            cancelTransferBtn.addEventListener('click', function() {
+                transferModal.style.display = 'none';
+                transferForm.reset();
+                currentOrderId = null; // Reset the currentOrderId
+            });
+
+            // Transfer form submission
+            transferForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitTransfer();
+            });
+
+            // Move submitTransfer function inside this scope to access currentOrderId
+            function submitTransfer() {
+                // Check if currentOrderId is set
+                if (!currentOrderId) {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Order ID is not set. Please try again.',
+                        icon: 'error',
+                        confirmButtonColor: '#dc3545'
+                    });
+                    return;
+                }
+
+                const formData = new FormData(transferForm);
+                
+                Swal.fire({
+                    title: 'Confirm Transfer',
+                    text: 'Are you sure you want to transfer this payment to the seller?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, Transfer Now!',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        console.log('Submitting transfer for order:', currentOrderId); // Debug log
+                        fetch(`/admin/orders/${currentOrderId}/transfer-payment`, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    title: 'Transfer Successful!',
+                                    text: data.message,
+                                    icon: 'success',
+                                    confirmButtonColor: '#28a745'
+                                }).then(() => {
+                                    transferModal.style.display = 'none';
+                                    transferForm.reset();
+                                    currentOrderId = null; // Reset the currentOrderId
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: 'Transfer Failed',
+                                    text: data.message || 'Failed to transfer payment',
+                                    icon: 'error',
+                                    confirmButtonColor: '#dc3545'
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            Swal.fire({
+                                title: 'Transfer Failed',
+                                text: 'Failed to transfer payment. Please try again.',
+                                icon: 'error',
+                                confirmButtonColor: '#dc3545'
+                            });
+                        });
+                    }
+                });
+            }
             
             window.addEventListener('click', function(event) {
                 if (event.target == receiptModal) {
                     receiptModal.style.display = 'none';
+                }
+                if (event.target == transferModal) {
+                    transferModal.style.display = 'none';
+                    transferForm.reset();
+                    currentOrderId = null; // Reset the currentOrderId
                 }
             });
 
@@ -307,6 +561,85 @@
                 });
             });
         });
+
+        function loadTransferModal(orderId) {
+            console.log('Loading transfer modal for order:', orderId); // Debug log
+            fetch(`/admin/orders/${orderId}/transfer-modal`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const order = data.order;
+                        const payment = order.payment_distribution;
+                        
+                        document.getElementById('transferOrderInfo').innerHTML = `
+                            <h5>Order #${order.id}</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Buyer:</strong> ${order.buyer_name}</p>
+                                    <p><strong>Seller:</strong> ${order.seller_name}</p>
+                                    <p><strong>Product:</strong> ${order.product_name}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="payment-breakdown">
+                                        <div class="breakdown-row">
+                                            <span>Order Amount:</span>
+                                            <span>₱${Number(payment?.order_amount || order.total_amount).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                                        </div>
+                                        <div class="breakdown-row">
+                                            <span>Platform Fee (10%):</span>
+                                            <span class="text-danger">-₱${Number(payment?.platform_fee || (order.total_amount * 0.10)).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                                        </div>
+                                        <div class="breakdown-row">
+                                            <span>Amount to Transfer:</span>
+                                            <span class="text-success">₱${Number(payment?.seller_amount || (order.total_amount * 0.90)).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                                        </div>
+                                    </div>
+                                    ${payment?.status === 'completed' ? `
+                                        <div class="alert alert-success">
+                                            <i class="bi bi-check-circle"></i> Payment already transferred on ${payment.paid_at}
+                                            <br><small>Reference: ${payment.reference_number}</small>
+                                        </div>
+                                    ` : `
+                                        <div class="alert alert-info">
+                                            <i class="bi bi-info-circle"></i> Ready to transfer payment to seller
+                                        </div>
+                                    `}
+                                </div>
+                            </div>
+                        `;
+
+                        // Auto-populate seller contact if available
+                        if (order.seller_contact && order.seller_contact.trim() !== '') {
+                            document.getElementById('recipient_contact').value = order.seller_contact;
+                        }
+
+                        // Enable/disable form based on payment status
+                        const isCompleted = payment?.status === 'completed';
+                        document.getElementById('confirmTransferBtn').style.display = isCompleted ? 'none' : 'block';
+                        document.querySelectorAll('#transferForm input, #transferForm select, #transferForm textarea').forEach(el => {
+                            el.disabled = isCompleted;
+                        });
+
+                        transferModal.style.display = 'block';
+                    } else {
+                        Swal.fire({
+                            title: 'Cannot Transfer Payment',
+                            text: data.message || 'Failed to load transfer details',
+                            icon: 'warning',
+                            confirmButtonColor: '#517A5B'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Failed to load transfer details. Please try again.',
+                        icon: 'error',
+                        confirmButtonColor: '#dc3545'
+                    });
+                });
+        }
 
         function confirmLogout() {
             Swal.fire({
